@@ -1,0 +1,195 @@
+@import "@fontsource/ibm-plex-sans-thai/400.css";
+@import "@fontsource/ibm-plex-sans-thai/500.css";
+@import "@fontsource/ibm-plex-sans-thai/600.css";
+@import "@fontsource/ibm-plex-sans-thai/700.css";
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --bg: #14110e;
+  --surface: #211c18;
+  --surface-2: #2c261f;
+  --fg: #f7f3ee;
+  --muted: #b7aa9e;
+  --line: #3c342c;
+  --fast: #f0a04b;
+  --eat: #ff8a70;
+  --done: #3dbe84;
+  --rest: #7eb0e8;
+  --multi: #f08aa2;
+  --fast-fill: #e8893a;
+  --eat-fill: #ef6d4f;
+  --done-fill: #2f9e6b;
+  --ink: #140f0c;
+  --on-accent: #1a120c;
+  --knob: #fffdfb;
+  --shadow: 0 12px 32px color-mix(in srgb, #000 28%, transparent);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f1ea;
+  --surface: #fffdfb;
+  --surface-2: #f3ece3;
+  --fg: #1c1612;
+  --muted: #5e564e;
+  --line: #e4d9ce;
+  --fast: #9a4e0c;
+  --eat: #b8432c;
+  --done: #0f7a45;
+  --rest: #1d5fa8;
+  --multi: #a83252;
+  --fast-fill: #e8893a;
+  --eat-fill: #ef6d4f;
+  --done-fill: #2f9e6b;
+  --ink: #1c1612;
+  --on-accent: #1a120c;
+  --knob: #fffdfb;
+  --shadow: 0 10px 28px color-mix(in srgb, #1c1612 8%, transparent);
+}
+
+@theme inline {
+  --font-sans: "IBM Plex Sans Thai", "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-fast: var(--fast);
+  --color-eat: var(--eat);
+  --color-done: var(--done);
+  --color-rest: var(--rest);
+  --color-multi: var(--multi);
+  --color-fast-fill: var(--fast-fill);
+  --color-eat-fill: var(--eat-fill);
+  --color-done-fill: var(--done-fill);
+  --color-ink: var(--ink);
+  --color-on-accent: var(--on-accent);
+  --color-knob: var(--knob);
+}
+
+@layer base {
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--fast) 35%, transparent);
+  }
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(880px 380px at 8% -10%, color-mix(in srgb, var(--fast-fill) 18%, transparent), transparent 62%),
+    radial-gradient(640px 320px at 110% 0%, color-mix(in srgb, var(--rest) 12%, transparent), transparent 58%);
+  z-index: -1;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 1.5rem;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.press {
+  transition: scale 150ms ease-out;
+}
+
+.press:active {
+  scale: 0.96;
+}
+
+.field,
+.area {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.field {
+  height: 2.75rem;
+  padding-inline: 0.75rem;
+}
+
+.area {
+  min-height: 4.75rem;
+  padding: 0.75rem;
+  resize: vertical;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.ember-wash {
+  background: radial-gradient(ellipse at top, color-mix(in srgb, var(--fast-fill) 30%, transparent), transparent 68%);
+}
+
+.eat-wash {
+  background: radial-gradient(ellipse at top, color-mix(in srgb, var(--eat-fill) 28%, transparent), transparent 68%);
+}
+
+.done-wash {
+  background: radial-gradient(ellipse at top, color-mix(in srgb, var(--done-fill) 24%, transparent), transparent 68%);
+}
+
+.rise {
+  animation: rise 220ms ease-out;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--fast);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .press:active {
+    scale: 1;
+  }
+}
