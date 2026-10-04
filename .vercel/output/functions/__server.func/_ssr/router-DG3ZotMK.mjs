@@ -4,8 +4,8 @@ import { _ as createFileRoute, d as Scripts, f as HeadContent, g as lazyRouteCom
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { i as TriangleAlert } from "../_libs/lucide-react.mjs";
 import { a as union, i as string, n as number, r as object, t as literal } from "../_libs/zod.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/router-DOkbidmQ.js
-var router_DOkbidmQ_exports = /* @__PURE__ */ __exportAll({ getRouter: () => getRouter });
+//#region node_modules/.nitro/vite/services/ssr/assets/router-DG3ZotMK.js
+var router_DG3ZotMK_exports = /* @__PURE__ */ __exportAll({ getRouter: () => getRouter });
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var FALLBACK_MESSAGE = "An unexpected error occurred. Try reloading the page.";
@@ -299,7 +299,7 @@ function PreviewHostBridge() {
 	}, [router]);
 	return null;
 }
-var styles_default = "/assets/styles-CkD_Xtuy.css";
+var styles_default = "/assets/styles-D4N60Wju.css";
 var THEME_BOOT = `(function(){try{var raw=localStorage.getItem("omad-tracker-v1");var theme="dark";var lang="th";if(raw){var data=JSON.parse(raw);if(data&&data.settings&&data.settings.theme==="light")theme="light";if(data&&data.settings&&data.settings.lang==="en")lang="en";}document.documentElement.dataset.theme=theme;document.documentElement.lang=lang;}catch(e){document.documentElement.dataset.theme="dark";}})();`;
 var Route$1 = createRootRoute({
 	head: () => ({
@@ -361,7 +361,7 @@ var Route$1 = createRootRoute({
 		] })]
 	})
 });
-var $$splitComponentImporter = () => import("./routes-BXV3ZBAn.mjs");
+var $$splitComponentImporter = () => import("./routes-DtX1WGNF.mjs");
 var rootRouteChildren = { IndexRoute: createFileRoute("/")({ component: lazyRouteComponent($$splitComponentImporter, "component") }).update({
 	id: "/",
 	path: "/",
@@ -375,4 +375,4 @@ function getRouter() {
 	});
 }
 //#endregion
-export { getRouter, router_DOkbidmQ_exports as t };
+export { getRouter, router_DG3ZotMK_exports as t };

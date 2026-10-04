@@ -35,6 +35,9 @@
   ],
   "authWarnings": [],
   "verdictFile": "/workspace/screenshots/app-builder-built.json",
-  "divergesFromBaseline": false,
-  "baselineReasons": []
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "desktop: body text changed (12 -> 655 chars, hash mismatch)",
+    "mobile: body text changed (12 -> 620 chars, hash mismatch)"
+  ]
 }

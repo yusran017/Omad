@@ -231,6 +231,62 @@ var Droplets = createLucideIcon("droplets", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var FileJson = createLucideIcon("file-json", [
+	["path", {
+		d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z",
+		key: "1rqfz7"
+	}],
+	["path", {
+		d: "M14 2v4a2 2 0 0 0 2 2h4",
+		key: "tnqrlb"
+	}],
+	["path", {
+		d: "M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1",
+		key: "1oajmo"
+	}],
+	["path", {
+		d: "M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1",
+		key: "mpwhp6"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var FileSpreadsheet = createLucideIcon("file-spreadsheet", [
+	["path", {
+		d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z",
+		key: "1rqfz7"
+	}],
+	["path", {
+		d: "M14 2v4a2 2 0 0 0 2 2h4",
+		key: "tnqrlb"
+	}],
+	["path", {
+		d: "M8 13h2",
+		key: "yr2amv"
+	}],
+	["path", {
+		d: "M14 13h2",
+		key: "un5t4a"
+	}],
+	["path", {
+		d: "M8 17h2",
+		key: "2yhykz"
+	}],
+	["path", {
+		d: "M14 17h2",
+		key: "10kma7"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Flame = createLucideIcon("flame", [["path", {
 	d: "M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z",
 	key: "96xj49"
@@ -515,4 +571,4 @@ var Zap = createLucideIcon("zap", [["path", {
 	key: "1xq2db"
 }]]);
 //#endregion
-export { ChevronRight as _, Sun as a, CalendarDays as b, Pencil as c, House as d, History as f, CircleDashed as g, Droplets as h, TriangleAlert as i, Moon as l, Flame as m, X as n, Smile as o, Frown as p, Utensils as r, Settings as s, Zap as t, Meh as u, ChevronLeft as v, ChartColumn as y };
+export { CalendarDays as S, Droplets as _, Sun as a, ChevronLeft as b, Pencil as c, House as d, History as f, FileJson as g, FileSpreadsheet as h, TriangleAlert as i, Moon as l, Flame as m, X as n, Smile as o, Frown as p, Utensils as r, Settings as s, Zap as t, Meh as u, CircleDashed as v, ChartColumn as x, ChevronRight as y };
