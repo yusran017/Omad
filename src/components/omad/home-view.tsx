@@ -3,7 +3,7 @@ import { Droplet, GlassWater, Pencil, Utensils } from "lucide-react";
 import { useOmad } from "@/components/omad/context";
 import { GhostButton, PrimaryButton, Ring, StageIcon, StageRing, cn } from "@/components/omad/parts";
 import { t } from "@/lib/omad/i18n";
-import { FAST_BANDS, fastBand, fastBandLabel, fastBandNoteFor, formatHMS, formatHours, formatTime, formatWords, present, shouldConfirmOff, type FastBandId } from "@/lib/omad/logic";
+import { FAST_BANDS, fastBand, fastBandLabel, fastBandNoteFor, formatHMS, formatHours, formatTime, formatWords, present, scoreDay, shouldConfirmOff, type FastBandId } from "@/lib/omad/logic";
 import type { Outcome } from "@/lib/omad/types";
 
 const WATER = [50, 100, 150, 250, 500] as const;
@@ -24,6 +24,7 @@ export function HomeView({ now }: { now: number }) {
   const tracking = view.mode === "fasting" || view.mode === "eating";
   const eatTarget = today?.targetEatingMinutes ?? data.settings.targetEatingMinutes;
   const eatLeft = (derived?.phaseElapsedMs ?? 0) - eatTarget * 60_000;
+  const score = today ? scoreDay(today, now, view.todayKey) : null;
   const detail = pickedBand
     ? fastBandNoteFor(pickedBand.id, lang)
     : view.mode === "inactive"
@@ -112,6 +113,9 @@ export function HomeView({ now }: { now: number }) {
         {view.mode === "eating" ? (
           <p className="mt-1 text-center text-xs font-medium text-fg">{t(lang, "eatClock", { time: formatTime(derived?.openMeal?.start ?? null, lang), target: formatHours(eatTarget, lang) })}</p>
         ) : null}
+        {score?.mealOk ? <p className="mt-1 text-center text-xs font-semibold text-done">{t(lang, "inBounds")}</p> : null}
+        {score && score.mealCount > 1 ? <p className="mt-1 text-center text-xs font-semibold text-eat">{t(lang, "outSecond")}</p> : null}
+        {score?.overTarget ? <p className="mt-1 text-center text-xs font-semibold text-eat">{t(lang, "overWindow")}</p> : null}
         <div className="mt-2">
           {view.mode === "inactive" || view.mode === "rest" ? (
             <PrimaryButton onClick={activate}>{t(lang, "startToday")}</PrimaryButton>
@@ -141,7 +145,7 @@ export function HomeView({ now }: { now: number }) {
       </section>
 
       {data.settings.waterEnabled ? (
-        <section className="card -mx-2 shrink-0 px-3 py-2.5">
+        <section className="card shrink-0 px-3 py-2.5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="inline-flex items-center gap-1.5 text-sm font-semibold">
               <Droplet className="size-4 text-water" />
@@ -214,6 +218,7 @@ export function dotClass(outcome: Outcome) {
   if (outcome === "completed") return "bg-done-fill";
   if (outcome === "in_progress") return "bg-fast";
   if (outcome === "multiple") return "bg-multi";
+  if (outcome === "over") return "bg-eat";
   if (outcome === "rest") return "bg-rest";
   if (outcome === "other") return "bg-window";
   return "bg-line";

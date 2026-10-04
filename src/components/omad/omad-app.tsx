@@ -25,6 +25,7 @@ import {
   updateSettings as patchSettings,
   addFastLog,
   carryOpenFast,
+  upgradeOmadGoal,
   setMealDraft,
 } from "@/lib/omad/actions";
 import { t } from "@/lib/omad/i18n";
@@ -55,7 +56,7 @@ export function OmadApp() {
 
   useEffect(() => {
     const loaded = loadPersisted(localStorage.getItem(STORAGE_KEY));
-    setData(carryOpenFast(loaded, Date.now()));
+    setData(carryOpenFast(upgradeOmadGoal(loaded), Date.now()));
   }, []);
 
   useEffect(() => {
@@ -139,7 +140,11 @@ export function OmadApp() {
         setSheet(null);
       },
       startEat: () => {
-        setData((current) => current && startEating(current, Date.now()));
+        const stamp = Date.now();
+        const today = data.days[localDateKey(new Date(stamp))];
+        const second = (today?.meals.length ?? 0) > 0;
+        setData((current) => current && startEating(current, stamp));
+        if (second) say("outSecond");
         navigator.vibrate?.(12);
       },
       stopEat: () => {
@@ -150,8 +155,10 @@ export function OmadApp() {
         const todayKey = localDateKey(new Date(stamp));
         const fastMs = open ? derive(next.days[open.date], stamp, todayKey).fastingMs : 0;
         const scored = open ? scoreDay(next.days[open.date], stamp, todayKey) : null;
-        if (scored?.omadWin) say("omadWin");
+        if ((scored?.mealCount ?? 0) > 1) say("outSecond");
         else if (scored?.overTarget) setBanner(t(lang, "overEat", { time: formatHours(next.days[open?.date ?? ""]?.targetEatingMinutes ?? data.settings.targetEatingMinutes, lang) }));
+        else if (scored?.omadWin) say("omadWin");
+        else if (scored?.mealOk) say("inBounds");
         else if (fastMs >= 12 * 3_600_000) setBanner(`${fastBandLabel(fastMs, lang)} · ${fastBandNote(fastMs, lang)}`);
         else say("savedMeal");
         navigator.vibrate?.(12);
@@ -229,6 +236,7 @@ export function OmadApp() {
       confirmCancel: () => {
         setData((current) => current && cancelOpenMeal(current, Date.now()));
         setSheet(null);
+        say("cancelKept");
       },
       confirmImport: () => {
         if (sheet?.type !== "import") return;

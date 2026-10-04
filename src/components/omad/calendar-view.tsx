@@ -65,10 +65,10 @@ export function CalendarView({ now }: { now: number }) {
         })}
       </div>
       <ul className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted">
-        {(["completed", "in_progress", "multiple", "rest", "other", "not_active"] as const).map((item) => (
+        {(["completed", "in_progress", "multiple", "over", "rest", "other"] as const).map((item) => (
           <li key={item} className="flex items-center gap-2">
             <span className={cn("size-2 rounded-full", dotClass(item))} />
-            {t(lang, item === "in_progress" ? "inProgress" : item === "not_active" ? "notActive" : item)}
+            {t(lang, item === "in_progress" ? "inProgress" : item === "over" ? "overWindow" : item)}
           </li>
         ))}
       </ul>

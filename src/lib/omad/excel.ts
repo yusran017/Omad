@@ -33,6 +33,7 @@ const TONE: Record<Outcome, { bg: string; fg: string }> = {
   multiple: { bg: "#fde8ee", fg: "#9a3450" },
   rest: { bg: "#e8f1fb", fg: "#1d5fa8" },
   other: { bg: "#fff6d8", fg: "#8a5a10" },
+  over: { bg: "#fde8ee", fg: "#9f1239" },
 };
 
 const MOOD_KEY: Record<Mood, "moodGood" | "moodNormal" | "moodTired" | "moodDifficult" | "moodStrong"> = {
@@ -106,11 +107,12 @@ function journalText(day: DayRecord | undefined, lang: Lang): string | null {
 }
 
 function outcomeLabel(outcome: Outcome, lang: Lang, hours = 0): string {
+  if (outcome === "over") return t(lang, "overWindow");
+  if (outcome === "multiple") return t(lang, "multiple");
   if (hours >= 12) return fastBandLabel(hours * 3_600_000, lang);
   if (outcome === "not_active") return t(lang, "notActive");
   if (outcome === "in_progress") return t(lang, "inProgress");
   if (outcome === "completed") return t(lang, "completed");
-  if (outcome === "multiple") return t(lang, "multiple");
   if (outcome === "rest") return t(lang, "rest");
   return t(lang, "other");
 }

@@ -1,4 +1,4 @@
-const CACHE = "omad-pages-v4";
+const CACHE = "omad-pages-v5";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

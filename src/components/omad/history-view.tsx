@@ -8,6 +8,7 @@ import type { Outcome } from "@/lib/omad/types";
 function labelKey(outcome: Outcome) {
   if (outcome === "in_progress") return "inProgress" as const;
   if (outcome === "not_active") return "notActive" as const;
+  if (outcome === "over") return "overWindow" as const;
   return outcome;
 }
 

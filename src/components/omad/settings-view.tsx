@@ -3,13 +3,13 @@ import { FileJson, FileSpreadsheet } from "lucide-react";
 import { useOmad } from "@/components/omad/context";
 import { Segmented, ToggleRow } from "@/components/omad/parts";
 import { t } from "@/lib/omad/i18n";
-import type { PlanId } from "@/lib/omad/types";
+import type { Lang, PlanId } from "@/lib/omad/types";
 
 const PLANS: { id: PlanId; fast: number; eat: number; label?: "planCustom" }[] = [
   { id: "16:8", fast: 16 * 60, eat: 8 * 60 },
   { id: "18:6", fast: 18 * 60, eat: 6 * 60 },
   { id: "20:4", fast: 20 * 60, eat: 4 * 60 },
-  { id: "omad", fast: 20 * 60, eat: 60 },
+  { id: "omad", fast: 23 * 60, eat: 60 },
   { id: "custom", fast: 20 * 60, eat: 60, label: "planCustom" },
 ];
 
@@ -58,6 +58,7 @@ export function SettingsView() {
               updateSettings({ plan: "custom", targetFastingMinutes: Math.round(Math.min(72, Math.max(1, hours)) * 60) });
             }}
           />
+          <span className="mt-1 block text-xs leading-snug">{t(lang, "goalFastHint")}</span>
         </label>
         <label className="text-sm text-muted">
           {t(lang, "goalEat")}
@@ -74,16 +75,13 @@ export function SettingsView() {
               updateSettings({ plan: "custom", targetEatingMinutes: Math.round(Math.min(16, Math.max(0.25, hours)) * 60) });
             }}
           />
+          <span className="mt-1 block text-xs leading-snug">{t(lang, "goalEatHint")}</span>
         </label>
-        <label className="text-sm text-muted">
-          {t(lang, "preferredEat")}
-          <input
-            className="field mt-1"
-            type="time"
-            value={data.settings.preferredEatingTime}
-            onChange={(event) => updateSettings({ preferredEatingTime: event.target.value || "14:00" })}
-          />
-        </label>
+        <ClockField
+          lang={lang}
+          value={data.settings.preferredEatingTime}
+          onChange={(value) => updateSettings({ preferredEatingTime: value })}
+        />
       </section>
 
       <section className="card grid gap-3 p-4">
@@ -185,5 +183,37 @@ export function SettingsView() {
         <p className="text-xs leading-snug text-muted">{t(lang, "aboutBody")}</p>
       </section>
     </div>
+  );
+}
+
+function ClockField({ lang, value, onChange }: { lang: Lang; value: string; onChange: (value: string) => void }) {
+  const [rawH, rawM] = value.split(":");
+  const hour = String(Math.min(23, Math.max(0, Number(rawH) || 0))).padStart(2, "0");
+  const minute = String(Math.min(59, Math.max(0, Number(rawM) || 0))).padStart(2, "0");
+  const hours = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, "0"));
+  const minutes = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, "0"));
+  return (
+    <fieldset className="text-sm text-muted">
+      <legend>{t(lang, "preferredEat")}</legend>
+      <div className="mt-1 grid grid-cols-2 gap-2">
+        <label>
+          {t(lang, "hourLabel")}
+          <select className="field mt-1" value={hour} onChange={(event) => onChange(`${event.target.value}:${minute}`)}>
+            {hours.map((item) => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {t(lang, "minuteLabel")}
+          <select className="field mt-1" value={minute} onChange={(event) => onChange(`${hour}:${event.target.value}`)}>
+            {minutes.map((item) => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <span className="mt-1 block text-xs leading-snug">{t(lang, "clockHint")} · {hour}:{minute}{lang === "th" ? " น." : ""}</span>
+    </fieldset>
   );
 }

@@ -194,6 +194,18 @@ export function setMealDraft(data: Persisted, text: string, now: number): Persis
   return withDay(data, key, (day) => ({ ...day, mealDraft: text.slice(0, 500) }));
 }
 
+/** Old OMAD preset was 20 hours. The 24-hour day with a 1-hour meal is a 23-hour fast. */
+export function upgradeOmadGoal(data: Persisted): Persisted {
+  if (data.settings.plan !== "omad" || data.settings.targetFastingMinutes !== 20 * 60 || data.settings.targetEatingMinutes !== 60) return data;
+  const days = { ...data.days };
+  for (const [key, day] of Object.entries(days)) {
+    if (day.targetFastingMinutes === 20 * 60 && day.targetEatingMinutes === 60) {
+      days[key] = { ...day, targetFastingMinutes: 23 * 60 };
+    }
+  }
+  return { ...data, settings: { ...data.settings, targetFastingMinutes: 23 * 60 }, days };
+}
+
 /** Keep a fast that started on Home running after midnight, with the same start time. */
 export function carryOpenFast(data: Persisted, now: number): Persisted {
   const today = localDateKey(new Date(now));

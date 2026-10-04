@@ -110,6 +110,44 @@ test("rejects a backup that is not an object of days", () => {
   }
 });
 
+test("one meal inside an hour stays inside OMAD even if the fast is short", () => {
+  const now = new Date(2026, 9, 4, 16, 0);
+  const record = day({
+    date: localDateKey(now),
+    fastingStart: new Date(2026, 9, 4, 8, 0).toISOString(),
+    meals: [
+      {
+        id: "m1",
+        start: new Date(2026, 9, 4, 14, 0).toISOString(),
+        end: new Date(2026, 9, 4, 14, 40).toISOString(),
+        description: "",
+        notes: "",
+        calories: null,
+      },
+    ],
+  });
+  assert.equal(derive(record, now.getTime(), localDateKey(now)).outcome, "completed");
+});
+
+test("a meal longer than one hour falls out of OMAD", () => {
+  const now = new Date(2026, 9, 4, 16, 0);
+  const record = day({
+    date: localDateKey(now),
+    fastingStart: new Date(2026, 9, 3, 18, 0).toISOString(),
+    meals: [
+      {
+        id: "m1",
+        start: new Date(2026, 9, 4, 13, 0).toISOString(),
+        end: new Date(2026, 9, 4, 14, 30).toISOString(),
+        description: "",
+        notes: "",
+        calories: null,
+      },
+    ],
+  });
+  assert.equal(derive(record, now.getTime(), localDateKey(now)).outcome, "over");
+});
+
 test("one meal inside an hour after a long fast is an OMAD win", () => {
   const now = new Date(2026, 9, 4, 16, 0);
   const record = day({

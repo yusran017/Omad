@@ -155,11 +155,12 @@ export function dayOutcome(day: DayRecord | undefined, todayKey: string): Outcom
   const open = day.meals.some((meal) => !meal.end);
   if (day.meals.length > 1) return "multiple";
   if (day.meals.length === 1 && !open) {
-    const start = day.fastingStart ? Date.parse(day.fastingStart) : NaN;
-    const first = Math.min(...day.meals.map((meal) => Date.parse(meal.start)).filter(Number.isFinite));
-    const hours = Number.isFinite(start) && Number.isFinite(first) ? Math.max(0, first - start) / 3_600_000 : 0;
-    if (hours + 1e-6 >= day.targetFastingMinutes / 60) return "completed";
-    return "other";
+    const meal = day.meals[0];
+    const start = Date.parse(meal.start);
+    const end = meal.end ? Date.parse(meal.end) : NaN;
+    const minutes = Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) / 60_000 : Number.POSITIVE_INFINITY;
+    if (minutes <= day.targetEatingMinutes + 1e-6) return "completed";
+    return "over";
   }
   if (day.date === todayKey) return "in_progress";
   return "other";
@@ -360,6 +361,7 @@ export type Stats = {
   multiple: number;
   rest: number;
   other: number;
+  over: number;
   consistency: number | null;
   bars: { date: string; hours: number; outcome: Outcome }[];
 };
@@ -396,6 +398,7 @@ export function computeStats(days: Record<string, DayRecord>, range: RangeId, no
     multiple: 0,
     rest: 0,
     other: 0,
+    over: 0,
     consistency: null,
     bars: [],
   };
@@ -424,7 +427,7 @@ export function computeStats(days: Record<string, DayRecord>, range: RangeId, no
 
   stats.avgFastHours = fastN ? fastSum / fastN : null;
   stats.avgEatHours = eatN ? eatSum / eatN : null;
-  const tracked = stats.completed + stats.multiple + stats.other;
+  const tracked = stats.completed + stats.multiple + stats.other + stats.over;
   stats.consistency = tracked ? stats.completed / tracked : null;
   return stats;
 }
