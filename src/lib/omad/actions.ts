@@ -1,4 +1,4 @@
-import { findOpenMeal, localDateKey, suggestFastingStart, validateDay } from "./logic.ts";
+import { addDays, findOpenMeal, localDateKey, suggestFastingStart, validateDay } from "./logic.ts";
 import type { DayRecord, FastLog, Meal, Persisted, Settings } from "./types.ts";
 
 export function blankDay(date: string, settings: Settings): DayRecord {
@@ -15,6 +15,7 @@ export function blankDay(date: string, settings: Settings): DayRecord {
     weightKg: null,
     mood: null,
     logs: [],
+    mealDraft: "",
   };
 }
 
@@ -59,7 +60,8 @@ export function startEating(data: Persisted, now: number): Persisted {
     fastingStart: day.fastingStart ?? suggestFastingStart(data.days, now),
     targetFastingMinutes: data.settings.targetFastingMinutes,
     targetEatingMinutes: data.settings.targetEatingMinutes,
-    meals: [...day.meals, meal],
+    mealDraft: "",
+    meals: [...day.meals, { ...meal, description: day.mealDraft || "" }],
   }));
 }
 
@@ -99,6 +101,7 @@ export function saveDay(data: Persisted, day: DayRecord): { data: Persisted; err
     notes: day.notes.slice(0, 2000),
     waterMl: stored?.waterMl ?? day.waterMl,
     logs: stored?.logs ?? day.logs ?? [],
+    mealDraft: (day.mealDraft ?? stored?.mealDraft ?? "").slice(0, 500),
   };
   return { data: { ...data, days: { ...data.days, [day.date]: next } }, error: null };
 }
@@ -155,25 +158,72 @@ export function setNotes(data: Persisted, notes: string, now: number): Persisted
 
 export function addFastLog(
   data: Persisted,
-  entry: { notes: string; mood: FastLog["mood"]; weightKg: number | null; fastingMs: number },
+  entry: { notes: string; mood: FastLog["mood"]; weightKg: number | null },
   now: number,
 ): Persisted {
   const key = localDateKey(new Date(now));
-  const log: FastLog = {
-    id: crypto.randomUUID(),
-    at: new Date(now).toISOString(),
-    fastingMs: Math.max(0, Math.round(entry.fastingMs)),
-    notes: entry.notes.slice(0, 500),
-    mood: entry.mood,
-    weightKg: entry.weightKg,
-  };
-  return withDay(data, key, (day) => ({
-    ...day,
-    notes: log.notes || day.notes,
-    mood: entry.mood ?? day.mood,
-    weightKg: entry.weightKg ?? day.weightKg,
-    logs: [...(day.logs ?? []), log].slice(-40),
-  }));
+  return withDay(data, key, (day) => {
+    const startMs = day.fastingStart ? Date.parse(day.fastingStart) : NaN;
+    const firstMeal = day.meals
+      .map((meal) => Date.parse(meal.start))
+      .filter((stamp) => Number.isFinite(stamp) && stamp <= now)
+      .sort((a, b) => a - b)[0];
+    const until = Number.isFinite(firstMeal) ? firstMeal : now;
+    const fastingMs = Number.isFinite(startMs) ? Math.max(0, until - startMs) : 0;
+    const log: FastLog = {
+      id: crypto.randomUUID(),
+      at: new Date(now).toISOString(),
+      fastingStart: Number.isFinite(startMs) ? day.fastingStart : null,
+      fastingMs,
+      notes: entry.notes.slice(0, 500),
+      mood: entry.mood,
+      weightKg: entry.weightKg,
+    };
+    return {
+      ...day,
+      notes: log.notes || day.notes,
+      mood: entry.mood ?? day.mood,
+      weightKg: entry.weightKg ?? day.weightKg,
+      logs: [...(day.logs ?? []), log].slice(-40),
+    };
+  });
+}
+
+export function setMealDraft(data: Persisted, text: string, now: number): Persisted {
+  const key = localDateKey(new Date(now));
+  return withDay(data, key, (day) => ({ ...day, mealDraft: text.slice(0, 500) }));
+}
+
+/** Keep a fast that started on Home running after midnight, with the same start time. */
+export function carryOpenFast(data: Persisted, now: number): Persisted {
+  const today = localDateKey(new Date(now));
+  const existing = data.days[today];
+  if (existing?.rest || existing?.fastingStart || (existing && !existing.active) || (existing?.meals.length ?? 0) > 0) return data;
+
+  let cursor = addDays(today, -1);
+  for (let i = 0; i < 3; i += 1) {
+    const prev = data.days[cursor];
+    cursor = addDays(cursor, -1);
+    if (!prev) continue;
+    if (prev.rest || !prev.active || !prev.fastingStart) return data;
+    const startMs = Date.parse(prev.fastingStart);
+    if (!Number.isFinite(startMs) || now < startMs || now - startMs > 72 * 3_600_000) return data;
+    const ate = prev.meals.some((meal) => {
+      const stamp = Date.parse(meal.start);
+      return Number.isFinite(stamp) && stamp >= startMs;
+    });
+    if (ate) return data;
+    const start = prev.fastingStart;
+    return withDay(data, today, (day) => ({
+      ...day,
+      active: true,
+      rest: false,
+      fastingStart: start,
+      targetFastingMinutes: prev.targetFastingMinutes,
+      targetEatingMinutes: prev.targetEatingMinutes,
+    }));
+  }
+  return data;
 }
 
 export function setMealDescription(data: Persisted, date: string, mealId: string, description: string): Persisted {

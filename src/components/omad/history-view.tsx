@@ -2,7 +2,7 @@ import { useState } from "react";
 import { dotClass } from "@/components/omad/home-view";
 import { useOmad } from "@/components/omad/context";
 import { t } from "@/lib/omad/i18n";
-import { addDays, dayOutcome, derive, endOfDay, fastBandLabel, formatPrettyDate, formatWords, localDateKey } from "@/lib/omad/logic";
+import { addDays, dayOutcome, derive, endOfDay, fastBandLabel, formatPrettyDate, formatWords, localDateKey, scoreDay } from "@/lib/omad/logic";
 import type { Outcome } from "@/lib/omad/types";
 
 function labelKey(outcome: Outcome) {
@@ -34,7 +34,10 @@ export function HistoryView({ now }: { now: number }) {
               ? `${t(lang, "fastingShort")} ${formatWords(measured.fastingMs, lang)} · ${t(lang, "eatingShort")} ${formatWords(measured.eatingMs, lang)}`
               : "";
           const latest = record?.logs?.at(-1);
-          const detail = [stage ?? t(lang, labelKey(outcome)), times, latest?.notes ? latest.notes : "", open ? t(lang, "unclosed") : ""].filter(Boolean).join(" · ");
+          const score = record ? scoreDay(record, now, today) : null;
+          const won = Boolean(score?.omadWin);
+          const windowBit = score?.overTarget ? t(lang, "overTarget") : score?.mealOk ? t(lang, "mealOk") : "";
+          const detail = [won ? t(lang, "omadWins") : windowBit, stage ?? t(lang, labelKey(outcome)), times, latest?.notes ? latest.notes : "", open ? t(lang, "unclosed") : ""].filter(Boolean).join(" · ");
           return (
             <li key={key}>
               <button type="button" className="flex w-full items-center gap-3 py-3 text-left press" onClick={() => openDay(key)}>

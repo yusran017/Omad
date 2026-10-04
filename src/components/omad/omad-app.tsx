@@ -24,10 +24,12 @@ import {
   stopEating,
   updateSettings as patchSettings,
   addFastLog,
+  carryOpenFast,
+  setMealDraft,
 } from "@/lib/omad/actions";
 import { t } from "@/lib/omad/i18n";
 import { downloadExcel } from "@/lib/omad/excel";
-import { dayOutcome, dueNotices, findOpenMeal, formatPrettyDate, loadPersisted, localDateKey, parseBackup, serialize, shouldConfirmOff, derive, fastBandLabel, fastBandNote } from "@/lib/omad/logic";
+import { dueNotices, findOpenMeal, formatPrettyDate, loadPersisted, localDateKey, parseBackup, serialize, shouldConfirmOff, derive, fastBandLabel, fastBandNote, scoreDay, formatHours } from "@/lib/omad/logic";
 import { STORAGE_KEY, emptyPersisted, type Persisted, type SheetState, type ViewId } from "@/lib/omad/types";
 
 const NAV: { id: ViewId; icon: typeof House; label: "home" | "calendar" | "stats" | "history" | "log" }[] = [
@@ -53,7 +55,7 @@ export function OmadApp() {
 
   useEffect(() => {
     const loaded = loadPersisted(localStorage.getItem(STORAGE_KEY));
-    setData(loaded);
+    setData(carryOpenFast(loaded, Date.now()));
   }, []);
 
   useEffect(() => {
@@ -90,7 +92,10 @@ export function OmadApp() {
   useEffect(() => {
     const tick = (prime: boolean) => {
       const current = dataRef.current;
-      if (!current || typeof Notification === "undefined" || Notification.permission !== "granted") return;
+      if (!current) return;
+      const carried = carryOpenFast(current, Date.now());
+      if (carried !== current) setData(carried);
+      if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
       for (const notice of dueNotices(current, Date.now(), seen.current, prime)) {
         try {
           new Notification(notice.title, { body: notice.body, lang: current.settings.lang });
@@ -144,11 +149,11 @@ export function OmadApp() {
         setData(next);
         const todayKey = localDateKey(new Date(stamp));
         const fastMs = open ? derive(next.days[open.date], stamp, todayKey).fastingMs : 0;
-        if (fastMs >= 12 * 3_600_000) setBanner(`${fastBandLabel(fastMs, lang)} · ${fastBandNote(fastMs, lang)}`);
-        else {
-          const outcome = open ? dayOutcome(next.days[open.date], todayKey) : "other";
-          say(outcome === "completed" ? "savedOmad" : "savedMeal");
-        }
+        const scored = open ? scoreDay(next.days[open.date], stamp, todayKey) : null;
+        if (scored?.omadWin) say("omadWin");
+        else if (scored?.overTarget) setBanner(t(lang, "overEat", { time: formatHours(next.days[open?.date ?? ""]?.targetEatingMinutes ?? data.settings.targetEatingMinutes, lang) }));
+        else if (fastMs >= 12 * 3_600_000) setBanner(`${fastBandLabel(fastMs, lang)} · ${fastBandNote(fastMs, lang)}`);
+        else say("savedMeal");
         navigator.vibrate?.(12);
       },
       requestCancel: () => setSheet({ type: "cancel-meal" }),
@@ -159,6 +164,7 @@ export function OmadApp() {
         setData((current) => current && addFastLog(current, entry, Date.now()));
         setBanner(t(lang, "logSaved"));
       },
+      setMealDraft: (text) => setData((current) => current && setMealDraft(current, text, Date.now())),
       setWeight: (kg) => setData((current) => current && setWeight(current, kg, Date.now())),
       setMealText: (date, mealId, text) => setData((current) => current && setMealDescription(current, date, mealId, text)),
       updateSettings: (patch) => setData((current) => current && patchSettings(current, patch, Date.now())),

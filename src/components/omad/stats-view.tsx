@@ -3,7 +3,7 @@ import { Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis } f
 import { useOmad } from "@/components/omad/context";
 import { Ring, Segmented } from "@/components/omad/parts";
 import { t } from "@/lib/omad/i18n";
-import { computeStats, formatHourNumber, formatPrettyDate } from "@/lib/omad/logic";
+import { computeStats, formatHourNumber, formatPrettyDate, winStreak, scoreDay, localDateKey } from "@/lib/omad/logic";
 import type { RangeId } from "@/lib/omad/types";
 
 export function StatsView({ now }: { now: number }) {
@@ -16,10 +16,15 @@ export function StatsView({ now }: { now: number }) {
     label: range === "7" ? formatPrettyDate(bar.date, lang).split(" ")[0] : bar.date.slice(8),
   }));
   const weights = Object.values(data.days)
-    .filter((day) => typeof day.weightKg === "number")
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .map((day) => ({ date: day.date, label: day.date.slice(5), kg: day.weightKg }));
+    .flatMap((day) => {
+      const logged = (day.logs ?? []).filter((log) => typeof log.weightKg === "number");
+      if (logged.length) return logged.map((log) => ({ date: log.at, label: day.date.slice(5), kg: log.weightKg as number }));
+      return typeof day.weightKg === "number" ? [{ date: day.date, label: day.date.slice(5), kg: day.weightKg }] : [];
+    })
+    .sort((a, b) => a.date.localeCompare(b.date));
   const tracked = stats.completed + stats.inProgress + stats.multiple + stats.other;
+  const wins = Object.values(data.days).filter((day) => scoreDay(day, now, localDateKey(new Date(now))).omadWin).length;
+  const streak = winStreak(data.days, now);
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -55,6 +60,8 @@ export function StatsView({ now }: { now: number }) {
         <Tile label={t(lang, "avgEat")} value={stats.avgEatHours === null ? t(lang, "dash") : formatHourNumber(stats.avgEatHours, lang)} />
         <Tile label={t(lang, "completedCount")} value={String(stats.completed)} />
         <Tile label={t(lang, "activeDays")} value={String(tracked)} />
+        <Tile label={t(lang, "omadWins")} value={String(wins)} />
+        <Tile label={t(lang, "winStreak")} value={String(streak)} />
         <Tile label={t(lang, "notActiveDays")} value={String(stats.notActive)} />
       </section>
 
@@ -84,13 +91,10 @@ export function StatsView({ now }: { now: number }) {
         )}
       </section>
 
-      {data.settings.weightEnabled ? (
+      {weights.length > 0 ? (
         <section className="card p-4 lg:col-span-2">
           <h2 className="text-sm font-semibold">{t(lang, "weightChart")}</h2>
-          {weights.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">{t(lang, "weightEmpty")}</p>
-          ) : (
-            <div className="mt-3 h-44 w-full min-w-0">
+          <div className="mt-3 h-44 w-full min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={weights} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <XAxis dataKey="label" tick={{ fill: "var(--muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -99,7 +103,6 @@ export function StatsView({ now }: { now: number }) {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          )}
         </section>
       ) : null}
     </div>

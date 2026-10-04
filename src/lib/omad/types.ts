@@ -18,6 +18,7 @@ export type Meal = {
 export type FastLog = {
   id: string;
   at: string;
+  fastingStart: string | null;
   fastingMs: number;
   notes: string;
   mood: Mood | null;
@@ -37,6 +38,7 @@ export type DayRecord = {
   weightKg: number | null;
   mood: Mood | null;
   logs: FastLog[];
+  mealDraft: string;
 };
 
 export type Settings = {

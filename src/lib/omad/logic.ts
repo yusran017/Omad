@@ -284,6 +284,61 @@ export function shouldConfirmOff(day: DayRecord | undefined, now: number): boole
   return now - Date.parse(day.fastingStart) > 60_000;
 }
 
+export function scoreDay(day: DayRecord | undefined, now: number, todayKey: string) {
+  const none = {
+    fastHours: 0,
+    eatMinutes: null as number | null,
+    mealCount: 0,
+    open: false,
+    overTarget: false,
+    mealOk: false,
+    omadWin: false,
+    fastingStart: null as string | null,
+    mealStart: null as string | null,
+    mealEnd: null as string | null,
+  };
+  if (!day) return none;
+  const asOf = day.date === todayKey ? now : Math.min(now, endOfDay(day.date));
+  const derived = derive(day, asOf, todayKey);
+  const meals = day.meals.filter((meal) => Number.isFinite(Date.parse(meal.start)));
+  const eatMinutes = meals.length ? Math.round(derived.eatingMs / 60_000) : null;
+  const fastHours = derived.fastingMs / 3_600_000;
+  const open = meals.some((meal) => !meal.end);
+  const overTarget = eatMinutes != null && !open && eatMinutes > day.targetEatingMinutes;
+  const first = meals.slice().sort((a, b) => Date.parse(a.start) - Date.parse(b.start))[0] ?? null;
+  const mealOk = meals.length === 1 && !open && eatMinutes != null && eatMinutes <= day.targetEatingMinutes;
+  const omadWin = mealOk && fastHours + 1e-6 >= day.targetFastingMinutes / 60;
+  return {
+    fastHours,
+    eatMinutes,
+    mealCount: meals.length,
+    open,
+    overTarget,
+    mealOk,
+    omadWin,
+    fastingStart: day.fastingStart,
+    mealStart: first?.start ?? null,
+    mealEnd: first?.end ?? null,
+  };
+}
+
+export function winStreak(days: Record<string, DayRecord>, now: number): number {
+  const today = localDateKey(new Date(now));
+  let cursor = today;
+  let streak = 0;
+  for (let i = 0; i < 400; i += 1) {
+    const score = scoreDay(days[cursor], now, today);
+    if (cursor === today && !score.omadWin) {
+      cursor = addDays(cursor, -1);
+      continue;
+    }
+    if (!score.omadWin) break;
+    streak += 1;
+    cursor = addDays(cursor, -1);
+  }
+  return streak;
+}
+
 export function fastSample(day: DayRecord | undefined, now: number, todayKey: string): { hours: number; counted: boolean } {
   if (!day?.active || day.rest || !day.fastingStart) return { hours: 0, counted: false };
   const start = Date.parse(day.fastingStart);
@@ -387,54 +442,78 @@ export const FAST_BANDS = [
 
 export type FastBandId = (typeof FAST_BANDS)[number]["id"];
 
-const BAND_COPY: Record<FastBandId, { th: string; en: string; noteTh: string; noteEn: string }> = {
+const BAND_COPY: Record<FastBandId, { th: string; en: string; noteTh: string; noteEn: string; mark: string; verbTh: string; verbEn: string }> = {
   "0": {
     th: "เริ่มอด",
     en: "Started",
     noteTh: "ยังไม่ถึง 12 ชั่วโมง ร่างกายใช้น้ำตาลที่เก็บไว้เป็นหลัก",
     noteEn: "Under 12 hours. The body is still using stored sugar",
+    mark: "🌅",
+    verbTh: "เริ่ม",
+    verbEn: "Start",
   },
   "12": {
     th: "12 ชม.",
     en: "12h",
     noteTh: "ผ่าน 12 ชม. เริ่มดึงไขมันมาใช้เป็นพลังงานมากขึ้น",
     noteEn: "12 hours. Fat is starting to cover more of the energy need",
+    mark: "🔥",
+    verbTh: "ไขมัน",
+    verbEn: "Fat",
   },
   "16": {
     th: "16:8",
     en: "16:8",
     noteTh: "สูตร 16:8 อินซูลินมักต่ำลง และเริ่มใช้ไขมันชัดขึ้น",
     noteEn: "16:8. Insulin is often lower, and fat use is clearer",
+    mark: "⚡",
+    verbTh: "สลับ",
+    verbEn: "Switch",
   },
   "18": {
     th: "18:6",
     en: "18:6",
     noteTh: "สูตร 18:6 เข้าออโตฟาจีช่วงต้น เซลล์เริ่มเก็บกวาดส่วนที่เสื่อม",
     noteEn: "18:6. Early autophagy. Cells start clearing worn parts",
+    mark: "✨",
+    verbTh: "กวาด",
+    verbEn: "Clear",
   },
   "20": {
     th: "20:4",
     en: "20:4",
     noteTh: "สูตร 20:4 ใกล้ OMAD ร่างกายพึ่งไขมันเป็นพลังงานหลัก",
     noteEn: "20:4. Near one meal. Fat is the main fuel",
+    mark: "🎯",
+    verbTh: "ใกล้",
+    verbEn: "Near",
   },
   "24": {
     th: "OMAD",
     en: "OMAD",
     noteTh: "ครบ 24 ชม. แบบ OMAD ออโตฟาจีชัดกว่าช่วงก่อนหน้า",
     noteEn: "24 hours, OMAD. Autophagy is clearer than earlier on",
+    mark: "🍽️",
+    verbTh: "มื้อ",
+    verbEn: "One",
   },
   "36": {
     th: "36 ชม.",
     en: "36h",
     noteTh: "อด 36 ชม. ใช้ไขมันต่อเนื่อง และออโตฟาจียังทำงานอยู่",
     noteEn: "36 hours. Fat use continues, and autophagy is still active",
+    mark: "🌿",
+    verbTh: "ลึก",
+    verbEn: "Deep",
   },
   "48": {
     th: "48 ชม.",
     en: "48h",
     noteTh: "ครบ 48 ชม. เป็นการอดระยะยาว ฟังความรู้สึกของร่างกายด้วย",
     noteEn: "48 hours. A long fast. Pay attention to how you feel",
+    mark: "🛡️",
+    verbTh: "ยาว",
+    verbEn: "Long",
   },
 };
 
@@ -454,6 +533,15 @@ export function fastBandLabel(ms: number, lang: Lang): string {
 export function fastBandNoteFor(id: FastBandId, lang: Lang): string {
   const copy = BAND_COPY[id];
   return lang === "th" ? copy.noteTh : copy.noteEn;
+}
+
+export function fastBandMark(id: FastBandId): string {
+  return BAND_COPY[id].mark;
+}
+
+export function fastBandVerb(id: FastBandId, lang: Lang): string {
+  const copy = BAND_COPY[id];
+  return lang === "th" ? copy.verbTh : copy.verbEn;
 }
 
 export function fastBandNote(ms: number, lang: Lang): string {
@@ -511,6 +599,7 @@ function normalizeLog(value: unknown): FastLog | null {
     id: typeof log.id === "string" && log.id ? log.id : crypto.randomUUID(),
     at: log.at,
     fastingMs: clampNum(log.fastingMs, 0, 120 * 3_600_000, 0),
+    fastingStart: typeof log.fastingStart === "string" && Number.isFinite(Date.parse(log.fastingStart)) ? log.fastingStart : null,
     notes: clip(log.notes, 500),
     mood: typeof log.mood === "string" && MOODS.has(log.mood) ? (log.mood as FastLog["mood"]) : null,
     weightKg: weight === null ? null : Math.max(20, Math.min(400, Math.round(weight * 10) / 10)),
@@ -537,6 +626,7 @@ function normalizeDay(value: unknown, key: string): DayRecord | null {
     weightKg: weight === null ? null : Math.max(20, Math.min(400, Math.round(weight * 10) / 10)),
     mood: typeof day.mood === "string" && MOODS.has(day.mood) ? (day.mood as DayRecord["mood"]) : null,
     logs: Array.isArray(day.logs) ? day.logs.map(normalizeLog).filter((log): log is FastLog => Boolean(log)).slice(-40) : [],
+    mealDraft: clip(day.mealDraft, 500),
   };
 }
 

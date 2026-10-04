@@ -11,6 +11,7 @@ import {
   formatPrettyDate,
   listRange,
   localDateKey,
+  scoreDay,
 } from "./logic.ts";
 import type { DayRecord, Lang, Mood, Outcome, Persisted } from "./types.ts";
 
@@ -157,7 +158,7 @@ export function buildWorkbook(data: Persisted, now = Date.now()): Array<Sheet<Bl
     { label: t(lang, "avgEat"), value: stats.avgEatHours == null ? "—" : round1(stats.avgEatHours), format: "0.0" },
     { label: t(lang, "completedCount"), value: stats.completed, format: "0" },
     { label: t(lang, "activeDays"), value: stats.completed + stats.inProgress + stats.multiple + stats.other, format: "0" },
-    { label: t(lang, "rest"), value: stats.rest, format: "0" },
+    { label: t(lang, "omadWins"), value: keys.filter((key) => scoreDay(data.days[key], now, today).omadWin).length, format: "0" },
     { label: lang === "th" ? "น้ำหนักล่าสุด" : "Latest weight", value: latestWeight == null ? "—" : round1(latestWeight), format: "0.0" },
     { label: lang === "th" ? "น้ำเฉลี่ย (มล.)" : "Avg water (ml)", value: avgWater == null ? "—" : avgWater, format: "#,##0" },
   ];
@@ -251,6 +252,53 @@ export function buildWorkbook(data: Persisted, now = Date.now()): Array<Sheet<Bl
     dash.push([
       cell(t(lang, "emptyStats"), { columnSpan: cols, backgroundColor: CREAM, align: "center", height: 28 }),
       ...Array.from({ length: cols - 1 }, () => null),
+    ]);
+  }
+
+  dash.push([
+    cell(lang === "th" ? "วิเคราะห์ OMAD" : "OMAD analysis", {
+      columnSpan: cols,
+      backgroundColor: SECTION,
+      fontWeight: "bold",
+      fontSize: 13,
+      borderColor: "#e2d3c4",
+      height: 24,
+    }),
+    ...Array.from({ length: cols - 1 }, () => null),
+  ]);
+  dash.push(
+    headers([
+      lang === "th" ? "วันที่" : "Date",
+      lang === "th" ? "เริ่มอด" : "Fast start",
+      lang === "th" ? "เริ่มกิน" : "Meal start",
+      lang === "th" ? "จบกิน" : "Meal end",
+      lang === "th" ? "กิน (นาที)" : "Eat (min)",
+      lang === "th" ? "หน้าต่าง 1 ชม." : "1h window",
+      lang === "th" ? "ช่วงที่ถึง" : "Stage",
+      t(lang, "omadWins"),
+      t(lang, "weight"),
+    ]),
+  );
+  for (const key of keys) {
+    const day = data.days[key];
+    if (!day?.active && day?.meals.length !== 1 && !(day?.logs?.length)) continue;
+    if (!day) continue;
+    const score = scoreDay(day, now, today);
+    const tone = TONE[dayOutcome(day, today)];
+    const base = { backgroundColor: tone.bg, textColor: INK };
+    const windowLabel = score.eatMinutes == null ? "—" : score.overTarget ? t(lang, "overTarget") : t(lang, "withinTarget");
+    const food = day.meals.map((meal) => meal.description.trim()).filter(Boolean).join(", ");
+    const stage = fastBandLabel(score.fastHours * 3_600_000, lang);
+    dash.push([
+      cell(formatPrettyDate(key, lang, true), base),
+      cell(clock(score.fastingStart, lang), { ...base, align: "center" }),
+      cell(clock(score.mealStart, lang), { ...base, align: "center" }),
+      cell(clock(score.mealEnd, lang), { ...base, align: "center" }),
+      cell(score.eatMinutes, { ...base, format: "0", align: "right" }),
+      cell(windowLabel, { ...base, align: "center", fontWeight: "bold", textColor: score.overTarget ? "#9f1239" : score.mealOk ? "#3f6212" : INK }),
+      cell(food ? `${stage} · ${food}` : stage, { ...base, align: "left", wrap: true }),
+      cell(score.omadWin ? t(lang, "omadWins") : score.mealOk ? t(lang, "mealOk") : "—", { ...base, align: "center", fontWeight: "bold" }),
+      cell(day.weightKg, { ...base, format: "0.00", align: "right" }),
     ]);
   }
 
