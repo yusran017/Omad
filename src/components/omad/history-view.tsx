@@ -2,7 +2,7 @@ import { useState } from "react";
 import { dotClass } from "@/components/omad/home-view";
 import { useOmad } from "@/components/omad/context";
 import { t } from "@/lib/omad/i18n";
-import { addDays, dayOutcome, derive, endOfDay, formatPrettyDate, formatWords, localDateKey } from "@/lib/omad/logic";
+import { addDays, dayOutcome, derive, endOfDay, fastBandLabel, formatPrettyDate, formatWords, localDateKey } from "@/lib/omad/logic";
 import type { Outcome } from "@/lib/omad/types";
 
 function labelKey(outcome: Outcome) {
@@ -28,19 +28,19 @@ export function HistoryView({ now }: { now: number }) {
           const asOf = key === today ? now : Math.min(now, endOfDay(key));
           const measured = record ? derive({ ...record, active: true, rest: false }, asOf, today) : null;
           const open = record?.meals.some((meal) => !meal.end);
+          const stage = measured && measured.fastingMs >= 12 * 3_600_000 ? fastBandLabel(measured.fastingMs, lang) : null;
+          const times =
+            measured && (measured.fastingMs > 0 || measured.eatingMs > 0)
+              ? `${t(lang, "fastingShort")} ${formatWords(measured.fastingMs, lang)} · ${t(lang, "eatingShort")} ${formatWords(measured.eatingMs, lang)}`
+              : "";
+          const detail = [stage ?? t(lang, labelKey(outcome)), times, open ? t(lang, "unclosed") : ""].filter(Boolean).join(" · ");
           return (
             <li key={key}>
               <button type="button" className="flex w-full items-center gap-3 py-3 text-left press" onClick={() => openDay(key)}>
                 <span className={`size-2.5 shrink-0 rounded-full ${dotClass(outcome)}`} aria-hidden="true" />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{formatPrettyDate(key, lang, true)}</span>
-                  <span className="block text-xs text-muted">
-                    {t(lang, labelKey(outcome))}
-                    {measured && (measured.fastingMs > 0 || measured.eatingMs > 0)
-                      ? ` · ${t(lang, "fastingShort")} ${formatWords(measured.fastingMs, lang)} · ${t(lang, "eatingShort")} ${formatWords(measured.eatingMs, lang)}`
-                      : ""}
-                    {open ? ` · ${t(lang, "unclosed")}` : ""}
-                  </span>
+                  <span className="block text-xs text-muted">{detail}</span>
                 </span>
               </button>
             </li>

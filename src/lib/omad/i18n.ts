@@ -7,6 +7,7 @@ const STR = {
   calendar: { th: "ปฏิทิน", en: "Calendar" },
   stats: { th: "สถิติ", en: "Stats" },
   history: { th: "ประวัติ", en: "History" },
+  log: { th: "บันทึก", en: "Log" },
   settings: { th: "ตั้งค่า", en: "Settings" },
   fasting: { th: "กำลังอดอาหาร", en: "Fasting" },
   eating: { th: "กำลังกิน", en: "Eating" },

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BarChart3, CalendarDays, FileJson, FileSpreadsheet, History, House, Moon, Settings, Sun } from "lucide-react";
+import { BarChart3, CalendarDays, History, House, Moon, NotebookPen, Settings, Sun } from "lucide-react";
 import { CalendarView } from "@/components/omad/calendar-view";
 import { OmadProvider, type OmadApi } from "@/components/omad/context";
 import { DaySheet } from "@/components/omad/day-sheet";
 import { HistoryView } from "@/components/omad/history-view";
 import { HomeView } from "@/components/omad/home-view";
+import { LogView } from "@/components/omad/log-view";
 import { Mark, Sheet, cn } from "@/components/omad/parts";
 import { SettingsView } from "@/components/omad/settings-view";
 import { StatsView } from "@/components/omad/stats-view";
@@ -25,15 +26,15 @@ import {
 } from "@/lib/omad/actions";
 import { t } from "@/lib/omad/i18n";
 import { downloadExcel } from "@/lib/omad/excel";
-import { dayOutcome, dueNotices, findOpenMeal, formatPrettyDate, loadPersisted, localDateKey, parseBackup, serialize, shouldConfirmOff } from "@/lib/omad/logic";
+import { dayOutcome, dueNotices, findOpenMeal, formatPrettyDate, loadPersisted, localDateKey, parseBackup, serialize, shouldConfirmOff, derive, fastBandLabel, fastBandNote } from "@/lib/omad/logic";
 import { STORAGE_KEY, emptyPersisted, type Persisted, type SheetState, type ViewId } from "@/lib/omad/types";
 
-const NAV: { id: ViewId; icon: typeof House; label: "home" | "calendar" | "stats" | "history" | "settings" }[] = [
+const NAV: { id: ViewId; icon: typeof House; label: "home" | "calendar" | "stats" | "history" | "log" }[] = [
   { id: "home", icon: House, label: "home" },
   { id: "calendar", icon: CalendarDays, label: "calendar" },
   { id: "stats", icon: BarChart3, label: "stats" },
   { id: "history", icon: History, label: "history" },
-  { id: "settings", icon: Settings, label: "settings" },
+  { id: "log", icon: NotebookPen, label: "log" },
 ];
 
 type InstallEvent = Event & { prompt: () => Promise<void> };
@@ -60,7 +61,7 @@ export function OmadApp() {
     document.documentElement.dataset.theme = data.settings.theme;
     document.documentElement.lang = data.settings.lang === "en" ? "en" : "th";
     const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute("content", data.settings.theme === "light" ? "#f6f1ea" : "#14110e");
+    meta?.setAttribute("content", data.settings.theme === "light" ? "#f3f6fb" : "#0e141c");
   }, [data]);
 
   useEffect(() => {
@@ -141,8 +142,12 @@ export function OmadApp() {
         const next = stopEating(data, stamp);
         setData(next);
         const todayKey = localDateKey(new Date(stamp));
-        const outcome = open ? dayOutcome(next.days[open.date], todayKey) : "other";
-        say(outcome === "completed" ? "savedOmad" : "savedMeal");
+        const fastMs = open ? derive(next.days[open.date], stamp, todayKey).fastingMs : 0;
+        if (fastMs >= 12 * 3_600_000) setBanner(`${fastBandLabel(fastMs, lang)} · ${fastBandNote(fastMs, lang)}`);
+        else {
+          const outcome = open ? dayOutcome(next.days[open.date], todayKey) : "other";
+          say(outcome === "completed" ? "savedOmad" : "savedMeal");
+        }
         navigator.vibrate?.(12);
       },
       requestCancel: () => setSheet({ type: "cancel-meal" }),
@@ -255,7 +260,7 @@ export function OmadApp() {
 
   return (
     <OmadProvider value={api}>
-      <div className="min-h-dvh lg:flex">
+      <div className={cn("lg:flex", view === "home" ? "h-dvh overflow-hidden" : "min-h-dvh")}>
         <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-r border-line bg-surface/80 px-4 py-6 backdrop-blur-md lg:flex">
           <div className="flex items-center gap-3 px-2">
             <Mark className="size-9 text-fast" />
@@ -283,9 +288,9 @@ export function OmadApp() {
           </nav>
         </aside>
 
-        <div className="min-w-0 flex-1">
+        <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col", view === "home" && "h-dvh")}>
           <header className="sticky top-0 z-20 border-b border-line bg-bg/80 backdrop-blur-md">
-            <div className="mx-auto flex min-h-16 w-full max-w-6xl items-center gap-3 px-4 py-2 lg:px-8">
+            <div className="mx-auto flex min-h-12 w-full max-w-6xl items-center gap-1.5 px-1.5 py-1 lg:px-6">
               <Mark className="size-8 text-fast lg:hidden" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold lg:text-base">{t(lang, "appName")}</p>
@@ -293,40 +298,32 @@ export function OmadApp() {
               </div>
               <button
                 type="button"
-                className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 press"
-                aria-label={t(lang, "exportJson")}
-                onClick={api.exportJson}
-              >
-                <FileJson className="size-5" />
-              </button>
-              <button
-                type="button"
-                className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 press"
-                aria-label={t(lang, "exportExcel")}
-                onClick={() => void api.exportExcel()}
-              >
-                <FileSpreadsheet className="size-5" />
-              </button>
-              <button
-                type="button"
-                className="grid size-11 place-items-center rounded-full press"
+                className="grid size-11 shrink-0 place-items-center rounded-full press"
                 aria-label={t(lang, "themeToggle")}
                 onClick={() => api.setTheme(data.settings.theme === "dark" ? "light" : "dark")}
               >
                 {data.settings.theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
               </button>
-              <button type="button" className="grid size-11 place-items-center rounded-full press lg:hidden" aria-label={t(lang, "settings")} onClick={() => setView("settings")}>
+              <button type="button" className={cn("grid size-11 shrink-0 place-items-center rounded-full press", view === "settings" && "bg-surface-2 text-fast")} aria-label={t(lang, "settings")} onClick={() => setView("settings")}>
                 <Settings className="size-5" />
               </button>
             </div>
           </header>
 
-          <main className="mx-auto w-full max-w-6xl px-4 pt-4 pb-28 lg:px-8 lg:pb-10">
-            <div key={view} className="rise">
+          <main
+            className={cn(
+              "mx-auto flex w-full max-w-6xl flex-col px-1 lg:px-6",
+              view === "home"
+                ? "min-h-0 flex-1 overflow-hidden pt-1 pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-3"
+                : "pt-1 pb-28 lg:pb-10",
+            )}
+          >
+            <div key={view} className={cn("rise", view === "home" && "flex min-h-0 flex-1 flex-col")}>
               {view === "home" ? <HomeView now={now} /> : null}
               {view === "calendar" ? <CalendarView now={now} /> : null}
               {view === "stats" ? <StatsView now={now} /> : null}
               {view === "history" ? <HistoryView now={now} /> : null}
+              {view === "log" ? <LogView now={now} /> : null}
               {view === "settings" ? <SettingsView /> : null}
             </div>
           </main>

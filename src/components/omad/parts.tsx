@@ -10,11 +10,8 @@ export function cn(...parts: Array<string | false | null | undefined>) {
 export function Mark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <circle cx="16" cy="16" r="12.25" fill="none" stroke="currentColor" strokeWidth="1.75" />
-      <path
-        fill="currentColor"
-        d="M16.1 7.4c.15 2.2-.65 3.55-1.6 4.6 1.65.05 3.15 1.2 3.65 2.95.6 2.05-.55 4.15-2.5 5.05-2.05.95-4.4.15-5.35-1.65-.75-1.45-.45-3 .3-4.35-1.05-1.3.2-3.4 2.1-4.95.7-.55 1.55-1.2 2.4-1.65z"
-      />
+      <circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" strokeWidth="2.2" />
+      <path d="M16 8.2v8l4.2 2.4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -58,7 +55,56 @@ export function Ring({
           strokeDashoffset={circ * (1 - clamped)}
         />
       </svg>
-      <div className="relative z-10 px-6 text-center">{children}</div>
+      <div className="relative z-10 max-w-[62%] px-0.5 text-center leading-none">{children}</div>
+    </div>
+  );
+}
+
+export function StageRing({
+  hours,
+  bands,
+  children,
+  className,
+  label,
+}: {
+  hours: number;
+  bands: { hours: number; color: string }[];
+  children?: ReactNode;
+  className?: string;
+  label: string;
+}) {
+  const radius = 46;
+  const circ = 2 * Math.PI * radius;
+  const cap = bands.at(-1)?.hours || 48;
+  const safe = Math.max(0, hours);
+  const count = Math.max(1, bands.length);
+  return (
+    <div className={cn("relative mx-auto grid place-items-center", className ?? "size-44")}>
+      <svg viewBox="0 0 120 120" className="absolute inset-0 size-full -rotate-90" role="img" aria-label={label}>
+        <circle cx="60" cy="60" r={radius} className="fill-none stroke-line" strokeWidth="8" />
+        {bands.map((band, index) => {
+          const next = bands[index + 1]?.hours ?? cap;
+          const spanHours = Math.max(0.001, next - band.hours);
+          const within = next <= band.hours ? (safe >= band.hours ? 1 : 0) : Math.max(0, Math.min(1, (safe - band.hours) / spanHours));
+          if (within <= 0) return null;
+          const length = (within / count) * circ;
+          return (
+            <circle
+              key={band.hours}
+              cx="60"
+              cy="60"
+              r={radius}
+              fill="none"
+              stroke={band.color}
+              strokeWidth="8"
+              strokeLinecap="butt"
+              strokeDasharray={`${length} ${circ - length}`}
+              strokeDashoffset={-(index / count) * circ}
+            />
+          );
+        })}
+      </svg>
+      <div className="relative z-10 max-w-[62%] px-0.5 text-center leading-none">{children}</div>
     </div>
   );
 }

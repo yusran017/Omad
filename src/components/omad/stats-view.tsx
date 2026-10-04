@@ -38,7 +38,7 @@ export function StatsView({ now }: { now: number }) {
         />
         <div className="mt-4 flex items-center gap-4">
           <Ring progress={stats.consistency ?? 0} tone="done" className="size-28 shrink-0" label={t(lang, "consistency")}>
-            <span className="tabular text-xl font-semibold">{stats.consistency === null ? t(lang, "dash") : `${Math.round(stats.consistency * 100)}%`}</span>
+            <span className="tabular block text-xs font-semibold leading-none whitespace-nowrap">{stats.consistency === null ? t(lang, "dash") : `${Math.round(stats.consistency * 100)}%`}</span>
           </Ring>
           <div>
             <h2 className="text-base font-semibold">{t(lang, "consistency")}</h2>

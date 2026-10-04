@@ -3,7 +3,7 @@ import { useOmad } from "@/components/omad/context";
 import { Sheet, ToggleRow } from "@/components/omad/parts";
 import { t } from "@/lib/omad/i18n";
 import { blankDay } from "@/lib/omad/actions";
-import { derive, endOfDay, formatPrettyDate, formatWords, fromLocalInput, localDateKey, toLocalInput, validateDay } from "@/lib/omad/logic";
+import { derive, endOfDay, fastBand, fastBandLabel, fastBandNote, formatPrettyDate, formatWords, fromLocalInput, localDateKey, toLocalInput, validateDay } from "@/lib/omad/logic";
 import type { DayRecord, Meal } from "@/lib/omad/types";
 
 export function DaySheet({ now }: { now: number }) {
@@ -34,6 +34,11 @@ export function DaySheet({ now }: { now: number }) {
         <p className="text-sm text-muted">
           {t(lang, "fastingShort")} {formatWords(preview.fastingMs, lang)} · {t(lang, "eatingShort")} {formatWords(preview.eatingMs, lang)}
         </p>
+        {preview.fastingMs >= 12 * 3_600_000 ? (
+          <p className="text-sm font-semibold" style={{ color: fastBand(preview.fastingMs).color }}>
+            {fastBandLabel(preview.fastingMs, lang)} · {fastBandNote(preview.fastingMs, lang)}
+          </p>
+        ) : null}
         <ToggleRow label={t(lang, "activeDay")} checked={draft.active} onChange={(active) => setDraft({ ...draft, active, rest: active ? false : draft.rest })} />
         <ToggleRow label={t(lang, "markRest")} checked={draft.rest} onChange={(rest) => setDraft({ ...draft, rest, active: rest ? false : draft.active })} />
         <label className="text-sm text-muted">

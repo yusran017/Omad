@@ -154,7 +154,13 @@ export function dayOutcome(day: DayRecord | undefined, todayKey: string): Outcom
   if (!day.active) return "not_active";
   const open = day.meals.some((meal) => !meal.end);
   if (day.meals.length > 1) return "multiple";
-  if (day.meals.length === 1 && !open) return "completed";
+  if (day.meals.length === 1 && !open) {
+    const start = day.fastingStart ? Date.parse(day.fastingStart) : NaN;
+    const first = Math.min(...day.meals.map((meal) => Date.parse(meal.start)).filter(Number.isFinite));
+    const hours = Number.isFinite(start) && Number.isFinite(first) ? Math.max(0, first - start) / 3_600_000 : 0;
+    if (hours + 1e-6 >= day.targetFastingMinutes / 60) return "completed";
+    return "other";
+  }
   if (day.date === todayKey) return "in_progress";
   return "other";
 }
@@ -366,6 +372,88 @@ export function computeStats(days: Record<string, DayRecord>, range: RangeId, no
   const tracked = stats.completed + stats.multiple + stats.other;
   stats.consistency = tracked ? stats.completed / tracked : null;
   return stats;
+}
+
+export const FAST_BANDS = [
+  { id: "0", hours: 0, color: "#5b8def" },
+  { id: "12", hours: 12, color: "#2ec4b6" },
+  { id: "16", hours: 16, color: "#3ddc97" },
+  { id: "18", hours: 18, color: "#4c8dff" },
+  { id: "20", hours: 20, color: "#7c6cf0" },
+  { id: "24", hours: 24, color: "#c084fc" },
+  { id: "36", hours: 36, color: "#e85d9a" },
+  { id: "48", hours: 48, color: "#ff5d73" },
+] as const;
+
+export type FastBandId = (typeof FAST_BANDS)[number]["id"];
+
+const BAND_COPY: Record<FastBandId, { th: string; en: string; noteTh: string; noteEn: string }> = {
+  "0": {
+    th: "เริ่มอด",
+    en: "Started",
+    noteTh: "ยังไม่ถึง 12 ชั่วโมง",
+    noteEn: "Under 12 hours",
+  },
+  "12": {
+    th: "12 ชม.",
+    en: "12h",
+    noteTh: "ผ่าน 12 ชม. เริ่มใช้ไขมัน",
+    noteEn: "12 hours. Fat use is starting",
+  },
+  "16": {
+    th: "16:8",
+    en: "16:8",
+    noteTh: "ถึง 16 ชม. บันทึกเป็น 16:8 แม้ยังไม่ถึง OMAD",
+    noteEn: "16 hours. Logged as 16:8, not yet OMAD",
+  },
+  "18": {
+    th: "18:6",
+    en: "18:6",
+    noteTh: "ถึง 18 ชม. ออโตฟาจีเริ่มต้น",
+    noteEn: "18 hours. Early autophagy",
+  },
+  "20": {
+    th: "20:4",
+    en: "20:4",
+    noteTh: "ถึง 20 ชม. ใกล้มื้อเดียว",
+    noteEn: "20 hours. Near one meal",
+  },
+  "24": {
+    th: "OMAD",
+    en: "OMAD",
+    noteTh: "ครบ 24 ชม. ออโตฟาจีชัดขึ้น",
+    noteEn: "24 hours. Autophagy is clearer",
+  },
+  "36": {
+    th: "36 ชม.",
+    en: "36h",
+    noteTh: "อดยาว ออโตฟาจีต่อเนื่อง",
+    noteEn: "36 hours. Autophagy continues",
+  },
+  "48": {
+    th: "48 ชม.",
+    en: "48h",
+    noteTh: "ถึง 48 ชั่วโมง",
+    noteEn: "48-hour fast",
+  },
+};
+
+export function fastBand(ms: number) {
+  const hours = Math.max(0, ms / 3_600_000);
+  let current: (typeof FAST_BANDS)[number] = FAST_BANDS[0];
+  for (const band of FAST_BANDS) {
+    if (hours + 1e-9 >= band.hours) current = band;
+  }
+  return current;
+}
+
+export function fastBandLabel(ms: number, lang: Lang): string {
+  return BAND_COPY[fastBand(ms).id][lang];
+}
+
+export function fastBandNote(ms: number, lang: Lang): string {
+  const copy = BAND_COPY[fastBand(ms).id];
+  return lang === "th" ? copy.noteTh : copy.noteEn;
 }
 
 export function validateDay(day: DayRecord): "meal_order" | "fast_after_meal" | null {

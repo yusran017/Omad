@@ -3,7 +3,7 @@ export type Theme = "light" | "dark";
 export type PlanId = "16:8" | "18:6" | "20:4" | "omad" | "custom";
 export type Mood = "good" | "normal" | "tired" | "difficult" | "strong";
 export type Outcome = "completed" | "in_progress" | "not_active" | "multiple" | "rest" | "other";
-export type ViewId = "home" | "calendar" | "stats" | "history" | "settings";
+export type ViewId = "home" | "calendar" | "stats" | "history" | "log" | "settings";
 export type RangeId = "7" | "30" | "90" | "all";
 
 export type Meal = {

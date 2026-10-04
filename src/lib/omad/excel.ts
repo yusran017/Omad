@@ -1,4 +1,4 @@
-import type { Cell, Sheet } from "write-excel-file/browser";
+import type { Cell, CellObject, Sheet } from "write-excel-file/browser";
 import { t } from "./i18n.ts";
 import {
   computeStats,
@@ -6,6 +6,7 @@ import {
   dayOutcome,
   derive,
   endOfDay,
+  fastBandLabel,
   fastSample,
   formatPrettyDate,
   listRange,
@@ -41,7 +42,7 @@ const MOOD_KEY: Record<Mood, "moodGood" | "moodNormal" | "moodTired" | "moodDiff
   strong: "moodStrong",
 };
 
-type Extras = Partial<Cell> & { value?: string | number };
+type Extras = Partial<CellObject> & { value?: string | number };
 
 function cell(value: string | number | null | undefined, extras: Extras = {}): Cell {
   const missing = value === null || value === undefined;
@@ -94,7 +95,8 @@ function headers(labels: string[]): Cell[] {
   );
 }
 
-function outcomeLabel(outcome: Outcome, lang: Lang): string {
+function outcomeLabel(outcome: Outcome, lang: Lang, hours = 0): string {
+  if (hours >= 12) return fastBandLabel(hours * 3_600_000, lang);
   if (outcome === "not_active") return t(lang, "notActive");
   if (outcome === "in_progress") return t(lang, "inProgress");
   if (outcome === "completed") return t(lang, "completed");
@@ -226,7 +228,7 @@ export function buildWorkbook(data: Persisted, now = Date.now()): Array<Sheet<Bl
     dash.push([
       cell(formatPrettyDate(key, lang, true), base),
       cell(key, { ...base, align: "center" }),
-      cell(outcomeLabel(outcome, lang), { ...base, textColor: tone.fg, fontWeight: "bold", align: "center" }),
+      cell(outcomeLabel(outcome, lang, sample.hours), { ...base, textColor: tone.fg, fontWeight: "bold", align: "center" }),
       cell(sample.hours > 0 || sample.counted ? round1(sample.hours) : null, { ...base, format: "0.0", align: "right" }),
       cell(eat == null ? null : Math.round(eat * 60), { ...base, format: "0", align: "right" }),
       cell(day && day.waterMl > 0 ? day.waterMl : null, { ...base, format: "#,##0", align: "right" }),
@@ -275,7 +277,7 @@ export function buildWorkbook(data: Persisted, now = Date.now()): Array<Sheet<Bl
       detail.push([
         cell(formatPrettyDate(key, lang, true), base),
         cell(key, { ...base, align: "center" }),
-        cell(outcomeLabel(outcome, lang), { ...base, textColor: tone.fg, fontWeight: "bold" }),
+        cell(outcomeLabel(outcome, lang, index === 0 ? sample.hours : 0), { ...base, textColor: tone.fg, fontWeight: "bold" }),
         cell(index === 0 ? clock(day?.fastingStart ?? null, lang) : "—", { ...base, align: "center" }),
         cell(meal ? clock(meal.start, lang) : null, { ...base, align: "center" }),
         cell(meal ? clock(meal.end, lang) : null, { ...base, align: "center" }),
