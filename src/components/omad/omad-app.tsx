@@ -64,7 +64,7 @@ export function OmadApp() {
     document.documentElement.dataset.theme = data.settings.theme;
     document.documentElement.lang = data.settings.lang === "en" ? "en" : "th";
     const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute("content", data.settings.theme === "light" ? "#f4f2fb" : "#12101c");
+    meta?.setAttribute("content", data.settings.theme === "light" ? "#eef2f5" : "#0e141b");
   }, [data]);
 
   useEffect(() => {
@@ -272,7 +272,7 @@ export function OmadApp() {
   return (
     <OmadProvider value={api}>
       <div className={cn("lg:flex", view === "home" ? "h-dvh overflow-hidden" : "min-h-dvh")}>
-        <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-r border-line bg-surface/80 px-4 py-6 backdrop-blur-md lg:flex">
+        <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-r border-line bg-surface px-4 py-6 lg:flex">
           <div className="flex items-center gap-3 px-2">
             <Mark className="size-9 text-fast" />
             <div>
@@ -300,12 +300,12 @@ export function OmadApp() {
         </aside>
 
         <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col", view === "home" && "h-dvh")}>
-          <header className="sticky top-0 z-20 border-b border-line bg-bg/80 backdrop-blur-md">
-            <div className="mx-auto flex min-h-12 w-full max-w-6xl items-center gap-2 px-3 py-1 lg:px-6">
-              <Mark className="size-8 text-fast lg:hidden" />
+          <header className="sticky top-0 z-20 border-b border-line bg-surface">
+            <div className="mx-auto flex min-h-14 w-full max-w-6xl items-center gap-3 px-3 py-2 lg:px-6">
+              <Mark className="size-9 text-fast lg:hidden" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold lg:text-base">{t(lang, "appName")}</p>
-                <p className="truncate text-xs text-muted">{formatPrettyDate(localDateKey(new Date(now)), lang, true)}</p>
+                <p className="truncate text-base font-semibold leading-tight">{formatPrettyDate(localDateKey(new Date(now)), lang, true)}</p>
+                <p className="truncate text-xs text-muted">{t(lang, "tagline")}</p>
               </div>
               <button
                 type="button"
@@ -340,18 +340,19 @@ export function OmadApp() {
           </main>
 
           <nav
-            className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/90 backdrop-blur-md lg:hidden"
+            className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface lg:hidden"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
             aria-label="main"
           >
-            <div className="mx-auto grid max-w-lg grid-cols-5">
+            <div className="mx-auto grid max-w-lg grid-cols-5 px-1">
               {NAV.map((item) => {
                 const Icon = item.icon;
                 const on = view === item.id;
                 return (
-                  <button key={item.id} type="button" onClick={() => setView(item.id)} className={cn("relative flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium", on ? "text-fast" : "text-muted")}>
-                    <span className={cn("absolute top-0 h-0.5 w-8 rounded-full bg-fast-fill", on ? "opacity-100" : "opacity-0")} />
-                    <Icon className="size-5" />
+                  <button key={item.id} type="button" onClick={() => setView(item.id)} className={cn("flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium", on ? "text-fast" : "text-muted")}>
+                    <span className={cn("grid size-8 place-items-center rounded-xl", on ? "bg-fast-fill text-on-accent" : "")}>
+                      <Icon className="size-4" />
+                    </span>
                     {t(lang, item.label)}
                   </button>
                 );
@@ -362,7 +363,7 @@ export function OmadApp() {
       </div>
 
       {banner ? (
-        <div role="status" className="fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-done-fill px-4 py-2 text-sm font-semibold text-on-accent shadow">
+        <div role="status" className="fixed top-4 left-1/2 z-50 max-w-[90vw] -translate-x-1/2 rounded-2xl bg-surface px-4 py-2 text-sm font-semibold text-fg shadow">
           {banner}
         </div>
       ) : null}

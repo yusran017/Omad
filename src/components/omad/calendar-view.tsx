@@ -53,8 +53,8 @@ export function CalendarView({ now }: { now: number }) {
               aria-label={t(lang, "openDay", { date: key })}
               onClick={() => openDay(key)}
               className={cn(
-                "flex aspect-square flex-col items-center justify-center rounded-2xl text-sm press",
-                key === today ? "border border-fast" : "border border-transparent",
+                "flex aspect-square flex-col items-center justify-center rounded-xl text-sm press",
+                key === today ? "bg-surface-2 text-fast" : "",
                 future ? "text-muted" : "text-fg",
               )}
             >

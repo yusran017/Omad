@@ -21,7 +21,7 @@ export function HistoryView({ now }: { now: number }) {
   return (
     <section className="card p-4">
       <h2 className="text-base font-semibold">{t(lang, "history")}</h2>
-      <ul className="mt-2 divide-y divide-line">
+      <ul className="mt-3 grid gap-2">
         {keys.map((key) => {
           const record = data.days[key];
           const outcome = dayOutcome(record, today);
@@ -40,7 +40,7 @@ export function HistoryView({ now }: { now: number }) {
           const detail = [won ? t(lang, "omadWins") : windowBit, stage ?? t(lang, labelKey(outcome)), times, latest?.notes ? latest.notes : "", open ? t(lang, "unclosed") : ""].filter(Boolean).join(" · ");
           return (
             <li key={key}>
-              <button type="button" className="flex w-full items-center gap-3 py-3 text-left press" onClick={() => openDay(key)}>
+              <button type="button" className="flex w-full items-center gap-3 rounded-2xl bg-surface-2 px-3 py-3 text-left press" onClick={() => openDay(key)}>
                 <span className={`size-2.5 shrink-0 rounded-full ${dotClass(outcome)}`} aria-hidden="true" />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{formatPrettyDate(key, lang, true)}</span>

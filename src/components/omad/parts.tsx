@@ -1,7 +1,8 @@
 import { useId, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { clsx } from "clsx";
-import { X } from "lucide-react";
+import { Flame, Leaf, Shield, Sparkles, Sunrise, Target, Utensils, X, Zap, type LucideIcon } from "lucide-react";
+import type { FastBandId } from "@/lib/omad/logic";
 
 export function cn(...parts: Array<string | false | null | undefined>) {
   return clsx(parts);
@@ -9,6 +10,22 @@ export function cn(...parts: Array<string | false | null | undefined>) {
 
 export function Mark({ className }: { className?: string }) {
   return <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="" className={cn("rounded-xl object-cover", className)} />;
+}
+
+const STAGE_ICONS: Record<FastBandId, LucideIcon> = {
+  "0": Sunrise,
+  "12": Flame,
+  "16": Zap,
+  "18": Sparkles,
+  "20": Target,
+  "24": Utensils,
+  "36": Leaf,
+  "48": Shield,
+};
+
+export function StageIcon({ id, className }: { id: FastBandId; className?: string }) {
+  const Icon = STAGE_ICONS[id] ?? Sunrise;
+  return <Icon className={className ?? "size-4"} strokeWidth={2.25} aria-hidden="true" />;
 }
 
 const STROKE = 12;
@@ -243,7 +260,7 @@ export function PrimaryButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex min-h-14 w-full items-center justify-center gap-2 rounded-full px-5 text-base font-semibold text-on-accent press",
+        "flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl px-5 text-base font-semibold text-on-accent press",
         tone === "eat" ? "btn-eat" : "btn-fast",
       )}
     >

@@ -12,7 +12,7 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "OMAD Tracker" },
       { name: "description", content: "ติดตามการกินแบบ OMAD ส่วนตัว บันทึกเวลาไว้บนเครื่องคุณ" },
-      { name: "theme-color", content: "#12101c" },
+      { name: "theme-color", content: "#0e141b" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "OMAD" },

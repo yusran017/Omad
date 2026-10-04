@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Droplet, GlassWater, Pencil, Utensils } from "lucide-react";
 import { useOmad } from "@/components/omad/context";
-import { GhostButton, PrimaryButton, Ring, StageRing, cn } from "@/components/omad/parts";
+import { GhostButton, PrimaryButton, Ring, StageIcon, StageRing, cn } from "@/components/omad/parts";
 import { t } from "@/lib/omad/i18n";
-import { FAST_BANDS, fastBand, fastBandLabel, fastBandMark, fastBandNoteFor, fastBandVerb, formatHMS, formatHours, formatTime, formatWords, present, shouldConfirmOff, type FastBandId } from "@/lib/omad/logic";
+import { FAST_BANDS, fastBand, fastBandLabel, fastBandNoteFor, formatHMS, formatHours, formatTime, formatWords, present, shouldConfirmOff, type FastBandId } from "@/lib/omad/logic";
 import type { Outcome } from "@/lib/omad/types";
 
 const WATER = [50, 100, 150, 250, 500] as const;
@@ -18,13 +18,15 @@ export function HomeView({ now }: { now: number }) {
   const hours = fastingMs / 3_600_000;
   const band = fastBand(fastingMs);
   const [picked, setPicked] = useState<FastBandId | null>(null);
-  const shown = FAST_BANDS.find((item) => item.id === picked && hours + 1e-9 >= item.hours) ?? band;
+  const pickedBand = FAST_BANDS.find((item) => item.id === picked) ?? null;
+  const shown = pickedBand ?? band;
   const minuteStatus = statusLine(lang, view.mode, derived);
   const tracking = view.mode === "fasting" || view.mode === "eating";
   const eatTarget = today?.targetEatingMinutes ?? data.settings.targetEatingMinutes;
   const eatLeft = (derived?.phaseElapsedMs ?? 0) - eatTarget * 60_000;
-  const detail =
-    view.mode === "inactive"
+  const detail = pickedBand
+    ? fastBandNoteFor(pickedBand.id, lang)
+    : view.mode === "inactive"
       ? t(lang, "notActiveBody")
       : view.mode === "rest"
         ? t(lang, "restBody")
@@ -66,10 +68,47 @@ export function HomeView({ now }: { now: number }) {
             </StageRing>
           )}
         </div>
-        <p className="line-clamp-2 px-1 text-center text-xs leading-snug text-muted">{detail}</p>
-        {view.mode === "fasting" && derived?.fastingStart ? (
-          <p className="mt-1 text-center text-xs font-medium text-fg">{t(lang, "fastBegan", { time: formatTime(derived.fastingStart, lang) })}</p>
-        ) : null}
+        <div className="mt-1 grid shrink-0 grid-cols-7 gap-1">
+          {FAST_BANDS.filter((item) => item.hours > 0).map((item) => {
+            const reached = view.mode === "fasting" && hours + 1e-9 >= item.hours;
+            const active = shown.id === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={active}
+                title={fastBandNoteFor(item.id, lang)}
+                onClick={() => setPicked((current) => (current === item.id ? null : item.id))}
+                className={cn("flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl press", active ? "stage-on bg-surface-2" : "")}
+              >
+                <span style={{ color: active || reached ? item.color : "var(--muted)" }}>
+                  <StageIcon id={item.id} className="size-4" />
+                </span>
+                <span className="micro font-semibold" style={{ color: active || reached ? item.color : "var(--muted)" }}>
+                  {fastBandLabel(item.hours * 3_600_000, lang)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-2 shrink-0 rounded-2xl bg-surface-2 px-3 py-2 text-center">
+          <p
+            className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold"
+            style={{ color: pickedBand || view.mode === "fasting" ? shown.color : view.mode === "eating" ? "var(--eat)" : "var(--muted)" }}
+          >
+            {view.mode === "eating" && !pickedBand ? <Utensils className="size-4" /> : <StageIcon id={shown.id} className="size-4" />}
+            {pickedBand
+              ? fastBandLabel(pickedBand.hours * 3_600_000, lang)
+              : view.mode === "eating"
+                ? t(lang, "eating")
+                : view.mode === "rest"
+                  ? t(lang, "rest")
+                  : view.mode === "fasting"
+                    ? fastBandLabel(shown.hours * 3_600_000, lang)
+                    : t(lang, "notActiveTitle")}
+          </p>
+          <p className="mt-1 line-clamp-3 text-xs leading-snug text-muted">{detail}</p>
+        </div>
         {view.mode === "eating" ? (
           <p className="mt-1 text-center text-xs font-medium text-fg">{t(lang, "eatClock", { time: formatTime(derived?.openMeal?.start ?? null, lang), target: formatHours(eatTarget, lang) })}</p>
         ) : null}
@@ -102,7 +141,7 @@ export function HomeView({ now }: { now: number }) {
       </section>
 
       {data.settings.waterEnabled ? (
-        <section className="card shrink-0 px-3 py-2.5">
+        <section className="card -mx-2 shrink-0 px-3 py-2.5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="inline-flex items-center gap-1.5 text-sm font-semibold">
               <Droplet className="size-4 text-water" />
@@ -126,36 +165,6 @@ export function HomeView({ now }: { now: number }) {
           </div>
         </section>
       ) : null}
-
-      <div className="grid shrink-0 grid-cols-7 gap-1">
-        {FAST_BANDS.filter((item) => item.hours > 0).map((item) => {
-          const on = view.mode === "fasting" && hours + 1e-9 >= item.hours;
-          const active = shown.id === item.id && on;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              disabled={!on}
-              aria-pressed={active}
-              title={fastBandNoteFor(item.id, lang)}
-              onClick={() => setPicked((current) => (current === item.id ? null : item.id))}
-              className={cn("flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl px-0.5 press", on ? "stage-on bg-surface-2" : "text-muted")}
-            >
-              <span
-                className="grid size-6 place-items-center rounded-full text-sm leading-none"
-                style={on ? { background: `color-mix(in srgb, ${item.color} 28%, transparent)` } : undefined}
-                aria-hidden="true"
-              >
-                {fastBandMark(item.id)}
-              </span>
-              <span className="micro font-semibold" style={{ color: active ? item.color : undefined }}>
-                {fastBandLabel(item.hours * 3_600_000, lang)}
-              </span>
-              <span className="micro text-muted">{fastBandVerb(item.id, lang)}</span>
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Frown, Meh, Moon, Smile, Zap } from "lucide-react";
 import { useOmad } from "@/components/omad/context";
-import { cn } from "@/components/omad/parts";
+import { StageIcon, cn } from "@/components/omad/parts";
 import { t } from "@/lib/omad/i18n";
-import { fastBand, fastBandLabel, fastBandMark, formatTime, formatWords, present, scoreDay } from "@/lib/omad/logic";
+import { fastBand, fastBandLabel, formatTime, formatWords, present, scoreDay } from "@/lib/omad/logic";
 import type { DayRecord, Mood } from "@/lib/omad/types";
 
 const MOODS: { id: Mood; icon: typeof Smile; key: "moodGood" | "moodNormal" | "moodTired" | "moodDifficult" | "moodStrong" }[] = [
@@ -40,13 +40,25 @@ export function LogView({ now }: { now: number }) {
         <h2 className="text-sm font-semibold">{t(lang, "journal")}</h2>
         {fastingStart ? (
           <p className="mt-1 text-sm font-semibold" style={{ color: band.color }}>
-            <span aria-hidden="true">{fastBandMark(band.id)} </span>
-            {t(lang, "fastBegan", { time: formatTime(fastingStart, lang) })} · {t(lang, "fastedFor", { time: formatWords(fastMs, lang) })}
+            <span className="inline-flex items-center gap-1" style={{ color: band.color }}>
+              <StageIcon id={band.id} className="size-4" />
+              {t(lang, "fastBegan", { time: formatTime(fastingStart, lang) })} · {t(lang, "fastedFor", { time: formatWords(fastMs, lang) })}
+            </span>
           </p>
         ) : (
           <p className="mt-1 text-sm text-muted">{t(lang, "noFastYet")}</p>
         )}
         <p className="mt-1 text-xs leading-snug text-muted">{t(lang, "logHint")}</p>
+        {score?.mealStart ? (
+          <p className={cn("mt-2 text-sm font-semibold", score.omadWin || score.mealOk ? "text-done" : score.overTarget ? "text-eat" : "text-fg")}>
+            {t(lang, "startedEat", { time: formatTime(score.mealStart, lang) })}
+            {score.eatMinutes != null ? ` · ${t(lang, "ateFor", { time: formatWords(score.eatMinutes * 60_000, lang) })}` : ""}
+            {" · "}
+            {score.omadWin ? t(lang, "omadWin") : score.overTarget ? t(lang, "overTarget") : score.mealOk ? t(lang, "mealOk") : score.open ? t(lang, "eating") : t(lang, "dash")}
+          </p>
+        ) : fastingStart ? (
+          <p className="mt-2 text-sm text-muted">{t(lang, "mealWait")}</p>
+        ) : null}
         <p className="mt-3 text-sm text-muted">{t(lang, "moodQ")}</p>
         <div className="mt-2 grid grid-cols-5 gap-1.5">
           {MOODS.map((item) => {
@@ -87,10 +99,22 @@ export function LogView({ now }: { now: number }) {
             onChange={(event) => setWeight(event.target.value)}
           />
         </label>
+        <label className="mt-3 block text-sm text-muted">
+          {t(lang, "mealFood")}
+          <input
+            className="field mt-1"
+            value={meal && view.focusDate ? meal.description : today?.mealDraft ?? ""}
+            placeholder={t(lang, "mealPh")}
+            onChange={(event) => {
+              if (meal && view.focusDate) setMealText(view.focusDate, meal.id, event.target.value);
+              else setMealDraft(event.target.value);
+            }}
+          />
+        </label>
         <button
           type="button"
           disabled={!canSave}
-          className="btn-fast mt-3 min-h-12 w-full rounded-full text-sm font-semibold text-on-accent press disabled:opacity-40"
+          className="btn-fast mt-3 min-h-12 w-full rounded-2xl text-sm font-semibold text-on-accent press disabled:opacity-40"
           onClick={() => {
             if (!canSave) return;
             saveFastLog({
@@ -116,8 +140,8 @@ export function LogView({ now }: { now: number }) {
             return (
               <li key={row.id} className="rounded-2xl bg-surface-2 px-3 py-2">
                 <p className="tabular text-lg font-semibold">{row.kg} {t(lang, "kg")}</p>
-                <p className="text-sm font-medium" style={{ color: stage.color }}>
-                  <span aria-hidden="true">{fastBandMark(stage.id)} </span>
+                <p className="inline-flex items-center gap-1 text-sm font-medium" style={{ color: stage.color }}>
+                  <StageIcon id={stage.id} className="size-4" />
                   {row.fastingStart ? t(lang, "fastBegan", { time: formatTime(row.fastingStart, lang) }) : fastBandLabel(row.fastingMs, lang)}
                   {" · "}
                   {t(lang, "fastedFor", { time: formatWords(row.fastingMs, lang) })}
@@ -141,8 +165,8 @@ export function LogView({ now }: { now: number }) {
         <ul className="mt-2 grid gap-2">
           {notesLog.map((log) => (
             <li key={log.id} className="rounded-2xl bg-surface-2 px-3 py-2">
-              <p className="text-sm font-semibold" style={{ color: fastBand(log.fastingMs).color }}>
-                <span aria-hidden="true">{fastBandMark(fastBand(log.fastingMs).id)} </span>
+              <p className="inline-flex items-center gap-1 text-sm font-semibold" style={{ color: fastBand(log.fastingMs).color }}>
+                <StageIcon id={fastBand(log.fastingMs).id} className="size-4" />
                 {fastBandLabel(log.fastingMs, lang)} · {t(lang, "fastedFor", { time: formatWords(log.fastingMs, lang) })}
               </p>
               <p className="mt-0.5 text-sm text-fg">{log.notes || t(lang, "dash")}</p>
@@ -150,51 +174,6 @@ export function LogView({ now }: { now: number }) {
             </li>
           ))}
         </ul>
-      </section>
-
-      <section className="card rise p-3">
-        <h2 className="text-sm font-semibold">{t(lang, "mealClock")}</h2>
-        {score?.mealStart ? (
-          <>
-            <p className="mt-1 text-sm font-semibold text-fg">
-              {t(lang, "startedEat", { time: formatTime(score.mealStart, lang) })}
-              {score.eatMinutes != null ? ` · ${t(lang, "ateFor", { time: formatWords(score.eatMinutes * 60_000, lang) })}` : ""}
-            </p>
-            <p className={cn("mt-1 text-sm font-semibold", score.omadWin || score.mealOk ? "text-done" : score.overTarget || (score.open && (score.eatMinutes ?? 0) > (today?.targetEatingMinutes ?? 60)) ? "text-eat" : "text-muted")}>
-              {score.omadWin
-                ? t(lang, "omadWin")
-                : score.overTarget || (score.open && (score.eatMinutes ?? 0) > (today?.targetEatingMinutes ?? 60))
-                  ? t(lang, "overTarget")
-                  : score.mealOk
-                    ? t(lang, "mealOk")
-                    : score.open
-                      ? t(lang, "eating")
-                      : t(lang, "dash")}
-            </p>
-          </>
-        ) : (
-          <p className="mt-1 text-sm text-muted">{fastingStart ? t(lang, "mealWait") : t(lang, "noFastYet")}</p>
-        )}
-      </section>
-
-      <section className="card p-3">
-        <label className="block text-sm text-muted">
-          {t(lang, "mealFood")}
-          <input
-            className="field mt-1"
-            value={meal && view.focusDate ? meal.description : today?.mealDraft ?? ""}
-            placeholder={t(lang, "mealPh")}
-            onChange={(event) => {
-              if (meal && view.focusDate) setMealText(view.focusDate, meal.id, event.target.value);
-              else setMealDraft(event.target.value);
-            }}
-          />
-        </label>
-        {fastMs > 0 ? (
-          <p className="mt-2 text-xs text-muted">
-            {t(lang, "fastingShort")} · {fastBandLabel(fastMs, lang)}
-          </p>
-        ) : null}
       </section>
     </div>
   );
