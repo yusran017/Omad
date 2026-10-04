@@ -1,5 +1,5 @@
 import { findOpenMeal, localDateKey, suggestFastingStart, validateDay } from "./logic.ts";
-import type { DayRecord, Meal, Persisted, Settings } from "./types.ts";
+import type { DayRecord, FastLog, Meal, Persisted, Settings } from "./types.ts";
 
 export function blankDay(date: string, settings: Settings): DayRecord {
   return {
@@ -14,6 +14,7 @@ export function blankDay(date: string, settings: Settings): DayRecord {
     waterMl: 0,
     weightKg: null,
     mood: null,
+    logs: [],
   };
 }
 
@@ -91,7 +92,14 @@ export function saveDay(data: Persisted, day: DayRecord): { data: Persisted; err
       notes: meal.notes.slice(0, 500),
     }))
     .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
-  const next = { ...day, meals, notes: day.notes.slice(0, 2000) };
+  const stored = data.days[day.date];
+  const next = {
+    ...day,
+    meals,
+    notes: day.notes.slice(0, 2000),
+    waterMl: stored?.waterMl ?? day.waterMl,
+    logs: stored?.logs ?? day.logs ?? [],
+  };
   return { data: { ...data, days: { ...data.days, [day.date]: next } }, error: null };
 }
 
@@ -143,6 +151,29 @@ export function setMood(data: Persisted, mood: DayRecord["mood"], now: number): 
 export function setNotes(data: Persisted, notes: string, now: number): Persisted {
   const key = localDateKey(new Date(now));
   return withDay(data, key, (day) => ({ ...day, notes: notes.slice(0, 2000) }));
+}
+
+export function addFastLog(
+  data: Persisted,
+  entry: { notes: string; mood: FastLog["mood"]; weightKg: number | null; fastingMs: number },
+  now: number,
+): Persisted {
+  const key = localDateKey(new Date(now));
+  const log: FastLog = {
+    id: crypto.randomUUID(),
+    at: new Date(now).toISOString(),
+    fastingMs: Math.max(0, Math.round(entry.fastingMs)),
+    notes: entry.notes.slice(0, 500),
+    mood: entry.mood,
+    weightKg: entry.weightKg,
+  };
+  return withDay(data, key, (day) => ({
+    ...day,
+    notes: log.notes || day.notes,
+    mood: entry.mood ?? day.mood,
+    weightKg: entry.weightKg ?? day.weightKg,
+    logs: [...(day.logs ?? []), log].slice(-40),
+  }));
 }
 
 export function setMealDescription(data: Persisted, date: string, mealId: string, description: string): Persisted {

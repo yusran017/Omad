@@ -6,46 +6,50 @@
 
 :root {
   color-scheme: dark;
-  --bg: #0e141c;
-  --surface: #17202b;
-  --surface-2: #212b38;
-  --fg: #f4f7fb;
-  --muted: #9aabc0;
-  --line: #2d3b4d;
-  --fast: #5eead4;
-  --eat: #fb7185;
-  --done: #3ddc97;
-  --rest: #7eb6ff;
-  --multi: #c084fc;
-  --fast-fill: #14b8a6;
-  --eat-fill: #f43f5e;
-  --done-fill: #16a37a;
-  --ink: #070b10;
-  --on-accent: #06211e;
+  --bg: #12101c;
+  --surface: #1c1830;
+  --surface-2: #2a2442;
+  --fg: #f6f3ff;
+  --muted: #b7adc9;
+  --line: #3a3358;
+  --fast: #7aa2ff;
+  --eat: #ff8b9a;
+  --done: #f5c15a;
+  --rest: #a8b0c2;
+  --multi: #f0a0e0;
+  --window: #c4b5fd;
+  --water: #7dd3fc;
+  --fast-fill: #7c6bff;
+  --eat-fill: #ff5d73;
+  --done-fill: #e3a008;
+  --ink: #07060f;
+  --on-accent: #f8f6ff;
   --knob: #fffdfb;
-  --shadow: 0 10px 28px color-mix(in srgb, #000 32%, transparent);
+  --shadow: 0 16px 36px color-mix(in srgb, #05040c 42%, transparent);
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #f3f6fb;
+  --bg: #f4f2fb;
   --surface: #ffffff;
-  --surface-2: #e7eef6;
-  --fg: #121820;
-  --muted: #5c6b7c;
-  --line: #d5e0ec;
-  --fast: #0f766e;
+  --surface-2: #ece8f7;
+  --fg: #1c1730;
+  --muted: #6d657f;
+  --line: #ddd6ee;
+  --fast: #3158d6;
   --eat: #e11d48;
-  --done: #047857;
-  --rest: #1d4ed8;
-  --multi: #7c3aed;
-  --fast-fill: #0d9488;
+  --done: #b45309;
+  --rest: #64748b;
+  --multi: #c026d3;
+  --window: #7c3aed;
+  --water: #0369a1;
+  --fast-fill: #6d5efc;
   --eat-fill: #f43f5e;
-  --done-fill: #059669;
-  --ink: #121820;
-  --on-accent: #f8fffd;
+  --done-fill: #d97706;
+  --ink: #1c1730;
+  --on-accent: #fbfaff;
   --knob: #fffdfb;
-  --shadow: 0 10px 28px color-mix(in srgb, #1c1612 8%, transparent);
+  --shadow: 0 14px 32px color-mix(in srgb, #2a2148 10%, transparent);
 }
 
 @theme inline {
@@ -61,6 +65,8 @@
   --color-done: var(--done);
   --color-rest: var(--rest);
   --color-multi: var(--multi);
+  --color-window: var(--window);
+  --color-water: var(--water);
   --color-fast-fill: var(--fast-fill);
   --color-eat-fill: var(--eat-fill);
   --color-done-fill: var(--done-fill);
@@ -100,17 +106,56 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(880px 380px at 8% -10%, color-mix(in srgb, var(--fast-fill) 18%, transparent), transparent 62%),
-    radial-gradient(640px 320px at 110% 0%, color-mix(in srgb, var(--rest) 12%, transparent), transparent 58%);
+    radial-gradient(720px 420px at 0% -8%, color-mix(in srgb, #7c6bff 34%, transparent), transparent 62%),
+    radial-gradient(520px 360px at 100% 0%, color-mix(in srgb, #f5c15a 20%, transparent), transparent 58%),
+    radial-gradient(480px 340px at 78% 110%, color-mix(in srgb, #7dd3fc 18%, transparent), transparent 55%),
+    radial-gradient(420px 280px at 10% 100%, color-mix(in srgb, #f472b6 14%, transparent), transparent 52%);
   z-index: -1;
 }
 
 .card {
-  border: 1px solid var(--line);
-  border-radius: 1.5rem;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, white 22%, var(--line));
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 16%, transparent), color-mix(in srgb, white 4%, transparent)),
+    color-mix(in srgb, var(--surface) 78%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
+    var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.ring-slot {
+  container-type: size;
+  display: grid;
+  flex: 1 1 auto;
+  place-items: center;
+  min-height: 0;
+}
+
+.ring-fit {
+  width: min(100cqw, 100cqh);
+  aspect-ratio: 1;
+  filter: drop-shadow(0 12px 18px color-mix(in srgb, #000 28%, transparent));
+}
+
+.micro {
+  font-size: 0.625rem;
+  line-height: 1;
+}
+
+.btn-fast {
+  background: linear-gradient(180deg, #a598ff 0%, #7c6bff 42%, #5b4de0 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 48%, transparent),
+    0 10px 22px color-mix(in srgb, #7c6bff 36%, transparent);
+}
+
+.btn-eat {
+  background: linear-gradient(180deg, #ff8fa0 0%, #ff5d73 48%, #e11d48 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 40%, transparent),
+    0 10px 22px color-mix(in srgb, #ff5d73 32%, transparent);
 }
 
 .press {

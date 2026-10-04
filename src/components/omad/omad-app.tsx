@@ -23,6 +23,7 @@ import {
   startEating,
   stopEating,
   updateSettings as patchSettings,
+  addFastLog,
 } from "@/lib/omad/actions";
 import { t } from "@/lib/omad/i18n";
 import { downloadExcel } from "@/lib/omad/excel";
@@ -61,7 +62,7 @@ export function OmadApp() {
     document.documentElement.dataset.theme = data.settings.theme;
     document.documentElement.lang = data.settings.lang === "en" ? "en" : "th";
     const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute("content", data.settings.theme === "light" ? "#f3f6fb" : "#0e141c");
+    meta?.setAttribute("content", data.settings.theme === "light" ? "#f4f2fb" : "#12101c");
   }, [data]);
 
   useEffect(() => {
@@ -154,6 +155,10 @@ export function OmadApp() {
       addWater: (delta) => setData((current) => current && addWater(current, delta, Date.now())),
       setMood: (mood) => setData((current) => current && setMood(current, mood, Date.now())),
       setNotes: (notes) => setData((current) => current && setNotes(current, notes, Date.now())),
+      saveFastLog: (entry) => {
+        setData((current) => current && addFastLog(current, entry, Date.now()));
+        setBanner(t(lang, "logSaved"));
+      },
       setWeight: (kg) => setData((current) => current && setWeight(current, kg, Date.now())),
       setMealText: (date, mealId, text) => setData((current) => current && setMealDescription(current, date, mealId, text)),
       updateSettings: (patch) => setData((current) => current && patchSettings(current, patch, Date.now())),
@@ -290,7 +295,7 @@ export function OmadApp() {
 
         <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col", view === "home" && "h-dvh")}>
           <header className="sticky top-0 z-20 border-b border-line bg-bg/80 backdrop-blur-md">
-            <div className="mx-auto flex min-h-12 w-full max-w-6xl items-center gap-1.5 px-1.5 py-1 lg:px-6">
+            <div className="mx-auto flex min-h-12 w-full max-w-6xl items-center gap-2 px-3 py-1 lg:px-6">
               <Mark className="size-8 text-fast lg:hidden" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold lg:text-base">{t(lang, "appName")}</p>
@@ -312,7 +317,7 @@ export function OmadApp() {
 
           <main
             className={cn(
-              "mx-auto flex w-full max-w-6xl flex-col px-1 lg:px-6",
+              "mx-auto flex w-full max-w-6xl flex-col px-3 lg:px-6",
               view === "home"
                 ? "min-h-0 flex-1 overflow-hidden pt-1 pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-3"
                 : "pt-1 pb-28 lg:pb-10",

@@ -1,3 +1,4 @@
+import { Droplet, GlassWater } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useOmad } from "@/components/omad/context";
 import { Sheet, ToggleRow } from "@/components/omad/parts";
@@ -7,7 +8,7 @@ import { derive, endOfDay, fastBand, fastBandLabel, fastBandNote, formatPrettyDa
 import type { DayRecord, Meal } from "@/lib/omad/types";
 
 export function DaySheet({ now }: { now: number }) {
-  const { data, sheet, closeSheet, commitDay, deleteDay } = useOmad();
+  const { data, sheet, closeSheet, commitDay, deleteDay, addWater } = useOmad();
   const open = sheet?.type === "day";
   const date = open ? sheet.date : "";
   const lang = data.settings.lang;
@@ -34,6 +35,22 @@ export function DaySheet({ now }: { now: number }) {
         <p className="text-sm text-muted">
           {t(lang, "fastingShort")} {formatWords(preview.fastingMs, lang)} · {t(lang, "eatingShort")} {formatWords(preview.eatingMs, lang)}
         </p>
+        {data.settings.waterEnabled && draft.date === localDateKey(new Date(now)) ? (
+          <div>
+            <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-fg">
+              <Droplet className="size-4 text-water" />
+              {t(lang, "water")} {data.days[draft.date]?.waterMl ?? draft.waterMl} {t(lang, "ml")}
+            </p>
+            <div className="mt-2 grid grid-cols-6 gap-1">
+              {[50, 100, 150, 250, 500, -50].map((ml) => (
+                <button key={ml} type="button" className="flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl bg-surface-2 press" onClick={() => addWater(ml)}>
+                  <GlassWater className={ml < 0 ? "size-6 text-muted" : "size-6 text-water"} />
+                  <span className="micro font-medium text-muted">{ml < 0 ? `−${Math.abs(ml)}` : `+${ml}`}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {preview.fastingMs >= 12 * 3_600_000 ? (
           <p className="text-sm font-semibold" style={{ color: fastBand(preview.fastingMs).color }}>
             {fastBandLabel(preview.fastingMs, lang)} · {fastBandNote(preview.fastingMs, lang)}

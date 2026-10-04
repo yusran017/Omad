@@ -1,4 +1,4 @@
-import type { DayRecord, Lang, Meal, Outcome, Persisted, RangeId, Settings } from "./types.ts";
+import type { DayRecord, FastLog, Lang, Meal, Outcome, Persisted, RangeId, Settings } from "./types.ts";
 import { defaultSettings, emptyPersisted } from "./types.ts";
 
 export function localDateKey(date: Date): string {
@@ -375,14 +375,14 @@ export function computeStats(days: Record<string, DayRecord>, range: RangeId, no
 }
 
 export const FAST_BANDS = [
-  { id: "0", hours: 0, color: "#5b8def" },
-  { id: "12", hours: 12, color: "#2ec4b6" },
-  { id: "16", hours: 16, color: "#3ddc97" },
-  { id: "18", hours: 18, color: "#4c8dff" },
-  { id: "20", hours: 20, color: "#7c6cf0" },
-  { id: "24", hours: 24, color: "#c084fc" },
-  { id: "36", hours: 36, color: "#e85d9a" },
-  { id: "48", hours: 48, color: "#ff5d73" },
+  { id: "0", hours: 0, color: "#60a5fa" },
+  { id: "12", hours: 12, color: "#22d3ee" },
+  { id: "16", hours: 16, color: "#f5b942" },
+  { id: "18", hours: 18, color: "#a78bfa" },
+  { id: "20", hours: 20, color: "#fb7185" },
+  { id: "24", hours: 24, color: "#f472b6" },
+  { id: "36", hours: 36, color: "#fb923c" },
+  { id: "48", hours: 48, color: "#f43f5e" },
 ] as const;
 
 export type FastBandId = (typeof FAST_BANDS)[number]["id"];
@@ -391,50 +391,50 @@ const BAND_COPY: Record<FastBandId, { th: string; en: string; noteTh: string; no
   "0": {
     th: "เริ่มอด",
     en: "Started",
-    noteTh: "ยังไม่ถึง 12 ชั่วโมง",
-    noteEn: "Under 12 hours",
+    noteTh: "ยังไม่ถึง 12 ชั่วโมง ร่างกายใช้น้ำตาลที่เก็บไว้เป็นหลัก",
+    noteEn: "Under 12 hours. The body is still using stored sugar",
   },
   "12": {
     th: "12 ชม.",
     en: "12h",
-    noteTh: "ผ่าน 12 ชม. เริ่มใช้ไขมัน",
-    noteEn: "12 hours. Fat use is starting",
+    noteTh: "ผ่าน 12 ชม. เริ่มดึงไขมันมาใช้เป็นพลังงานมากขึ้น",
+    noteEn: "12 hours. Fat is starting to cover more of the energy need",
   },
   "16": {
     th: "16:8",
     en: "16:8",
-    noteTh: "ถึง 16 ชม. บันทึกเป็น 16:8 แม้ยังไม่ถึง OMAD",
-    noteEn: "16 hours. Logged as 16:8, not yet OMAD",
+    noteTh: "สูตร 16:8 อินซูลินมักต่ำลง และเริ่มใช้ไขมันชัดขึ้น",
+    noteEn: "16:8. Insulin is often lower, and fat use is clearer",
   },
   "18": {
     th: "18:6",
     en: "18:6",
-    noteTh: "ถึง 18 ชม. ออโตฟาจีเริ่มต้น",
-    noteEn: "18 hours. Early autophagy",
+    noteTh: "สูตร 18:6 เข้าออโตฟาจีช่วงต้น เซลล์เริ่มเก็บกวาดส่วนที่เสื่อม",
+    noteEn: "18:6. Early autophagy. Cells start clearing worn parts",
   },
   "20": {
     th: "20:4",
     en: "20:4",
-    noteTh: "ถึง 20 ชม. ใกล้มื้อเดียว",
-    noteEn: "20 hours. Near one meal",
+    noteTh: "สูตร 20:4 ใกล้ OMAD ร่างกายพึ่งไขมันเป็นพลังงานหลัก",
+    noteEn: "20:4. Near one meal. Fat is the main fuel",
   },
   "24": {
     th: "OMAD",
     en: "OMAD",
-    noteTh: "ครบ 24 ชม. ออโตฟาจีชัดขึ้น",
-    noteEn: "24 hours. Autophagy is clearer",
+    noteTh: "ครบ 24 ชม. แบบ OMAD ออโตฟาจีชัดกว่าช่วงก่อนหน้า",
+    noteEn: "24 hours, OMAD. Autophagy is clearer than earlier on",
   },
   "36": {
     th: "36 ชม.",
     en: "36h",
-    noteTh: "อดยาว ออโตฟาจีต่อเนื่อง",
-    noteEn: "36 hours. Autophagy continues",
+    noteTh: "อด 36 ชม. ใช้ไขมันต่อเนื่อง และออโตฟาจียังทำงานอยู่",
+    noteEn: "36 hours. Fat use continues, and autophagy is still active",
   },
   "48": {
     th: "48 ชม.",
     en: "48h",
-    noteTh: "ถึง 48 ชั่วโมง",
-    noteEn: "48-hour fast",
+    noteTh: "ครบ 48 ชม. เป็นการอดระยะยาว ฟังความรู้สึกของร่างกายด้วย",
+    noteEn: "48 hours. A long fast. Pay attention to how you feel",
   },
 };
 
@@ -451,9 +451,13 @@ export function fastBandLabel(ms: number, lang: Lang): string {
   return BAND_COPY[fastBand(ms).id][lang];
 }
 
-export function fastBandNote(ms: number, lang: Lang): string {
-  const copy = BAND_COPY[fastBand(ms).id];
+export function fastBandNoteFor(id: FastBandId, lang: Lang): string {
+  const copy = BAND_COPY[id];
   return lang === "th" ? copy.noteTh : copy.noteEn;
+}
+
+export function fastBandNote(ms: number, lang: Lang): string {
+  return fastBandNoteFor(fastBand(ms).id, lang);
 }
 
 export function validateDay(day: DayRecord): "meal_order" | "fast_after_meal" | null {
@@ -498,6 +502,21 @@ function normalizeMeal(value: unknown): Meal | null {
   };
 }
 
+function normalizeLog(value: unknown): FastLog | null {
+  if (!value || typeof value !== "object") return null;
+  const log = value as Partial<FastLog>;
+  if (typeof log.at !== "string" || !Number.isFinite(Date.parse(log.at))) return null;
+  const weight = numOrNull(log.weightKg);
+  return {
+    id: typeof log.id === "string" && log.id ? log.id : crypto.randomUUID(),
+    at: log.at,
+    fastingMs: clampNum(log.fastingMs, 0, 120 * 3_600_000, 0),
+    notes: clip(log.notes, 500),
+    mood: typeof log.mood === "string" && MOODS.has(log.mood) ? (log.mood as FastLog["mood"]) : null,
+    weightKg: weight === null ? null : Math.max(20, Math.min(400, Math.round(weight * 10) / 10)),
+  };
+}
+
 function normalizeDay(value: unknown, key: string): DayRecord | null {
   if (!value || typeof value !== "object") return null;
   const day = value as Partial<DayRecord>;
@@ -517,6 +536,7 @@ function normalizeDay(value: unknown, key: string): DayRecord | null {
     waterMl: clampNum(day.waterMl, 0, 20000, 0),
     weightKg: weight === null ? null : Math.max(20, Math.min(400, Math.round(weight * 10) / 10)),
     mood: typeof day.mood === "string" && MOODS.has(day.mood) ? (day.mood as DayRecord["mood"]) : null,
+    logs: Array.isArray(day.logs) ? day.logs.map(normalizeLog).filter((log): log is FastLog => Boolean(log)).slice(-40) : [],
   };
 }
 

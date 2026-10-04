@@ -1,11 +1,21 @@
-import { CircleDashed, GlassWater, Moon, Pencil, Utensils } from "lucide-react";
+import { useState } from "react";
+import { Award, Droplet, Flame, Gauge, GlassWater, Leaf, Pencil, Shield, Sparkles, Timer, Utensils } from "lucide-react";
 import { useOmad } from "@/components/omad/context";
 import { GhostButton, PrimaryButton, Ring, StageRing, cn } from "@/components/omad/parts";
 import { t } from "@/lib/omad/i18n";
-import { FAST_BANDS, fastBand, fastBandLabel, fastBandNote, formatHMS, formatHours, present, shouldConfirmOff } from "@/lib/omad/logic";
+import { FAST_BANDS, fastBand, fastBandLabel, fastBandNoteFor, formatHMS, formatHours, present, shouldConfirmOff, type FastBandId } from "@/lib/omad/logic";
 import type { Outcome } from "@/lib/omad/types";
 
 const WATER = [50, 100, 150, 250, 500] as const;
+const BAND_ICON: Record<Exclude<FastBandId, "0">, typeof Flame> = {
+  "12": Flame,
+  "16": Timer,
+  "18": Sparkles,
+  "20": Gauge,
+  "24": Award,
+  "36": Leaf,
+  "48": Shield,
+};
 
 export function HomeView({ now }: { now: number }) {
   const { data, activate, requestOff, startEat, stopEat, requestCancel, openDay, addWater } = useOmad();
@@ -16,11 +26,22 @@ export function HomeView({ now }: { now: number }) {
   const fastingMs = view.mode === "eating" ? derived?.fastingMs ?? 0 : derived?.phaseElapsedMs ?? derived?.fastingMs ?? 0;
   const hours = fastingMs / 3_600_000;
   const band = fastBand(fastingMs);
+  const [picked, setPicked] = useState<FastBandId | null>(null);
+  const shown = FAST_BANDS.find((item) => item.id === picked && hours + 1e-9 >= item.hours) ?? band;
   const minuteStatus = statusLine(lang, view.mode, derived);
+  const tracking = view.mode === "fasting" || view.mode === "eating";
+  const detail =
+    view.mode === "inactive"
+      ? t(lang, "notActiveBody")
+      : view.mode === "rest"
+        ? t(lang, "restBody")
+        : view.mode === "eating"
+          ? t(lang, "targetLine", { time: formatHours(today?.targetEatingMinutes ?? data.settings.targetEatingMinutes, lang) })
+          : fastBandNoteFor(shown.id, lang);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
-      <section className="card flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+      <section className="card flex min-h-0 flex-1 flex-col p-3">
         <SegmentedTrack
           on={Boolean(today?.active) && !today?.rest}
           lang={lang}
@@ -33,111 +54,104 @@ export function HomeView({ now }: { now: number }) {
         <p className="sr-only" aria-live="polite">
           {minuteStatus}
         </p>
-        {view.mode === "inactive" || view.mode === "rest" ? (
-          <div className="grid flex-1 place-items-center px-2 text-center">
-            <div>
-              <div className="mx-auto grid size-14 place-items-center rounded-full bg-surface-2 text-muted">
-                {view.mode === "rest" ? <Moon className="size-6" /> : <CircleDashed className="size-6" />}
-              </div>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-                {t(lang, view.mode === "rest" ? "rest" : "notActiveTitle")}
-              </h2>
-              <p className="mx-auto mt-1 max-w-xs text-sm text-muted">
-                {t(lang, view.mode === "rest" ? "restBody" : "notActiveBody")}
+        <div className="ring-slot py-1">
+          {view.mode === "eating" ? (
+            <Ring progress={derived?.progress ?? 0} tone="eat" label={minuteStatus} className="ring-fit">
+              <p className="text-xs font-semibold leading-none text-eat">{t(lang, "eating")}</p>
+              <p className="tabular mt-1 text-2xl font-semibold leading-none tracking-tight text-fg">{formatHMS(derived?.phaseElapsedMs ?? 0)}</p>
+            </Ring>
+          ) : (
+            <StageRing hours={view.mode === "fasting" ? hours : 0} bands={[...FAST_BANDS]} label={minuteStatus} className="ring-fit">
+              <p className="text-xs font-semibold leading-none" style={{ color: view.mode === "fasting" ? shown.color : undefined }}>
+                {view.mode === "rest" ? t(lang, "rest") : view.mode === "fasting" ? fastBandLabel(shown.hours * 3_600_000, lang) : t(lang, "notActiveTitle")}
               </p>
-              <div className="mt-4">
-                <PrimaryButton onClick={activate}>{t(lang, "startToday")}</PrimaryButton>
-              </div>
-            </div>
+              <p className="tabular mt-1 text-2xl font-semibold leading-none tracking-tight text-fg">
+                {formatHMS(view.mode === "fasting" ? derived?.phaseElapsedMs ?? 0 : 0)}
+              </p>
+            </StageRing>
+          )}
+        </div>
+        <p className="line-clamp-2 px-1 text-center text-xs leading-snug text-muted">{detail}</p>
+        <div className="mt-2">
+          {view.mode === "inactive" || view.mode === "rest" ? (
+            <PrimaryButton onClick={activate}>{t(lang, "startToday")}</PrimaryButton>
+          ) : view.mode === "eating" ? (
+            <PrimaryButton tone="eat" onClick={stopEat}>
+              <Utensils className="size-5" />
+              {t(lang, "stopEating")}
+            </PrimaryButton>
+          ) : (
+            <PrimaryButton onClick={startEat}>
+              <Utensils className="size-5" />
+              {t(lang, "startEating")}
+            </PrimaryButton>
+          )}
+        </div>
+        {tracking ? (
+          <div className="mt-0.5 flex justify-center gap-2">
+            <GhostButton onClick={() => view.focusDate && openDay(view.focusDate)}>
+              <span className="inline-flex items-center gap-1">
+                <Pencil className="size-4" />
+                {t(lang, view.mode === "eating" ? "editTime" : "editStart")}
+              </span>
+            </GhostButton>
+            {view.mode === "eating" ? <GhostButton onClick={requestCancel}>{t(lang, "cancelEating")}</GhostButton> : null}
           </div>
-        ) : (
-          <div className="flex min-h-0 flex-1 flex-col justify-center">
-            {view.mode === "eating" ? (
-              <Ring progress={derived?.progress ?? 0} tone="eat" label={minuteStatus} className="mx-auto size-[clamp(8rem,30dvh,11rem)] shrink-0">
-                <p className="text-xs font-semibold leading-none text-eat">{t(lang, "eating")}</p>
-                <p className="tabular mt-1 text-lg font-semibold leading-none tracking-tight text-fg">{formatHMS(derived?.phaseElapsedMs ?? 0)}</p>
-              </Ring>
-            ) : (
-              <StageRing hours={hours} bands={[...FAST_BANDS]} label={minuteStatus} className="mx-auto size-[clamp(8rem,30dvh,11rem)] shrink-0">
-                <p className="text-xs font-semibold leading-none" style={{ color: band.color }}>
-                  {fastBandLabel(fastingMs, lang)}
-                </p>
-                <p className="tabular mt-1 text-lg font-semibold leading-none tracking-tight text-fg">{formatHMS(derived?.phaseElapsedMs ?? 0)}</p>
-              </StageRing>
-            )}
-            <p className="mt-1 text-center text-xs text-muted">
-              {view.mode === "eating"
-                ? t(lang, "targetLine", { time: formatHours(today?.targetEatingMinutes ?? data.settings.targetEatingMinutes, lang) })
-                : fastBandNote(fastingMs, lang)}
-            </p>
-            <div className="mt-2 flex flex-wrap justify-center gap-1">
-              {FAST_BANDS.filter((item) => item.hours > 0).map((item) => {
-                const on = hours >= item.hours && view.mode !== "eating";
-                return (
-                  <span
-                    key={item.id}
-                    className={cn("rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none", on ? "" : "bg-surface-2 text-muted")}
-                    style={on ? { background: item.color, color: inkOn(item.color) } : undefined}
-                  >
-                    {fastBandLabel(item.hours * 3_600_000, lang)}
-                  </span>
-                );
-              })}
-            </div>
-            <div className="mt-3">
-              {view.mode === "eating" ? (
-                <PrimaryButton tone="eat" onClick={stopEat}>
-                  <Utensils className="size-5" />
-                  {t(lang, "stopEating")}
-                </PrimaryButton>
-              ) : (
-                <PrimaryButton onClick={startEat}>
-                  <Utensils className="size-5" />
-                  {t(lang, "startEating")}
-                </PrimaryButton>
-              )}
-            </div>
-            <div className="mt-0.5 flex justify-center gap-2">
-              <GhostButton onClick={() => view.focusDate && openDay(view.focusDate)}>
-                <span className="inline-flex items-center gap-1">
-                  <Pencil className="size-4" />
-                  {t(lang, view.mode === "eating" ? "editTime" : "editStart")}
-                </span>
-              </GhostButton>
-              {view.mode === "eating" ? <GhostButton onClick={requestCancel}>{t(lang, "cancelEating")}</GhostButton> : null}
-            </div>
-          </div>
-        )}
+        ) : null}
       </section>
 
       {data.settings.waterEnabled ? (
-        <section className="card shrink-0 p-3">
+        <section className="card shrink-0 px-3 py-2.5">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="inline-flex items-center gap-2 text-sm font-semibold">
-              <GlassWater className="size-4 text-rest" />
+            <h2 className="inline-flex items-center gap-1.5 text-sm font-semibold">
+              <Droplet className="size-4 text-water" />
               {t(lang, "water")}
             </h2>
             <p className="tabular text-sm text-fg">
               {today?.waterMl ?? 0} / {data.settings.waterGoalMl} {t(lang, "ml")}
             </p>
           </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
             <div
-              className="h-full rounded-full bg-rest"
+              className="h-full rounded-full bg-water"
               style={{ width: `${Math.min(100, ((today?.waterMl ?? 0) / Math.max(1, data.settings.waterGoalMl)) * 100)}%` }}
             />
           </div>
-          <div className="mt-2 grid grid-cols-6 gap-1">
+          <div className="mt-1.5 grid grid-cols-6 gap-1">
             {WATER.map((ml) => (
-              <WaterButton key={ml} ml={ml} unit={t(lang, "ml")} onClick={() => addWater(ml)} />
+              <WaterButton key={ml} ml={ml} onClick={() => addWater(ml)} />
             ))}
-            <WaterButton ml={-50} unit={t(lang, "ml")} onClick={() => addWater(-50)} />
+            <WaterButton ml={-50} onClick={() => addWater(-50)} />
           </div>
         </section>
       ) : null}
+
+      <div className="grid shrink-0 grid-cols-7 gap-1">
+        {FAST_BANDS.filter((item) => item.hours > 0).map((item) => {
+          const on = view.mode === "fasting" && hours + 1e-9 >= item.hours;
+          const Icon = BAND_ICON[item.id as Exclude<FastBandId, "0">];
+          const active = shown.id === item.id && on;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              disabled={!on}
+              aria-pressed={active}
+              onClick={() => setPicked((current) => (current === item.id ? null : item.id))}
+              className={cn("flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-2xl px-0.5 press", on ? "bg-surface-2" : "text-muted")}
+            >
+              <Icon className="size-3.5" style={{ color: on ? item.color : undefined }} />
+              <span className="micro font-semibold" style={{ color: active ? item.color : undefined }}>
+                {fastBandLabel(item.hours * 3_600_000, lang)}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
+
 
 function statusLine(lang: "th" | "en", mode: string, derived: { phaseElapsedMs: number } | null) {
   if (mode === "inactive") return t(lang, "notActiveTitle");
@@ -169,28 +183,21 @@ function SegmentedTrack({
   );
 }
 
-function WaterButton({ ml, unit, onClick }: { ml: number; unit: string; onClick: () => void }) {
+function WaterButton({ ml, onClick }: { ml: number; onClick: () => void }) {
   const minus = ml < 0;
   return (
-    <button type="button" onClick={onClick} className="flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-xl bg-surface-2 px-0.5 press">
-      <GlassWater className={cn("size-3.5", minus ? "text-muted" : "text-rest")} />
-      <span className="text-xs font-semibold leading-none">{minus ? `−${Math.abs(ml)}` : `+${ml}`}</span>
-      <span className="text-[10px] leading-none text-muted">{unit}</span>
+    <button type="button" onClick={onClick} className="flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl bg-surface-2 press">
+      <GlassWater className={cn("size-6", minus ? "text-muted" : "text-water")} />
+      <span className="micro font-medium text-muted">{minus ? `−${Math.abs(ml)}` : `+${ml}`}</span>
     </button>
   );
 }
 
-function inkOn(hex: string) {
-  const n = Number.parseInt(hex.slice(1), 16);
-  const y = (((n >> 16) & 255) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000;
-  return y > 160 ? "#06211e" : "#f8fffd";
-}
-
 export function dotClass(outcome: Outcome) {
   if (outcome === "completed") return "bg-done-fill";
-  if (outcome === "in_progress") return "bg-fast-fill";
+  if (outcome === "in_progress") return "bg-fast";
   if (outcome === "multiple") return "bg-multi";
   if (outcome === "rest") return "bg-rest";
-  if (outcome === "other") return "bg-fast";
+  if (outcome === "other") return "bg-window";
   return "bg-line";
 }

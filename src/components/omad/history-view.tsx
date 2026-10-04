@@ -33,7 +33,8 @@ export function HistoryView({ now }: { now: number }) {
             measured && (measured.fastingMs > 0 || measured.eatingMs > 0)
               ? `${t(lang, "fastingShort")} ${formatWords(measured.fastingMs, lang)} · ${t(lang, "eatingShort")} ${formatWords(measured.eatingMs, lang)}`
               : "";
-          const detail = [stage ?? t(lang, labelKey(outcome)), times, open ? t(lang, "unclosed") : ""].filter(Boolean).join(" · ");
+          const latest = record?.logs?.at(-1);
+          const detail = [stage ?? t(lang, labelKey(outcome)), times, latest?.notes ? latest.notes : "", open ? t(lang, "unclosed") : ""].filter(Boolean).join(" · ");
           return (
             <li key={key}>
               <button type="button" className="flex w-full items-center gap-3 py-3 text-left press" onClick={() => openDay(key)}>

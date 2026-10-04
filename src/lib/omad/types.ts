@@ -15,6 +15,15 @@ export type Meal = {
   calories: number | null;
 };
 
+export type FastLog = {
+  id: string;
+  at: string;
+  fastingMs: number;
+  notes: string;
+  mood: Mood | null;
+  weightKg: number | null;
+};
+
 export type DayRecord = {
   date: string;
   active: boolean;
@@ -27,6 +36,7 @@ export type DayRecord = {
   waterMl: number;
   weightKg: number | null;
   mood: Mood | null;
+  logs: FastLog[];
 };
 
 export type Settings = {

@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from "react";
-import type { DayRecord, Lang, Mood, Persisted, Settings, SheetState, Theme, ViewId } from "@/lib/omad/types";
+import type { DayRecord, FastLog, Lang, Mood, Persisted, Settings, SheetState, Theme, ViewId } from "@/lib/omad/types";
 
 export type OmadApi = {
   data: Persisted;
@@ -16,6 +16,7 @@ export type OmadApi = {
   addWater: (delta: number) => void;
   setMood: (mood: Mood | null) => void;
   setNotes: (notes: string) => void;
+  saveFastLog: (entry: { notes: string; mood: FastLog["mood"]; weightKg: number | null; fastingMs: number }) => void;
   setWeight: (kg: number | null) => void;
   setMealText: (date: string, mealId: string, text: string) => void;
   updateSettings: (patch: Partial<Settings>) => void;

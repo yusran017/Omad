@@ -16,6 +16,7 @@ function day(partial: Partial<DayRecord> & Pick<DayRecord, "date">): DayRecord {
     waterMl: 0,
     weightKg: null,
     mood: null,
+    logs: [],
     ...partial,
   };
 }

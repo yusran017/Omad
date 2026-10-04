@@ -95,6 +95,15 @@ function headers(labels: string[]): Cell[] {
   );
 }
 
+function journalText(day: DayRecord | undefined, lang: Lang): string | null {
+  if (!day) return null;
+  const extra = (day.logs ?? [])
+    .map((log) => (log.notes ? `${fastBandLabel(log.fastingMs, lang)}: ${log.notes}` : fastBandLabel(log.fastingMs, lang)))
+    .join(" · ");
+  const text = [day.notes, extra].filter(Boolean).join(" · ");
+  return text || null;
+}
+
 function outcomeLabel(outcome: Outcome, lang: Lang, hours = 0): string {
   if (hours >= 12) return fastBandLabel(hours * 3_600_000, lang);
   if (outcome === "not_active") return t(lang, "notActive");
@@ -234,7 +243,7 @@ export function buildWorkbook(data: Persisted, now = Date.now()): Array<Sheet<Bl
       cell(day && day.waterMl > 0 ? day.waterMl : null, { ...base, format: "#,##0", align: "right" }),
       cell(day?.weightKg ?? null, { ...base, format: "0.00", align: "right" }),
       cell(day ? moodLabel(day.mood, lang) : "—", { ...base, align: "center" }),
-      cell(day?.notes || null, { ...base, wrap: true, align: "left" }),
+      cell(journalText(day, lang), { ...base, wrap: true, align: "left" }),
     ]);
   }
 
@@ -288,7 +297,7 @@ export function buildWorkbook(data: Persisted, now = Date.now()): Array<Sheet<Bl
         cell(index === 0 && day ? moodLabel(day.mood, lang) : "—", { ...base, align: "center" }),
         cell(meal?.description || null, { ...base, wrap: true }),
         cell(meal?.notes || null, { ...base, wrap: true }),
-        cell(index === 0 ? day?.notes || null : null, { ...base, wrap: true }),
+        cell(index === 0 ? journalText(day, lang) : null, { ...base, wrap: true }),
       ]);
     });
   }

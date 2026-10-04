@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { clsx } from "clsx";
 import { X } from "lucide-react";
@@ -8,11 +8,24 @@ export function cn(...parts: Array<string | false | null | undefined>) {
 }
 
 export function Mark({ className }: { className?: string }) {
+  return <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="" className={cn("rounded-xl object-cover", className)} />;
+}
+
+const STROKE = 12;
+const RADIUS = 40;
+
+function GlassDisc({ id, radius }: { id: string; radius: number }) {
   return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" strokeWidth="2.2" />
-      <path d="M16 8.2v8l4.2 2.4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <>
+      <defs>
+        <radialGradient id={id} cx="50%" cy="38%" r="62%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.24" />
+          <stop offset="58%" stopColor="#ffffff" stopOpacity="0.06" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <circle cx="60" cy="60" r={radius - 8} fill={`url(#${id})`} />
+    </>
   );
 }
 
@@ -36,26 +49,28 @@ export function Ring({
   className?: string;
   label: string;
 }) {
-  const radius = 46;
+  const radius = RADIUS;
   const circ = 2 * Math.PI * radius;
   const clamped = Math.max(0, Math.min(progress, 1));
+  const gid = useId().replace(/:/g, "");
   return (
     <div className={cn("relative mx-auto grid place-items-center", className ?? "size-60")}>
       <svg viewBox="0 0 120 120" className="absolute inset-0 size-full -rotate-90" role="img" aria-label={label}>
-        <circle cx="60" cy="60" r={radius} className="fill-none stroke-line" strokeWidth="8" />
+        <GlassDisc id={gid} radius={radius} />
+        <circle cx="60" cy="60" r={radius} className="fill-none stroke-line" strokeWidth={STROKE} />
         <circle
           cx="60"
           cy="60"
           r={radius}
           className={cn("fill-none", TONE[tone])}
           stroke="currentColor"
-          strokeWidth="8"
+          strokeWidth={STROKE}
           strokeLinecap="round"
           strokeDasharray={circ}
           strokeDashoffset={circ * (1 - clamped)}
         />
       </svg>
-      <div className="relative z-10 max-w-[62%] px-0.5 text-center leading-none">{children}</div>
+      <div className="relative z-10 max-w-[58%] px-1 text-center leading-none">{children}</div>
     </div>
   );
 }
@@ -73,15 +88,17 @@ export function StageRing({
   className?: string;
   label: string;
 }) {
-  const radius = 46;
+  const radius = RADIUS;
   const circ = 2 * Math.PI * radius;
   const cap = bands.at(-1)?.hours || 48;
   const safe = Math.max(0, hours);
   const count = Math.max(1, bands.length);
+  const gid = useId().replace(/:/g, "");
   return (
     <div className={cn("relative mx-auto grid place-items-center", className ?? "size-44")}>
       <svg viewBox="0 0 120 120" className="absolute inset-0 size-full -rotate-90" role="img" aria-label={label}>
-        <circle cx="60" cy="60" r={radius} className="fill-none stroke-line" strokeWidth="8" />
+        <GlassDisc id={gid} radius={radius} />
+        <circle cx="60" cy="60" r={radius} className="fill-none stroke-line" strokeWidth={STROKE} />
         {bands.map((band, index) => {
           const next = bands[index + 1]?.hours ?? cap;
           const spanHours = Math.max(0.001, next - band.hours);
@@ -96,7 +113,7 @@ export function StageRing({
               r={radius}
               fill="none"
               stroke={band.color}
-              strokeWidth="8"
+              strokeWidth={STROKE}
               strokeLinecap="butt"
               strokeDasharray={`${length} ${circ - length}`}
               strokeDashoffset={-(index / count) * circ}
@@ -104,7 +121,7 @@ export function StageRing({
           );
         })}
       </svg>
-      <div className="relative z-10 max-w-[62%] px-0.5 text-center leading-none">{children}</div>
+      <div className="relative z-10 max-w-[58%] px-1 text-center leading-none">{children}</div>
     </div>
   );
 }
@@ -227,7 +244,7 @@ export function PrimaryButton({
       onClick={onClick}
       className={cn(
         "flex min-h-14 w-full items-center justify-center gap-2 rounded-full px-5 text-base font-semibold text-on-accent press",
-        tone === "eat" ? "bg-eat-fill" : "bg-fast-fill",
+        tone === "eat" ? "btn-eat" : "btn-fast",
       )}
     >
       {children}
