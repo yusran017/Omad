@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { FileJson, FileSpreadsheet } from "lucide-react";
 import { useOmad } from "@/components/omad/context";
 import { Segmented, ToggleRow } from "@/components/omad/parts";
 import { t } from "@/lib/omad/i18n";
@@ -14,7 +15,7 @@ const PLANS: { id: PlanId; fast: number; eat: number; label?: "planCustom" }[] =
 
 export function SettingsView() {
   const app = useOmad();
-  const { data, updateSettings, setTheme, setLang, enableNotifications, exportJson, beginImport, requestClear, canInstall, install } = app;
+  const { data, updateSettings, setTheme, setLang, enableNotifications, exportJson, exportExcel, beginImport, requestClear, canInstall, install } = app;
   const lang = data.settings.lang;
   const fileRef = useRef<HTMLInputElement>(null);
   const notifySupported = typeof window !== "undefined" && "Notification" in window;
@@ -137,9 +138,24 @@ export function SettingsView() {
       <section className="card grid gap-3 p-4">
         <h2 className="text-sm font-semibold">{t(lang, "dataTitle")}</h2>
         <p className="text-sm text-muted">{t(lang, "dataLocal")}</p>
-        <button type="button" className="min-h-11 rounded-2xl bg-fast-fill text-sm font-semibold text-on-accent press" onClick={exportJson}>
-          {t(lang, "exportJson")}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="grid size-11 place-items-center rounded-full bg-fast-fill text-on-accent press"
+            aria-label={t(lang, "exportJson")}
+            onClick={exportJson}
+          >
+            <FileJson className="size-5" />
+          </button>
+          <button
+            type="button"
+            className="grid size-11 place-items-center rounded-full bg-surface-2 press"
+            aria-label={t(lang, "exportExcel")}
+            onClick={() => void exportExcel()}
+          >
+            <FileSpreadsheet className="size-5" />
+          </button>
+        </div>
         <button type="button" className="min-h-11 rounded-2xl bg-surface-2 text-sm font-semibold press" onClick={() => fileRef.current?.click()}>
           {t(lang, "importJson")}
         </button>

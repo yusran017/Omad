@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BarChart3, CalendarDays, History, House, Moon, Settings, Sun } from "lucide-react";
+import { BarChart3, CalendarDays, FileJson, FileSpreadsheet, History, House, Moon, Settings, Sun } from "lucide-react";
 import { CalendarView } from "@/components/omad/calendar-view";
 import { OmadProvider, type OmadApi } from "@/components/omad/context";
 import { DaySheet } from "@/components/omad/day-sheet";
@@ -24,6 +24,7 @@ import {
   updateSettings as patchSettings,
 } from "@/lib/omad/actions";
 import { t } from "@/lib/omad/i18n";
+import { downloadExcel } from "@/lib/omad/excel";
 import { dayOutcome, dueNotices, findOpenMeal, formatPrettyDate, loadPersisted, localDateKey, parseBackup, serialize, shouldConfirmOff } from "@/lib/omad/logic";
 import { STORAGE_KEY, emptyPersisted, type Persisted, type SheetState, type ViewId } from "@/lib/omad/types";
 
@@ -180,6 +181,13 @@ export function OmadApp() {
         link.click();
         URL.revokeObjectURL(url);
       },
+      exportExcel: async () => {
+        try {
+          await downloadExcel(data);
+        } catch {
+          say("exportFail");
+        }
+      },
       beginImport: (text) => {
         try {
           const parsed = parseBackup(JSON.parse(text));
@@ -283,6 +291,22 @@ export function OmadApp() {
                 <p className="truncate text-sm font-semibold lg:text-base">{t(lang, "appName")}</p>
                 <p className="truncate text-xs text-muted">{formatPrettyDate(localDateKey(new Date(now)), lang, true)}</p>
               </div>
+              <button
+                type="button"
+                className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 press"
+                aria-label={t(lang, "exportJson")}
+                onClick={api.exportJson}
+              >
+                <FileJson className="size-5" />
+              </button>
+              <button
+                type="button"
+                className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 press"
+                aria-label={t(lang, "exportExcel")}
+                onClick={() => void api.exportExcel()}
+              >
+                <FileSpreadsheet className="size-5" />
+              </button>
               <button
                 type="button"
                 className="grid size-11 place-items-center rounded-full press"

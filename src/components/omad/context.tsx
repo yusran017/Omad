@@ -23,6 +23,7 @@ export type OmadApi = {
   setLang: (lang: Lang) => void;
   enableNotifications: (on: boolean) => Promise<void>;
   exportJson: () => void;
+  exportExcel: () => Promise<void>;
   beginImport: (text: string) => void;
   requestClear: () => void;
   confirmClear: () => void;

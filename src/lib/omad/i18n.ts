@@ -109,6 +109,8 @@ const STR = {
   themeLight: { th: "สว่าง", en: "Light" },
   themeToggle: { th: "สลับธีม", en: "Toggle theme" },
   exportJson: { th: "ส่งออก JSON", en: "Export JSON" },
+  exportExcel: { th: "ส่งออก Excel", en: "Export Excel" },
+  exportFail: { th: "ส่งออกไฟล์ไม่สำเร็จ", en: "Could not export the file" },
   importJson: { th: "นำเข้า JSON", en: "Import JSON" },
   clearData: { th: "ลบข้อมูลทั้งหมด", en: "Clear all data" },
   dataTitle: { th: "ข้อมูลในเครื่อง", en: "Data on this device" },
