@@ -1,6 +1,6 @@
 import { i as __toESM, t as __commonJSMin } from "../_runtime.mjs";
 import { n as require_react } from "./@radix-ui/react-compose-refs+[...].mjs";
-//#region node_modules/react/cjs/react-jsx-runtime.production.js
+//#region node_modules/.pnpm/react@19.3.0/node_modules/react/cjs/react-jsx-runtime.production.js
 /**
 * @license React
 * react-jsx-runtime.production.js
@@ -35,12 +35,12 @@ var require_react_jsx_runtime_production = /* @__PURE__ */ __commonJSMin(((expor
 	exports.jsxs = jsxProd;
 }));
 //#endregion
-//#region node_modules/react/jsx-runtime.js
+//#region node_modules/.pnpm/react@19.3.0/node_modules/react/jsx-runtime.js
 var require_jsx_runtime = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_react_jsx_runtime_production();
 }));
 //#endregion
-//#region node_modules/@radix-ui/react-context/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-context@1.3.0_@types+react@19.3.0_react@19.3.0/node_modules/@radix-ui/react-context/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_jsx_runtime = require_jsx_runtime();
 var __defProp = Object.defineProperty;

@@ -3,11 +3,11 @@ import { n as require_react, t as useComposedRefs } from "./react-compose-refs+[
 import { n as require_jsx_runtime, t as createContextScope } from "../radix-ui__react-context+react.mjs";
 import { t as composeEventHandlers } from "../radix-ui__primitive.mjs";
 import { __assign, __rest, __spreadArray } from "tslib";
-//#region node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-use-layout-effect@1.1.4_@types+react@19.3.0_react@19.3.0/node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var useLayoutEffect2 = globalThis?.document ? import_react.useLayoutEffect : () => {};
 //#endregion
-//#region node_modules/@radix-ui/react-id/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-id@1.1.4_@types+react@19.3.0_react@19.3.0/node_modules/@radix-ui/react-id/dist/index.mjs
 var __defProp$11 = Object.defineProperty;
 var __name$11 = (target, value) => __defProp$11(target, "name", {
 	value,
@@ -24,20 +24,20 @@ function useId(deterministicId) {
 }
 __name$11(useId, "useId");
 //#endregion
-//#region node_modules/@radix-ui/react-use-effect-event/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-use-effect-event@0.0.5_@types+react@19.3.0_react@19.3.0/node_modules/@radix-ui/react-use-effect-event/dist/index.mjs
 var __defProp$10 = Object.defineProperty;
 var __name$10 = (target, value) => __defProp$10(target, "name", {
 	value,
 	configurable: true
 });
 var useReactEffectEvent = import_react[" useEffectEvent ".trim().toString()];
-var useReactInsertionEffect = import_react[" useInsertionEffect ".trim().toString()];
+var useReactInsertionEffect$1 = import_react[" useInsertionEffect ".trim().toString()];
 function useEffectEvent(callback) {
 	if (typeof useReactEffectEvent === "function") return useReactEffectEvent(callback);
 	const ref = import_react.useRef(() => {
 		throw new Error("Cannot call an event handler while rendering.");
 	});
-	if (typeof useReactInsertionEffect === "function") useReactInsertionEffect(() => {
+	if (typeof useReactInsertionEffect$1 === "function") useReactInsertionEffect$1(() => {
 		ref.current = callback;
 	});
 	else useLayoutEffect2(() => {
@@ -47,7 +47,7 @@ function useEffectEvent(callback) {
 }
 __name$10(useEffectEvent, "useEffectEvent");
 //#endregion
-//#region node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-use-controllable-state@1.3.0_@types+react@19.3.0_react@19.3.0/node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
 var __defProp$9 = Object.defineProperty;
 var __name$9 = (target, value) => __defProp$9(target, "name", {
 	value,
@@ -149,7 +149,7 @@ function useControllableStateReducer(reducer, userArgs, initialArg, init) {
 }
 __name$9(useControllableStateReducer, "useControllableStateReducer");
 //#endregion
-//#region node_modules/react-dom/cjs/react-dom.production.js
+//#region node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom.production.js
 /**
 * @license React
 * react-dom.production.js
@@ -302,7 +302,7 @@ var require_react_dom_production = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.version = "19.3.0";
 }));
 //#endregion
-//#region node_modules/react-dom/index.js
+//#region node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/index.js
 var require_react_dom = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	function checkDCE() {
 		if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === "undefined" || typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE !== "function") return;
@@ -316,7 +316,7 @@ var require_react_dom = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_react_dom_production();
 }));
 //#endregion
-//#region node_modules/@radix-ui/react-slot/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-slot@1.5.0_@types+react@19.3.0_react@19.3.0/node_modules/@radix-ui/react-slot/dist/index.mjs
 var import_react_dom = /* @__PURE__ */ __toESM(require_react_dom(), 1);
 var __defProp$8 = Object.defineProperty;
 var __name$8 = (target, value) => __defProp$8(target, "name", {
@@ -330,13 +330,13 @@ function createSlot(ownerName) {
 		let slottableElement = null;
 		let hasSlottable = false;
 		const newChildren = [];
-		if (isLazyComponent(children) && typeof use === "function") children = use(children._payload);
+		children = useUnwrappedLazy(children);
 		import_react.Children.forEach(children, (maybeSlottable) => {
 			if (isSlottable(maybeSlottable)) {
 				hasSlottable = true;
 				const slottable = maybeSlottable;
 				let child = "child" in slottable.props ? slottable.props.child : slottable.props.children;
-				if (isLazyComponent(child) && typeof use === "function") child = use(child._payload);
+				while (isLazyComponent(child) && typeof use === "function") child = use(child._payload);
 				slottableElement = getSlottableElementFromSlottable(slottable, child);
 				newChildren.push(slottableElement?.props?.children);
 			} else newChildren.push(maybeSlottable);
@@ -368,9 +368,8 @@ function createSlottable(ownerName) {
 __name$8(createSlottable, "createSlottable");
 var getSlottableElementFromSlottable = /* @__PURE__ */ __name$8((slottable, child) => {
 	if ("child" in slottable.props) {
-		const child2 = slottable.props.child;
-		if (!import_react.isValidElement(child2)) return null;
-		return import_react.cloneElement(child2, void 0, slottable.props.children(child2.props.children));
+		if (!import_react.isValidElement(child)) return null;
+		return import_react.cloneElement(child, void 0, slottable.props.children(child.props.children));
 	}
 	return import_react.isValidElement(child) ? child : null;
 }, "getSlottableElementFromSlottable");
@@ -391,6 +390,7 @@ function mergeProps(slotProps, childProps) {
 			...childPropValue
 		};
 		else if (propName === "className") overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
+		else if (propName === "aria-describedby") overrideProps[propName] = concatAriaDescribedby$1(childPropValue, slotPropValue);
 	}
 	return {
 		...slotProps,
@@ -421,6 +421,21 @@ function isPromiseLike(value) {
 	return typeof value === "object" && value !== null && "then" in value;
 }
 __name$8(isPromiseLike, "isPromiseLike");
+function useUnwrappedLazy(value) {
+	let unwrapped = value;
+	while (isLazyComponent(unwrapped) && typeof use === "function") unwrapped = use(unwrapped._payload);
+	return unwrapped;
+}
+__name$8(useUnwrappedLazy, "useUnwrappedLazy");
+function concatAriaDescribedby$1(...values) {
+	const ids = /* @__PURE__ */ new Set();
+	for (const value of values) {
+		if (typeof value !== "string") continue;
+		for (const id of String(value).trim().split(/\s+/)) if (id) ids.add(id);
+	}
+	return ids.size > 0 ? Array.from(ids).join(" ") : void 0;
+}
+__name$8(concatAriaDescribedby$1, "concatAriaDescribedby");
 var createSlotError = /* @__PURE__ */ __name$8((ownerName) => {
 	return `${ownerName} failed to slot onto its children. Expected a single React element child or \`Slottable\`.`;
 }, "createSlotError");
@@ -429,7 +444,7 @@ var createSlottableError = /* @__PURE__ */ __name$8((ownerName) => {
 }, "createSlottableError");
 var use = import_react[" use ".trim().toString()];
 //#endregion
-//#region node_modules/@radix-ui/react-primitive/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-primitive@2.2.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types+rea_c31f5d2e8dd1090b081609bcec07c67f/node_modules/@radix-ui/react-primitive/dist/index.mjs
 var import_jsx_runtime = require_jsx_runtime();
 var __defProp$7 = Object.defineProperty;
 var __name$7 = (target, value) => __defProp$7(target, "name", {
@@ -476,22 +491,26 @@ function dispatchDiscreteCustomEvent(target, event) {
 }
 __name$7(dispatchDiscreteCustomEvent, "dispatchDiscreteCustomEvent");
 //#endregion
-//#region node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-use-callback-ref@1.1.5_@types+react@19.3.0_react@19.3.0/node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
 var __defProp$6 = Object.defineProperty;
 var __name$6 = (target, value) => __defProp$6(target, "name", {
 	value,
 	configurable: true
 });
+var useReactInsertionEffect = import_react[" useInsertionEffect ".trim().toString()];
 function useCallbackRef$1(callback) {
 	const callbackRef = import_react.useRef(callback);
-	import_react.useEffect(() => {
+	if (typeof useReactInsertionEffect === "function") useReactInsertionEffect(() => {
+		callbackRef.current = callback;
+	});
+	else useLayoutEffect2(() => {
 		callbackRef.current = callback;
 	});
 	return import_react.useMemo(() => ((...args) => callbackRef.current?.(...args)), []);
 }
 __name$6(useCallbackRef$1, "useCallbackRef");
 //#endregion
-//#region node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.2.1_@types+react-dom@19.3.0_@types+react@19.3.0__@t_2656bb590de67d8af7daa53dbff259b7/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
 var __defProp$5 = Object.defineProperty;
 var __name$5 = (target, value) => __defProp$5(target, "name", {
 	value,
@@ -755,7 +774,7 @@ function handleAndDispatchCustomEvent(name, handler, detail, { discrete }) {
 }
 __name$5(handleAndDispatchCustomEvent, "handleAndDispatchCustomEvent");
 //#endregion
-//#region node_modules/@radix-ui/react-focus-scope/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-focus-scope@1.3.1_@types+react-dom@19.3.0_@types+react@19.3.0__@types+r_c545200fe192271ccc07b707063d52f1/node_modules/@radix-ui/react-focus-scope/dist/index.mjs
 var __defProp$4 = Object.defineProperty;
 var __name$4 = (target, value) => __defProp$4(target, "name", {
 	value,
@@ -768,12 +787,21 @@ var EVENT_OPTIONS = {
 	cancelable: true
 };
 var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$4(function FocusScope2(props, forwardedRef) {
-	const { loop = false, trapped = false, onMountAutoFocus: onMountAutoFocusProp, onUnmountAutoFocus: onUnmountAutoFocusProp, ...scopeProps } = props;
+	const { loop = false, trapped = false, branches, onMountAutoFocus: onMountAutoFocusProp, onUnmountAutoFocus: onUnmountAutoFocusProp, ...scopeProps } = props;
 	const [container, setContainer] = import_react.useState(null);
 	const onMountAutoFocus = useCallbackRef$1(onMountAutoFocusProp);
 	const onUnmountAutoFocus = useCallbackRef$1(onUnmountAutoFocusProp);
 	const lastFocusedElementRef = import_react.useRef(null);
 	const composedRefs = useComposedRefs(forwardedRef, setContainer);
+	const branchesRef = import_react.useRef(branches);
+	import_react.useEffect(() => {
+		branchesRef.current = branches;
+	});
+	const isTargetInScope = import_react.useCallback((target) => {
+		if (!target) return false;
+		if (container?.contains(target)) return true;
+		return Boolean(branchesRef.current?.some((branch) => branch.contains(target)));
+	}, [container]);
 	const focusScope = import_react.useRef({
 		paused: false,
 		pause() {
@@ -788,13 +816,13 @@ var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$
 			let handleFocusIn2 = function(event) {
 				if (focusScope.paused || !container) return;
 				const target = event.target;
-				if (container.contains(target)) lastFocusedElementRef.current = target;
+				if (isTargetInScope(target)) lastFocusedElementRef.current = target;
 				else focus(lastFocusedElementRef.current, { select: true });
 			}, handleFocusOut2 = function(event) {
 				if (focusScope.paused || !container) return;
 				const relatedTarget = event.relatedTarget;
 				if (relatedTarget === null) return;
-				if (!container.contains(relatedTarget)) focus(lastFocusedElementRef.current, { select: true });
+				if (!isTargetInScope(relatedTarget)) focus(lastFocusedElementRef.current, { select: true });
 			}, handleMutations2 = function(mutations) {
 				if (document.activeElement !== document.body) return;
 				for (const mutation of mutations) if (mutation.removedNodes.length > 0) focus(container);
@@ -818,7 +846,8 @@ var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$
 	}, [
 		trapped,
 		container,
-		focusScope.paused
+		focusScope.paused,
+		isTargetInScope
 	]);
 	import_react.useEffect(() => {
 		if (container) {
@@ -835,11 +864,13 @@ var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$
 			}
 			return () => {
 				container.removeEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
+				const ownerDocument = container.ownerDocument;
+				const UnmountEvent = CustomEvent;
 				setTimeout(() => {
-					const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
+					const unmountEvent = new UnmountEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
 					container.addEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
 					container.dispatchEvent(unmountEvent);
-					if (!unmountEvent.defaultPrevented) focus(previouslyFocusedElement ?? document.body, { select: true });
+					if (!unmountEvent.defaultPrevented) focus(previouslyFocusedElement ?? ownerDocument.body, { select: true });
 					container.removeEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
 					focusScopesStack.remove(focusScope);
 				}, 0);
@@ -881,6 +912,35 @@ var FocusScope = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$
 		onKeyDown: handleKeyDown
 	});
 }, "FocusScope"));
+var FocusScopeBranchContext = import_react.createContext(null);
+function FocusScopeBranchProvider({ registry, children }) {
+	if (!registry) return children;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FocusScopeBranchContext.Provider, {
+		value: registry,
+		children
+	});
+}
+__name$4(FocusScopeBranchProvider, "FocusScopeBranchProvider");
+function useFocusScopeBranchRegistry() {
+	const [nodes, setNodes] = import_react.useState([]);
+	return {
+		nodes,
+		registry: import_react.useMemo(() => ({
+			add: /* @__PURE__ */ __name$4((node) => setNodes((prev) => prev.includes(node) ? prev : [...prev, node]), "add"),
+			remove: /* @__PURE__ */ __name$4((node) => setNodes((prev) => prev.filter((current) => current !== node)), "remove")
+		}), [])
+	};
+}
+__name$4(useFocusScopeBranchRegistry, "useFocusScopeBranchRegistry");
+function useFocusScopeBranch(node) {
+	const registry = import_react.useContext(FocusScopeBranchContext);
+	import_react.useEffect(() => {
+		if (!node || !registry) return;
+		registry.add(node);
+		return () => registry.remove(node);
+	}, [node, registry]);
+}
+__name$4(useFocusScopeBranch, "useFocusScopeBranch");
 function focusFirst(candidates, { select = false } = {}) {
 	const previouslyFocusedElement = document.activeElement;
 	for (const candidate of candidates) {
@@ -896,7 +956,7 @@ function getTabbableEdges(container) {
 __name$4(getTabbableEdges, "getTabbableEdges");
 function getTabbableCandidates(container) {
 	const nodes = [];
-	const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, { acceptNode: /* @__PURE__ */ __name$4((node) => {
+	const walker = container.ownerDocument.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, { acceptNode: /* @__PURE__ */ __name$4((node) => {
 		const isHiddenInput = node.tagName === "INPUT" && node.type === "hidden";
 		if (node.disabled || node.hidden || isHiddenInput) return NodeFilter.FILTER_SKIP;
 		return node.tabIndex >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
@@ -921,12 +981,12 @@ function isHidden(node, { upTo }) {
 }
 __name$4(isHidden, "isHidden");
 function isSelectableInput(element) {
-	return element instanceof HTMLInputElement && "select" in element;
+	return element.tagName === "INPUT" && typeof element.select === "function";
 }
 __name$4(isSelectableInput, "isSelectableInput");
 function focus(element, { select = false } = {}) {
 	if (element && element.focus) {
-		const previouslyFocusedElement = document.activeElement;
+		const previouslyFocusedElement = (element.ownerDocument ?? document).activeElement;
 		element.focus({ preventScroll: true });
 		if (element !== previouslyFocusedElement && isSelectableInput(element) && select) element.select();
 	}
@@ -961,7 +1021,7 @@ function removeLinks(items) {
 }
 __name$4(removeLinks, "removeLinks");
 //#endregion
-//#region node_modules/@radix-ui/react-portal/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-portal@1.2.0_@types+react-dom@19.3.0_@types+react@19.3.0__@types+react@_8edac65ad48366ac38478b64ccb751ca/node_modules/@radix-ui/react-portal/dist/index.mjs
 var __defProp$3 = Object.defineProperty;
 var __name$3 = (target, value) => __defProp$3(target, "name", {
 	value,
@@ -978,7 +1038,7 @@ var Portal = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name$3(fu
 	}), container) : null;
 }, "Portal"));
 //#endregion
-//#region node_modules/@radix-ui/react-presence/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-presence@1.1.11_@types+react-dom@19.3.0_@types+react@19.3.0__@types+rea_fea964e47d1f796c036ae060b7c5470f/node_modules/@radix-ui/react-presence/dist/index.mjs
 var __defProp$2 = Object.defineProperty;
 var __name$2 = (target, value) => __defProp$2(target, "name", {
 	value,
@@ -1120,7 +1180,7 @@ function getElementRef(element) {
 }
 __name$2(getElementRef, "getElementRef");
 //#endregion
-//#region node_modules/@radix-ui/react-focus-guards/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-focus-guards@1.2.0_@types+react@19.3.0_react@19.3.0/node_modules/@radix-ui/react-focus-guards/dist/index.mjs
 var __defProp$1 = Object.defineProperty;
 var __name$1 = (target, value) => __defProp$1(target, "name", {
 	value,
@@ -1166,7 +1226,7 @@ function createFocusGuard() {
 }
 __name$1(createFocusGuard, "createFocusGuard");
 //#endregion
-//#region node_modules/react-remove-scroll-bar/dist/es2015/constants.js
+//#region node_modules/.pnpm/react-remove-scroll-bar@2.3.8_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll-bar/dist/es2015/constants.js
 var zeroRightClassName = "right-scroll-bar-position";
 var fullWidthClassName = "width-before-scroll-bar";
 var noScrollbarsClassName = "with-scroll-bars-hidden";
@@ -1176,7 +1236,7 @@ var noScrollbarsClassName = "with-scroll-bars-hidden";
 */
 var removedBarSizeVariable = "--removed-body-scroll-bar-size";
 //#endregion
-//#region node_modules/use-callback-ref/dist/es2015/assignRef.js
+//#region node_modules/.pnpm/use-callback-ref@1.3.3_@types+react@19.3.0_react@19.3.0/node_modules/use-callback-ref/dist/es2015/assignRef.js
 /**
 * Assigns a value for a given ref, no matter of the ref format
 * @param {RefObject} ref - a callback function or ref object
@@ -1196,7 +1256,7 @@ function assignRef(ref, value) {
 	return ref;
 }
 //#endregion
-//#region node_modules/use-callback-ref/dist/es2015/useRef.js
+//#region node_modules/.pnpm/use-callback-ref@1.3.3_@types+react@19.3.0_react@19.3.0/node_modules/use-callback-ref/dist/es2015/useRef.js
 /**
 * creates a MutableRef with ref change callback
 * @param initialValue - initial ref value
@@ -1234,7 +1294,7 @@ function useCallbackRef(initialValue, callback) {
 	return ref.facade;
 }
 //#endregion
-//#region node_modules/use-callback-ref/dist/es2015/useMergeRef.js
+//#region node_modules/.pnpm/use-callback-ref@1.3.3_@types+react@19.3.0_react@19.3.0/node_modules/use-callback-ref/dist/es2015/useMergeRef.js
 var useIsomorphicLayoutEffect = typeof window !== "undefined" ? import_react.useLayoutEffect : import_react.useEffect;
 var currentValues = /* @__PURE__ */ new WeakMap();
 /**
@@ -1275,7 +1335,7 @@ function useMergeRefs(refs, defaultValue) {
 	return callbackRef;
 }
 //#endregion
-//#region node_modules/use-sidecar/dist/es2015/medium.js
+//#region node_modules/.pnpm/use-sidecar@1.1.3_@types+react@19.3.0_react@19.3.0/node_modules/use-sidecar/dist/es2015/medium.js
 function ItoI(a) {
 	return a;
 }
@@ -1355,7 +1415,7 @@ function createSidecarMedium(options) {
 	return medium;
 }
 //#endregion
-//#region node_modules/use-sidecar/dist/es2015/exports.js
+//#region node_modules/.pnpm/use-sidecar@1.1.3_@types+react@19.3.0_react@19.3.0/node_modules/use-sidecar/dist/es2015/exports.js
 var SideCar = function(_a) {
 	var sideCar = _a.sideCar, rest = __rest(_a, ["sideCar"]);
 	if (!sideCar) throw new Error("Sidecar: please provide `sideCar` property to import the right car");
@@ -1369,10 +1429,10 @@ function exportSidecar(medium, exported) {
 	return SideCar;
 }
 //#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/medium.js
+//#region node_modules/.pnpm/react-remove-scroll@2.7.2_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll/dist/es2015/medium.js
 var effectCar = createSidecarMedium();
 //#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/UI.js
+//#region node_modules/.pnpm/react-remove-scroll@2.7.2_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll/dist/es2015/UI.js
 var nothing = function() {};
 /**
 * Removes scrollbar from the page and contain the scroll within the Lock
@@ -1431,7 +1491,7 @@ var getNonce = function() {
 	if (typeof __webpack_nonce__ !== "undefined") return __webpack_nonce__;
 };
 //#endregion
-//#region node_modules/react-style-singleton/dist/es2015/singleton.js
+//#region node_modules/.pnpm/react-style-singleton@2.2.3_@types+react@19.3.0_react@19.3.0/node_modules/react-style-singleton/dist/es2015/singleton.js
 function makeStyleTag() {
 	if (!document) return null;
 	var tag = document.createElement("style");
@@ -1470,7 +1530,7 @@ var stylesheetSingleton = function() {
 	};
 };
 //#endregion
-//#region node_modules/react-style-singleton/dist/es2015/hook.js
+//#region node_modules/.pnpm/react-style-singleton@2.2.3_@types+react@19.3.0_react@19.3.0/node_modules/react-style-singleton/dist/es2015/hook.js
 /**
 * creates a hook to control style singleton
 * @see {@link styleSingleton} for a safer component version
@@ -1492,7 +1552,7 @@ var styleHookSingleton = function() {
 	};
 };
 //#endregion
-//#region node_modules/react-style-singleton/dist/es2015/component.js
+//#region node_modules/.pnpm/react-style-singleton@2.2.3_@types+react@19.3.0_react@19.3.0/node_modules/react-style-singleton/dist/es2015/component.js
 /**
 * create a Component to add styles on demand
 * - styles are added when first instance is mounted
@@ -1509,7 +1569,7 @@ var styleSingleton = function() {
 	return Sheet;
 };
 //#endregion
-//#region node_modules/react-remove-scroll-bar/dist/es2015/utils.js
+//#region node_modules/.pnpm/react-remove-scroll-bar@2.3.8_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll-bar/dist/es2015/utils.js
 var zeroGap = {
 	left: 0,
 	top: 0,
@@ -1544,7 +1604,7 @@ var getGapWidth = function(gapMode) {
 	};
 };
 //#endregion
-//#region node_modules/react-remove-scroll-bar/dist/es2015/component.js
+//#region node_modules/.pnpm/react-remove-scroll-bar@2.3.8_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll-bar/dist/es2015/component.js
 var Style = styleSingleton();
 var lockAttribute = "data-scroll-locked";
 var getStyles = function(_a, allowRelative, gapMode, important) {
@@ -1582,7 +1642,7 @@ var RemoveScrollBar = function(_a) {
 	return import_react.createElement(Style, { styles: getStyles(gap, !noRelative, gapMode, !noImportant ? "!important" : "") });
 };
 //#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/aggresiveCapture.js
+//#region node_modules/.pnpm/react-remove-scroll@2.7.2_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll/dist/es2015/aggresiveCapture.js
 var passiveSupported = false;
 if (typeof window !== "undefined") try {
 	var options = Object.defineProperty({}, "passive", { get: function() {
@@ -1596,7 +1656,7 @@ if (typeof window !== "undefined") try {
 }
 var nonPassive = passiveSupported ? { passive: false } : false;
 //#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/handleScroll.js
+//#region node_modules/.pnpm/react-remove-scroll@2.7.2_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll/dist/es2015/handleScroll.js
 var alwaysContainsScroll = function(node) {
 	return node.tagName === "TEXTAREA";
 };
@@ -1679,7 +1739,7 @@ var handleScroll = function(axis, endTarget, event, sourceDelta, noOverscroll) {
 	return shouldCancelScroll;
 };
 //#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/SideEffect.js
+//#region node_modules/.pnpm/react-remove-scroll@2.7.2_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll/dist/es2015/SideEffect.js
 var getTouchXY = function(event) {
 	return "changedTouches" in event ? [event.changedTouches[0].clientX, event.changedTouches[0].clientY] : [0, 0];
 };
@@ -1834,10 +1894,10 @@ function getOutermostShadowParent(node) {
 	return shadowParent;
 }
 //#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/sidecar.js
+//#region node_modules/.pnpm/react-remove-scroll@2.7.2_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll/dist/es2015/sidecar.js
 var sidecar_default = exportSidecar(effectCar, RemoveScrollSideCar);
 //#endregion
-//#region node_modules/react-remove-scroll/dist/es2015/Combination.js
+//#region node_modules/.pnpm/react-remove-scroll@2.7.2_@types+react@19.3.0_react@19.3.0/node_modules/react-remove-scroll/dist/es2015/Combination.js
 var ReactRemoveScroll = import_react.forwardRef(function(props, ref) {
 	return import_react.createElement(RemoveScroll, __assign({}, props, {
 		ref,
@@ -1846,7 +1906,7 @@ var ReactRemoveScroll = import_react.forwardRef(function(props, ref) {
 });
 ReactRemoveScroll.classNames = RemoveScroll.classNames;
 //#endregion
-//#region node_modules/aria-hidden/dist/es2015/index.js
+//#region node_modules/.pnpm/aria-hidden@1.2.6/node_modules/aria-hidden/dist/es2015/index.js
 var getDefaultParent = function(originalTarget) {
 	if (typeof document === "undefined") return null;
 	return (Array.isArray(originalTarget) ? originalTarget[0] : originalTarget).ownerDocument.body;
@@ -1952,7 +2012,7 @@ var hideOthers = function(originalTarget, parentNode, markerName) {
 	return applyAttributeToOthers(targets, activeParentNode, markerName, "aria-hidden");
 };
 //#endregion
-//#region node_modules/@radix-ui/react-dialog/dist/index.mjs
+//#region node_modules/.pnpm/@radix-ui+react-dialog@1.3.1_@types+react-dom@19.3.0_@types+react@19.3.0__@types+react@_a3b87985ed5587cda38fa4297542256b/node_modules/@radix-ui/react-dialog/dist/index.mjs
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", {
 	value,
@@ -1965,6 +2025,7 @@ var Dialog = /* @__PURE__ */ __name((props) => {
 	const { __scopeDialog, children, open: openProp, defaultOpen, onOpenChange, modal = true } = props;
 	const triggerRef = import_react.useRef(null);
 	const contentRef = import_react.useRef(null);
+	const { nodes: branchNodes, registry: branchRegistry } = useFocusScopeBranchRegistry();
 	const [open, setOpen] = useControllableState({
 		prop: openProp,
 		defaultProp: defaultOpen ?? false,
@@ -1988,6 +2049,8 @@ var Dialog = /* @__PURE__ */ __name((props) => {
 		onOpenChange: setOpen,
 		onOpenToggle: import_react.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen]),
 		modal,
+		branchNodes,
+		branchRegistry,
 		children
 	});
 }, "Dialog");
@@ -2031,7 +2094,7 @@ var DialogOverlayImpl = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ 
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReactRemoveScroll, {
 		as: Slot,
 		allowPinchZoom: true,
-		shards: [context.contentRef],
+		shards: import_react.useMemo(() => [context.contentRef, ...context.branchNodes.map((node) => ({ current: node }))], [context.contentRef, context.branchNodes]),
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive.div, {
 			"data-state": getState(context.open),
 			...overlayProps,
@@ -2115,32 +2178,36 @@ var DialogContentNonModal = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__
 	});
 }, "DialogContentNonModal"));
 var DialogContentImpl = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name(function DialogContentImpl2(props, forwardedRef) {
-	const { __scopeDialog, trapFocus, onOpenAutoFocus, onCloseAutoFocus, ...contentProps } = props;
+	const { __scopeDialog, trapFocus, onOpenAutoFocus, onCloseAutoFocus, "aria-describedby": ariaDescribedby, children, ...contentProps } = props;
 	const context = useDialogContext(CONTENT_NAME, __scopeDialog);
 	useFocusGuards();
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FocusScope, {
-		asChild: true,
-		loop: true,
-		trapped: trapFocus,
-		onMountAutoFocus: onOpenAutoFocus,
-		onUnmountAutoFocus: onCloseAutoFocus,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DismissableLayer, {
-			role: "dialog",
-			id: context.contentId,
-			"aria-describedby": context.descriptionPresent ? context.descriptionId : void 0,
-			"aria-labelledby": context.titlePresent ? context.titleId : void 0,
-			"data-state": getState(context.open),
-			...contentProps,
-			ref: forwardedRef,
-			deferPointerDownOutside: true,
-			onDismiss: () => context.onOpenChange(false)
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FocusScopeBranchProvider, {
+		registry: context.branchRegistry,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FocusScope, {
+			asChild: true,
+			loop: true,
+			trapped: trapFocus,
+			branches: context.branchNodes,
+			onMountAutoFocus: onOpenAutoFocus,
+			onUnmountAutoFocus: onCloseAutoFocus,
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DismissableLayer, {
+				role: "dialog",
+				id: context.contentId,
+				"aria-labelledby": context.titlePresent ? context.titleId : void 0,
+				"aria-describedby": context.descriptionPresent ? concatAriaDescribedby(ariaDescribedby, context.descriptionId) : ariaDescribedby,
+				"data-state": getState(context.open),
+				...contentProps,
+				ref: forwardedRef,
+				deferPointerDownOutside: true,
+				onDismiss: () => context.onOpenChange(false),
+				children
+			})
 		})
-	}) });
+	});
 }, "DialogContentImpl"));
-var TITLE_NAME = "DialogTitle";
 var DialogTitle = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name(function DialogTitle2(props, forwardedRef) {
 	const { __scopeDialog, ...titleProps } = props;
-	const context = useDialogContext(TITLE_NAME, __scopeDialog);
+	const context = useDialogContext("DialogTitle", __scopeDialog);
 	const { setTitleCount } = context;
 	useLayoutEffect2(() => {
 		setTitleCount((count) => count + 1);
@@ -2152,10 +2219,9 @@ var DialogTitle = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name
 		ref: forwardedRef
 	});
 }, "DialogTitle"));
-var DESCRIPTION_NAME = "DialogDescription";
 var DialogDescription = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name(function DialogDescription2(props, forwardedRef) {
 	const { __scopeDialog, ...descriptionProps } = props;
-	const context = useDialogContext(DESCRIPTION_NAME, __scopeDialog);
+	const context = useDialogContext("DialogDescription", __scopeDialog);
 	const { setDescriptionCount } = context;
 	useLayoutEffect2(() => {
 		setDescriptionCount((count) => count + 1);
@@ -2178,6 +2244,15 @@ var DialogClose = /* @__PURE__ */ import_react.forwardRef(/* @__PURE__ */ __name
 		onClick: composeEventHandlers(props.onClick, () => context.onOpenChange(false))
 	});
 }, "DialogClose"));
+function concatAriaDescribedby(...values) {
+	const ids = /* @__PURE__ */ new Set();
+	for (const value of values) {
+		if (typeof value !== "string") continue;
+		for (const id of String(value).trim().split(/\s+/)) if (id) ids.add(id);
+	}
+	return ids.size > 0 ? Array.from(ids).join(" ") : void 0;
+}
+__name(concatAriaDescribedby, "concatAriaDescribedby");
 function getState(open) {
 	return open ? "open" : "closed";
 }

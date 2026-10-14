@@ -1,11 +1,11 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { n as require_react } from "../_libs/@radix-ui/react-compose-refs+[...].mjs";
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
-import { S as CalendarDays, _ as Droplets, a as Sun, b as ChevronLeft, c as Pencil, d as House, f as History, g as FileJson, h as FileSpreadsheet, l as Moon, m as Flame, n as X, o as Smile, p as Frown, r as Utensils, s as Settings, t as Zap, u as Meh, v as CircleDashed, x as ChartColumn, y as ChevronRight } from "../_libs/lucide-react.mjs";
+import { C as FileJson, D as ChartColumn, E as ChevronLeft, O as CalendarDays, S as FileSpreadsheet, T as ChevronRight, _ as House, a as Target, b as Frown, c as Sparkles, d as Settings, f as Pencil, g as Leaf, h as Meh, l as Smile, m as Moon, n as X, o as Sunrise, p as NotebookPen, r as Utensils, s as Sun, t as Zap, u as Shield, v as History, w as Droplet, x as Flame, y as GlassWater } from "../_libs/lucide-react.mjs";
 import { a as DialogOverlay, i as DialogDescription, n as DialogClose, o as DialogPortal, r as DialogContent, s as DialogTitle, t as Dialog } from "../_libs/@radix-ui/react-dialog+[...].mjs";
 import { t as clsx } from "../_libs/clsx.mjs";
 import { a as Bar, i as Line, n as LineChart, o as ResponsiveContainer, r as XAxis, s as Tooltip, t as BarChart } from "../_libs/recharts+[...].mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-DtX1WGNF.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-Bmp__O3A.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var OmadContext = (0, import_react.createContext)(null);
@@ -24,22 +24,61 @@ function cn(...parts) {
 	return clsx(parts);
 }
 function Mark({ className }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-		viewBox: "0 0 32 32",
-		className,
-		"aria-hidden": "true",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-			cx: "16",
-			cy: "16",
-			r: "12.25",
-			fill: "none",
-			stroke: "currentColor",
-			strokeWidth: "1.75"
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			fill: "currentColor",
-			d: "M16.1 7.4c.15 2.2-.65 3.55-1.6 4.6 1.65.05 3.15 1.2 3.65 2.95.6 2.05-.55 4.15-2.5 5.05-2.05.95-4.4.15-5.35-1.65-.75-1.45-.45-3 .3-4.35-1.05-1.3.2-3.4 2.1-4.95.7-.55 1.55-1.2 2.4-1.65z"
-		})]
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
+		src: `/icon-192.png`,
+		alt: "",
+		className: cn("rounded-xl object-cover", className)
 	});
+}
+var STAGE_ICONS = {
+	"0": Sunrise,
+	"12": Flame,
+	"16": Zap,
+	"18": Sparkles,
+	"20": Target,
+	"24": Utensils,
+	"36": Leaf,
+	"48": Shield
+};
+function StageIcon({ id, className }) {
+	const Icon = STAGE_ICONS[id] ?? Sunrise;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, {
+		className: className ?? "size-4",
+		strokeWidth: 2.25,
+		"aria-hidden": "true"
+	});
+}
+var STROKE = 12;
+var RADIUS = 40;
+function GlassDisc({ id, radius }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("defs", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("radialGradient", {
+		id,
+		cx: "50%",
+		cy: "38%",
+		r: "62%",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "0%",
+				stopColor: "#ffffff",
+				stopOpacity: "0.24"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "58%",
+				stopColor: "#ffffff",
+				stopOpacity: "0.06"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", {
+				offset: "100%",
+				stopColor: "#ffffff",
+				stopOpacity: "0"
+			})
+		]
+	}) }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+		cx: "60",
+		cy: "60",
+		r: radius - 8,
+		fill: `url(#${id})`
+	})] });
 }
 var TONE$1 = {
 	fast: "text-fast",
@@ -48,9 +87,10 @@ var TONE$1 = {
 	muted: "text-muted"
 };
 function Ring({ progress, tone, children, className, label }) {
-	const radius = 46;
+	const radius = RADIUS;
 	const circ = 2 * Math.PI * radius;
 	const clamped = Math.max(0, Math.min(progress, 1));
+	const gid = (0, import_react.useId)().replace(/:/g, "");
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: cn("relative mx-auto grid place-items-center", className ?? "size-60"),
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
@@ -58,25 +98,83 @@ function Ring({ progress, tone, children, className, label }) {
 			className: "absolute inset-0 size-full -rotate-90",
 			role: "img",
 			"aria-label": label,
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-				cx: "60",
-				cy: "60",
-				r: radius,
-				className: "fill-none stroke-line",
-				strokeWidth: "8"
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-				cx: "60",
-				cy: "60",
-				r: radius,
-				className: cn("fill-none", TONE$1[tone]),
-				stroke: "currentColor",
-				strokeWidth: "8",
-				strokeLinecap: "round",
-				strokeDasharray: circ,
-				strokeDashoffset: circ * (1 - clamped)
-			})]
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GlassDisc, {
+					id: gid,
+					radius
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+					cx: "60",
+					cy: "60",
+					r: radius,
+					className: "fill-none stroke-line",
+					strokeWidth: STROKE
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+					cx: "60",
+					cy: "60",
+					r: radius,
+					className: cn("fill-none", TONE$1[tone]),
+					stroke: "currentColor",
+					strokeWidth: STROKE,
+					strokeLinecap: "round",
+					strokeDasharray: circ,
+					strokeDashoffset: circ * (1 - clamped)
+				})
+			]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			className: "relative z-10 px-6 text-center",
+			className: "relative z-10 max-w-[58%] px-1 text-center leading-none",
+			children
+		})]
+	});
+}
+function StageRing({ hours, bands, children, className, label }) {
+	const radius = RADIUS;
+	const circ = 2 * Math.PI * radius;
+	const cap = bands.at(-1)?.hours || 48;
+	const safe = Math.max(0, hours);
+	const count = Math.max(1, bands.length);
+	const gid = (0, import_react.useId)().replace(/:/g, "");
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: cn("relative mx-auto grid place-items-center", className ?? "size-44"),
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+			viewBox: "0 0 120 120",
+			className: "absolute inset-0 size-full -rotate-90",
+			role: "img",
+			"aria-label": label,
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GlassDisc, {
+					id: gid,
+					radius
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+					cx: "60",
+					cy: "60",
+					r: radius,
+					className: "fill-none stroke-line",
+					strokeWidth: STROKE
+				}),
+				bands.map((band, index) => {
+					const next = bands[index + 1]?.hours ?? cap;
+					const spanHours = Math.max(.001, next - band.hours);
+					const within = next <= band.hours ? safe >= band.hours ? 1 : 0 : Math.max(0, Math.min(1, (safe - band.hours) / spanHours));
+					if (within <= 0) return null;
+					const length = within / count * circ;
+					return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+						cx: "60",
+						cy: "60",
+						r: radius,
+						fill: "none",
+						stroke: band.color,
+						strokeWidth: STROKE,
+						strokeLinecap: "butt",
+						strokeDasharray: `${length} ${circ - length}`,
+						strokeDashoffset: -(index / count) * circ
+					}, band.hours);
+				})
+			]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "relative z-10 max-w-[58%] px-1 text-center leading-none",
 			children
 		})]
 	});
@@ -155,7 +253,7 @@ function PrimaryButton({ children, onClick, tone = "fast" }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 		type: "button",
 		onClick,
-		className: cn("flex min-h-14 w-full items-center justify-center gap-2 rounded-full px-5 text-base font-semibold text-on-accent press", tone === "eat" ? "bg-eat-fill" : "bg-fast-fill"),
+		className: cn("flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl px-5 text-base font-semibold text-on-accent press", tone === "eat" ? "btn-eat" : "btn-fast"),
 		children
 	});
 }
@@ -191,6 +289,10 @@ var STR = {
 	history: {
 		th: "ประวัติ",
 		en: "History"
+	},
+	log: {
+		th: "บันทึก",
+		en: "Log"
 	},
 	settings: {
 		th: "ตั้งค่า",
@@ -357,28 +459,32 @@ var STR = {
 		en: "OMAD"
 	},
 	completed: {
-		th: "ทำตามแผน",
-		en: "Completed"
+		th: "อยู่ในขอบเขต OMAD",
+		en: "Inside OMAD"
 	},
 	inProgress: {
 		th: "กำลังทำอยู่",
 		en: "In progress"
 	},
 	multiple: {
-		th: "มากกว่า 1 มื้อ",
+		th: "เริ่มกินมากกว่า 1 ครั้ง",
 		en: "More than one meal"
 	},
 	other: {
 		th: "ไม่ได้บันทึกมื้อ",
 		en: "No meal logged"
 	},
+	overWindow: {
+		th: "กินเกิน 1 ชั่วโมง",
+		en: "Ate longer than the window"
+	},
 	consistency: {
 		th: "ความสม่ำเสมอ",
 		en: "Consistency"
 	},
 	consistencyHint: {
-		th: "คิดจากวันที่เปิดติดตามแล้วจบมื้อเดียว ไม่นับวันที่ไม่ได้ติดตามและวันพัก",
-		en: "One-meal days among days you actually tracked. Days off and rest days are not misses"
+		th: "นับวันที่จบมื้อเดียวภายในช่วงกิน ถ้ายกเลิกมื้อหรือจบทัน ยังอยู่ในขอบเขต วันที่ไม่ได้ติดตามและวันพักไม่นับว่าพลาด",
+		en: "Days with one meal inside the eating window. Cancelling or finishing in time stays inside. Days off and rest days are not misses"
 	},
 	recent: {
 		th: "ย้อนหลังล่าสุด",
@@ -419,6 +525,134 @@ var STR = {
 	journal: {
 		th: "บันทึกวันนี้",
 		en: "Today's note"
+	},
+	saveLog: {
+		th: "บันทึกช่วงนี้",
+		en: "Save this stage"
+	},
+	logSaved: {
+		th: "บันทึกแล้ว ผูกกับเวลาเริ่มอดจากหน้าแรก",
+		en: "Saved. Linked to the fast you started on Home"
+	},
+	logHint: {
+		th: "น้ำหนักนับจากเวลาที่กดเริ่มอดบนหน้าแรก ไม่ใช่เวลาที่กดบันทึก",
+		en: "Weight follows the fast you started on Home, not the moment you save"
+	},
+	logEmpty: {
+		th: "ยังไม่มีบันทึกของช่วงอด",
+		en: "No note for a fast yet"
+	},
+	fastBegan: {
+		th: "เริ่มอด {time} จากหน้าแรก",
+		en: "Fast started {time} on Home"
+	},
+	weighedAt: {
+		th: "ชั่งตอน {time}",
+		en: "Weighed at {time}"
+	},
+	fastedFor: {
+		th: "อดมาแล้ว {time}",
+		en: "Fasted {time}"
+	},
+	weightHistory: {
+		th: "ประวัติน้ำหนัก",
+		en: "Weight history"
+	},
+	noteHistory: {
+		th: "ประวัติโน้ต",
+		en: "Note history"
+	},
+	weightHistEmpty: {
+		th: "ยังไม่มีการชั่งที่ผูกกับช่วงอด",
+		en: "No weigh-in linked to a fast yet"
+	},
+	omadWin: {
+		th: "ชนะ OMAD วันนี้ กินภายในเป้า",
+		en: "OMAD win. The meal stayed inside the window"
+	},
+	overEat: {
+		th: "บันทึกแล้ว กินเกิน {time}",
+		en: "Saved. Eating went past {time}"
+	},
+	eatClock: {
+		th: "เริ่มกิน {time} · เป้า {target}",
+		en: "Eating since {time} · target {target}"
+	},
+	eatLeft: {
+		th: "เหลือ {time} ก่อนเกินเป้า",
+		en: "{time} left before the window"
+	},
+	eatOverNow: {
+		th: "เกินเป้าไป {time}",
+		en: "Past the window by {time}"
+	},
+	winStreak: {
+		th: "ชนะต่อเนื่อง",
+		en: "Win streak"
+	},
+	omadWins: {
+		th: "ชนะ OMAD",
+		en: "OMAD wins"
+	},
+	withinTarget: {
+		th: "ภายในเป้า",
+		en: "Within window"
+	},
+	overTarget: {
+		th: "เกินเป้า",
+		en: "Over window"
+	},
+	noFastYet: {
+		th: "ยังไม่เริ่มอดบนหน้าแรก น้ำหนักจะผูกเมื่อเริ่มติดตาม",
+		en: "Start the fast on Home first. Weight links to that start"
+	},
+	mealClock: {
+		th: "มื้อวันนี้",
+		en: "Today's meal"
+	},
+	mealWait: {
+		th: "ยังไม่กดเริ่มกิน แอปจะจำเวลาทันทีที่กด",
+		en: "Not eating yet. The clock starts the moment you tap start"
+	},
+	ateFor: {
+		th: "กินไป {time}",
+		en: "Ate for {time}"
+	},
+	inBounds: {
+		th: "จบมื้อภายในเวลา ยังอยู่ในขอบเขต OMAD",
+		en: "Finished in time. Still inside OMAD"
+	},
+	mealOk: {
+		th: "กินภายในเป้า",
+		en: "Meal inside the window"
+	},
+	cancelKept: {
+		th: "ยกเลิกมื้อแล้ว ยังอยู่ในขอบเขต OMAD",
+		en: "Meal cancelled. Still inside OMAD"
+	},
+	outSecond: {
+		th: "หลุด OMAD เพราะเริ่มกินครั้งที่ 2",
+		en: "Out of OMAD. A second meal started"
+	},
+	goalFastHint: {
+		th: "วงกลมเดินไปหาตัวเลขนี้ ถึงเป้าและกินมื้อเดียวในเวลาที่กำหนด จะขึ้นว่าชนะ แผน OMAD คืออด 23 ชั่วโมงในรอบ 24 ชั่วโมง",
+		en: "The ring walks toward this number. Reaching it with one meal inside the window is a win. OMAD is a 23-hour fast inside a 24-hour day"
+	},
+	goalEatHint: {
+		th: "กดเริ่มกินได้ครั้งเดียวในรอบนี้ และต้องจบภายในเวลานี้ เช่น 1 ชั่วโมง ถ้ายกเลิกหรือจบทัน จะยังอยู่ในขอบเขต ถ้ากินนานกว่านั้นหรือเริ่มครั้งที่ 2 จะหลุด",
+		en: "Start eating once in this fast, and finish inside this time, such as 1 hour. Cancel or finish in time and you stay inside. A longer meal or a second start falls out"
+	},
+	clockHint: {
+		th: "นาฬิกา 24 ชั่วโมง เช่น 14:00 คือบ่ายสองโมง ไม่มี AM/PM",
+		en: "24-hour clock. 14:00 is 2 in the afternoon, not AM/PM"
+	},
+	hourLabel: {
+		th: "ชั่วโมง",
+		en: "Hour"
+	},
+	minuteLabel: {
+		th: "นาที",
+		en: "Minute"
 	},
 	moodQ: {
 		th: "วันนี้รู้สึกอย่างไร",
@@ -807,7 +1041,7 @@ var defaultSettings = {
 	theme: "dark",
 	lang: "th",
 	plan: "omad",
-	targetFastingMinutes: 1200,
+	targetFastingMinutes: 1380,
 	targetEatingMinutes: 60,
 	preferredEatingTime: "14:00",
 	notifications: false,
@@ -890,15 +1124,6 @@ function formatTime(iso, lang) {
 		hourCycle: "h23"
 	}).format(date);
 }
-function formatWhen(iso, lang, todayKey) {
-	const date = new Date(iso);
-	if (Number.isNaN(date.getTime())) return "—";
-	const key = localDateKey(date);
-	const time = formatTime(iso, lang);
-	if (key === todayKey) return time;
-	if (key === addDays(todayKey, -1)) return lang === "th" ? `เมื่อวาน ${time}` : `Yesterday ${time}`;
-	return `${formatPrettyDate(key, lang)} ${time}`;
-}
 function toLocalInput(iso) {
 	if (!iso) return "";
 	const date = new Date(iso);
@@ -945,7 +1170,13 @@ function dayOutcome(day, todayKey) {
 	if (!day.active) return "not_active";
 	const open = day.meals.some((meal) => !meal.end);
 	if (day.meals.length > 1) return "multiple";
-	if (day.meals.length === 1 && !open) return "completed";
+	if (day.meals.length === 1 && !open) {
+		const meal = day.meals[0];
+		const start = Date.parse(meal.start);
+		const end = meal.end ? Date.parse(meal.end) : NaN;
+		if ((Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) / 6e4 : Number.POSITIVE_INFINITY) <= day.targetEatingMinutes + 1e-6) return "completed";
+		return "over";
+	}
 	if (day.date === todayKey) return "in_progress";
 	return "other";
 }
@@ -1055,6 +1286,58 @@ function shouldConfirmOff(day, now) {
 	if (!day.fastingStart) return false;
 	return now - Date.parse(day.fastingStart) > 6e4;
 }
+function scoreDay(day, now, todayKey) {
+	const none = {
+		fastHours: 0,
+		eatMinutes: null,
+		mealCount: 0,
+		open: false,
+		overTarget: false,
+		mealOk: false,
+		omadWin: false,
+		fastingStart: null,
+		mealStart: null,
+		mealEnd: null
+	};
+	if (!day) return none;
+	const derived = derive(day, day.date === todayKey ? now : Math.min(now, endOfDay(day.date)), todayKey);
+	const meals = day.meals.filter((meal) => Number.isFinite(Date.parse(meal.start)));
+	const eatMinutes = meals.length ? Math.round(derived.eatingMs / 6e4) : null;
+	const fastHours = derived.fastingMs / 36e5;
+	const open = meals.some((meal) => !meal.end);
+	const overTarget = eatMinutes != null && !open && eatMinutes > day.targetEatingMinutes;
+	const first = meals.slice().sort((a, b) => Date.parse(a.start) - Date.parse(b.start))[0] ?? null;
+	const mealOk = meals.length === 1 && !open && eatMinutes != null && eatMinutes <= day.targetEatingMinutes;
+	const omadWin = mealOk && fastHours + 1e-6 >= day.targetFastingMinutes / 60;
+	return {
+		fastHours,
+		eatMinutes,
+		mealCount: meals.length,
+		open,
+		overTarget,
+		mealOk,
+		omadWin,
+		fastingStart: day.fastingStart,
+		mealStart: first?.start ?? null,
+		mealEnd: first?.end ?? null
+	};
+}
+function winStreak(days, now) {
+	const today = localDateKey(new Date(now));
+	let cursor = today;
+	let streak = 0;
+	for (let i = 0; i < 400; i += 1) {
+		const score = scoreDay(days[cursor], now, today);
+		if (cursor === today && !score.omadWin) {
+			cursor = addDays(cursor, -1);
+			continue;
+		}
+		if (!score.omadWin) break;
+		streak += 1;
+		cursor = addDays(cursor, -1);
+	}
+	return streak;
+}
 function fastSample(day, now, todayKey) {
 	if (!day?.active || day.rest || !day.fastingStart) return {
 		hours: 0,
@@ -1110,6 +1393,7 @@ function computeStats(days, range, now) {
 		multiple: 0,
 		rest: 0,
 		other: 0,
+		over: 0,
 		consistency: null,
 		bars: []
 	};
@@ -1140,9 +1424,141 @@ function computeStats(days, range, now) {
 	}
 	stats.avgFastHours = fastN ? fastSum / fastN : null;
 	stats.avgEatHours = eatN ? eatSum / eatN : null;
-	const tracked = stats.completed + stats.multiple + stats.other;
+	const tracked = stats.completed + stats.multiple + stats.other + stats.over;
 	stats.consistency = tracked ? stats.completed / tracked : null;
 	return stats;
+}
+var FAST_BANDS = [
+	{
+		id: "0",
+		hours: 0,
+		color: "#60a5fa"
+	},
+	{
+		id: "12",
+		hours: 12,
+		color: "#22d3ee"
+	},
+	{
+		id: "16",
+		hours: 16,
+		color: "#f5b942"
+	},
+	{
+		id: "18",
+		hours: 18,
+		color: "#a78bfa"
+	},
+	{
+		id: "20",
+		hours: 20,
+		color: "#fb7185"
+	},
+	{
+		id: "24",
+		hours: 24,
+		color: "#f472b6"
+	},
+	{
+		id: "36",
+		hours: 36,
+		color: "#fb923c"
+	},
+	{
+		id: "48",
+		hours: 48,
+		color: "#f43f5e"
+	}
+];
+var BAND_COPY = {
+	"0": {
+		th: "เริ่มอด",
+		en: "Started",
+		noteTh: "ยังไม่ถึง 12 ชั่วโมง ร่างกายใช้น้ำตาลที่เก็บไว้เป็นหลัก",
+		noteEn: "Under 12 hours. The body is still using stored sugar",
+		mark: "🌅",
+		verbTh: "เริ่ม",
+		verbEn: "Start"
+	},
+	"12": {
+		th: "12 ชม.",
+		en: "12h",
+		noteTh: "ผ่าน 12 ชม. เริ่มดึงไขมันมาใช้เป็นพลังงานมากขึ้น",
+		noteEn: "12 hours. Fat is starting to cover more of the energy need",
+		mark: "🔥",
+		verbTh: "ไขมัน",
+		verbEn: "Fat"
+	},
+	"16": {
+		th: "16:8",
+		en: "16:8",
+		noteTh: "สูตร 16:8 อินซูลินมักต่ำลง และเริ่มใช้ไขมันชัดขึ้น",
+		noteEn: "16:8. Insulin is often lower, and fat use is clearer",
+		mark: "⚡",
+		verbTh: "สลับ",
+		verbEn: "Switch"
+	},
+	"18": {
+		th: "18:6",
+		en: "18:6",
+		noteTh: "สูตร 18:6 เข้าออโตฟาจีช่วงต้น เซลล์เริ่มเก็บกวาดส่วนที่เสื่อม",
+		noteEn: "18:6. Early autophagy. Cells start clearing worn parts",
+		mark: "✨",
+		verbTh: "กวาด",
+		verbEn: "Clear"
+	},
+	"20": {
+		th: "20:4",
+		en: "20:4",
+		noteTh: "สูตร 20:4 ใกล้ OMAD ร่างกายพึ่งไขมันเป็นพลังงานหลัก",
+		noteEn: "20:4. Near one meal. Fat is the main fuel",
+		mark: "🎯",
+		verbTh: "ใกล้",
+		verbEn: "Near"
+	},
+	"24": {
+		th: "OMAD",
+		en: "OMAD",
+		noteTh: "ครบ 24 ชม. แบบ OMAD ออโตฟาจีชัดกว่าช่วงก่อนหน้า",
+		noteEn: "24 hours, OMAD. Autophagy is clearer than earlier on",
+		mark: "🍽️",
+		verbTh: "มื้อ",
+		verbEn: "One"
+	},
+	"36": {
+		th: "36 ชม.",
+		en: "36h",
+		noteTh: "อด 36 ชม. ใช้ไขมันต่อเนื่อง และออโตฟาจียังทำงานอยู่",
+		noteEn: "36 hours. Fat use continues, and autophagy is still active",
+		mark: "🌿",
+		verbTh: "ลึก",
+		verbEn: "Deep"
+	},
+	"48": {
+		th: "48 ชม.",
+		en: "48h",
+		noteTh: "ครบ 48 ชม. เป็นการอดระยะยาว ฟังความรู้สึกของร่างกายด้วย",
+		noteEn: "48 hours. A long fast. Pay attention to how you feel",
+		mark: "🛡️",
+		verbTh: "ยาว",
+		verbEn: "Long"
+	}
+};
+function fastBand(ms) {
+	const hours = Math.max(0, ms / 36e5);
+	let current = FAST_BANDS[0];
+	for (const band of FAST_BANDS) if (hours + 1e-9 >= band.hours) current = band;
+	return current;
+}
+function fastBandLabel(ms, lang) {
+	return BAND_COPY[fastBand(ms).id][lang];
+}
+function fastBandNoteFor(id, lang) {
+	const copy = BAND_COPY[id];
+	return lang === "th" ? copy.noteTh : copy.noteEn;
+}
+function fastBandNote(ms, lang) {
+	return fastBandNoteFor(fastBand(ms).id, lang);
 }
 function validateDay(day) {
 	const meals = day.meals.slice().sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
@@ -1193,6 +1609,21 @@ function normalizeMeal(value) {
 		calories: calories === null ? null : Math.max(0, Math.min(2e4, calories))
 	};
 }
+function normalizeLog(value) {
+	if (!value || typeof value !== "object") return null;
+	const log = value;
+	if (typeof log.at !== "string" || !Number.isFinite(Date.parse(log.at))) return null;
+	const weight = numOrNull(log.weightKg);
+	return {
+		id: typeof log.id === "string" && log.id ? log.id : crypto.randomUUID(),
+		at: log.at,
+		fastingMs: clampNum(log.fastingMs, 0, 432e6, 0),
+		fastingStart: typeof log.fastingStart === "string" && Number.isFinite(Date.parse(log.fastingStart)) ? log.fastingStart : null,
+		notes: clip(log.notes, 500),
+		mood: typeof log.mood === "string" && MOODS$1.has(log.mood) ? log.mood : null,
+		weightKg: weight === null ? null : Math.max(20, Math.min(400, Math.round(weight * 10) / 10))
+	};
+}
 function normalizeDay(value, key) {
 	if (!value || typeof value !== "object") return null;
 	const day = value;
@@ -1211,7 +1642,9 @@ function normalizeDay(value, key) {
 		notes: clip(day.notes, 2e3),
 		waterMl: clampNum(day.waterMl, 0, 2e4, 0),
 		weightKg: weight === null ? null : Math.max(20, Math.min(400, Math.round(weight * 10) / 10)),
-		mood: typeof day.mood === "string" && MOODS$1.has(day.mood) ? day.mood : null
+		mood: typeof day.mood === "string" && MOODS$1.has(day.mood) ? day.mood : null,
+		logs: Array.isArray(day.logs) ? day.logs.map(normalizeLog).filter((log) => Boolean(log)).slice(-40) : [],
+		mealDraft: clip(day.mealDraft, 500)
 	};
 }
 function clampNum(value, min, max, fallback) {
@@ -1322,417 +1755,208 @@ function loadPersisted(raw) {
 		return emptyPersisted();
 	}
 }
-var MOODS = [
-	{
-		id: "good",
-		icon: Smile,
-		key: "moodGood"
-	},
-	{
-		id: "normal",
-		icon: Meh,
-		key: "moodNormal"
-	},
-	{
-		id: "tired",
-		icon: Moon,
-		key: "moodTired"
-	},
-	{
-		id: "difficult",
-		icon: Frown,
-		key: "moodDifficult"
-	},
-	{
-		id: "strong",
-		icon: Zap,
-		key: "moodStrong"
-	}
+var WATER = [
+	50,
+	100,
+	150,
+	250,
+	500
 ];
-function outcomeKey(outcome) {
-	if (outcome === "completed") return "completed";
-	if (outcome === "in_progress") return "inProgress";
-	if (outcome === "multiple") return "multiple";
-	if (outcome === "rest") return "rest";
-	if (outcome === "other") return "other";
-	return "notActive";
-}
 function HomeView({ now }) {
-	const { data, activate, requestOff, startEat, stopEat, requestCancel, openDay, setView, addWater, setMood, setNotes, setWeight, setMealText } = useOmad();
+	const { data, activate, requestOff, startEat, stopEat, requestCancel, openDay, addWater } = useOmad();
 	const lang = data.settings.lang;
 	const view = present(data.days, now);
 	const today = view.today;
 	const derived = view.derived;
-	const stats = computeStats(data.days, "7", now);
-	const postMeal = view.mode === "fasting" && (derived?.newFastMs ?? 0) > 0 && Boolean(today?.meals.some((meal) => meal.end));
-	const tone = view.mode === "eating" ? "eat" : derived?.outcome === "completed" && !postMeal ? "done" : "fast";
-	const wash = view.mode === "eating" ? "eat-wash" : derived?.outcome === "completed" ? "done-wash" : "ember-wash";
-	const meal = derived?.openMeal ?? today?.meals.at(-1) ?? null;
+	const fastingMs = view.mode === "eating" ? derived?.fastingMs ?? 0 : derived?.phaseElapsedMs ?? derived?.fastingMs ?? 0;
+	const hours = fastingMs / 36e5;
+	const band = fastBand(fastingMs);
+	const [picked, setPicked] = (0, import_react.useState)(null);
+	const pickedBand = FAST_BANDS.find((item) => item.id === picked) ?? null;
+	const shown = pickedBand ?? band;
 	const minuteStatus = statusLine(lang, view.mode, derived);
+	const tracking = view.mode === "fasting" || view.mode === "eating";
+	const eatTarget = today?.targetEatingMinutes ?? data.settings.targetEatingMinutes;
+	const eatLeft = (derived?.phaseElapsedMs ?? 0) - eatTarget * 6e4;
+	const score = today ? scoreDay(today, now, view.todayKey) : null;
+	const detail = pickedBand ? fastBandNoteFor(pickedBand.id, lang) : view.mode === "inactive" ? t(lang, "notActiveBody") : view.mode === "rest" ? t(lang, "restBody") : view.mode === "eating" ? eatLeft > 0 ? t(lang, "eatOverNow", { time: formatWords(eatLeft, lang) }) : t(lang, "eatLeft", { time: formatWords(-eatLeft, lang) }) : fastBandNoteFor(shown.id, lang);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "grid items-start gap-4 lg:grid-cols-2",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", {
-				className: cn("card relative overflow-hidden p-4", view.mode === "fasting" || view.mode === "eating" ? wash : ""),
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: "relative",
-					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SegmentedTrack, {
-							on: Boolean(today?.active) && !today?.rest,
-							lang,
-							onActivate: activate,
-							onOff: () => {
-								if (shouldConfirmOff(today ?? void 0, now)) requestOff();
-								else requestOff(true);
-							}
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-							className: "sr-only",
-							"aria-live": "polite",
-							children: minuteStatus
-						}),
-						view.mode === "inactive" || view.mode === "rest" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "px-2 py-8 text-center",
-							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									className: "mx-auto grid size-16 place-items-center rounded-full bg-surface-2 text-muted",
-									children: view.mode === "rest" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Moon, { className: "size-7" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleDashed, { className: "size-7" })
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-									className: "mt-4 text-3xl font-semibold tracking-tight",
-									children: t(lang, view.mode === "rest" ? "rest" : "notActiveTitle")
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									className: "mx-auto mt-2 max-w-xs text-sm text-muted",
-									children: t(lang, view.mode === "rest" ? "restBody" : "notActiveBody")
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									className: "mt-6",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PrimaryButton, {
-										onClick: activate,
-										children: t(lang, "startToday")
-									})
-								})
-							]
-						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "pt-4",
-							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Ring, {
-									progress: derived?.progress ?? 0,
-									tone,
-									label: minuteStatus,
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: cn("text-sm font-medium", tone === "eat" ? "text-eat" : tone === "done" ? "text-done" : "text-fast"),
-										children: t(lang, view.mode === "eating" ? "eating" : "fasting")
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										className: "tabular text-4xl font-semibold tracking-tight text-fg sm:text-5xl",
-										children: formatHMS(derived?.phaseElapsedMs ?? 0)
-									})]
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-									className: "mt-2 text-center text-sm text-muted",
-									children: [
-										t(lang, "targetLine", { time: formatHours(view.mode === "eating" ? today?.targetEatingMinutes ?? data.settings.targetEatingMinutes : today?.targetFastingMinutes ?? data.settings.targetFastingMinutes, lang) }),
-										" · ",
-										derived && derived.remainingMs < 0 ? t(lang, view.mode === "eating" ? "eatOverLine" : "overLine", { time: formatHMS(-derived.remainingMs) }) : t(lang, "remainingLine", { time: formatHMS(derived?.remainingMs ?? 0) })
-									]
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									className: "mt-1 text-center text-sm text-fg",
-									children: view.mode === "eating" && derived?.openMeal ? t(lang, "startedEat", { time: formatWhen(derived.openMeal.start, lang, view.todayKey) }) : derived?.fastingStart ? t(lang, "startedFast", { time: formatWhen(derived.fastingStart, lang, view.todayKey) }) : t(lang, "preferredLine", { time: data.settings.preferredEatingTime })
-								}),
-								postMeal ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									className: "mt-1 text-center text-xs text-done",
-									children: t(lang, "newFast")
-								}) : null,
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									className: "mt-4",
-									children: view.mode === "eating" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(PrimaryButton, {
-										tone: "eat",
-										onClick: stopEat,
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Utensils, { className: "size-5" }), t(lang, "stopEating")]
-									}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(PrimaryButton, {
-										onClick: startEat,
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Utensils, { className: "size-5" }), t(lang, "startEating")]
-									})
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "mt-1 flex justify-center gap-2",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GhostButton, {
-										onClick: () => view.focusDate && openDay(view.focusDate),
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-											className: "inline-flex items-center gap-1",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pencil, { className: "size-4" }), t(lang, view.mode === "eating" ? "editTime" : "editStart")]
-										})
-									}), view.mode === "eating" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GhostButton, {
-										onClick: requestCancel,
-										children: t(lang, "cancelEating")
-									}) : null]
-								})
-							]
-						})
-					]
-				})
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "grid gap-4",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-						className: "card p-4",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-								className: "text-sm font-semibold text-muted",
-								children: t(lang, "todayTitle")
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "mt-3 grid grid-cols-2 gap-3",
-								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stat, {
-										icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Flame, { className: "size-4" }),
-										label: t(lang, "fastingShort"),
-										value: formatWords(measure(today, now, view.todayKey).fast, lang)
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stat, {
-										icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Utensils, { className: "size-4" }),
-										label: t(lang, "eatingShort"),
-										value: formatWords(measure(today, now, view.todayKey).eat, lang)
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stat, {
-										icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mark, { className: "size-4" }),
-										label: t(lang, "meals"),
-										value: String(today?.meals.length ?? 0)
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stat, {
-										icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: cn("size-2.5 rounded-full", dotClass(dayOutcome(today ?? void 0, view.todayKey))) }),
-										label: t(lang, "omad"),
-										value: t(lang, outcomeKey(dayOutcome(today ?? void 0, view.todayKey)))
-									})
-								]
-							}),
-							meal && view.focusDate ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-								className: "mt-3 block text-sm text-muted",
-								children: [t(lang, "mealFood"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-									className: "field mt-1",
-									value: meal.description,
-									placeholder: t(lang, "mealPh"),
-									onChange: (event) => setMealText(view.focusDate ?? "", meal.id, event.target.value)
-								})]
-							}) : null
-						]
-					}),
-					data.settings.waterEnabled ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-						className: "card p-4",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "flex items-center justify-between gap-3",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h2", {
-									className: "inline-flex items-center gap-2 text-sm font-semibold",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Droplets, { className: "size-4 text-rest" }), t(lang, "water")]
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-									className: "tabular text-sm text-fg",
-									children: [
-										(Math.round((today?.waterMl ?? 0) / 1e3 * 10) / 10).toFixed(1),
-										" / ",
-										(data.settings.waterGoalMl / 1e3).toFixed(1),
-										" ",
-										lang === "th" ? "ล." : "L"
-									]
-								})]
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "mt-3 h-2 overflow-hidden rounded-full bg-surface-2",
-								"aria-hidden": "true",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									className: "h-full rounded-full bg-rest",
-									style: { width: `${Math.min(100, (today?.waterMl ?? 0) / Math.max(1, data.settings.waterGoalMl) * 100)}%` }
-								})
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "mt-3 grid grid-cols-3 gap-2",
-								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mini, {
-										onClick: () => addWater(-250),
-										children: t(lang, "minus250")
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mini, {
-										onClick: () => addWater(250),
-										children: t(lang, "add250")
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mini, {
-										onClick: () => addWater(500),
-										children: t(lang, "add500")
-									})
-								]
-							})
-						]
-					}) : null,
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-						className: "card p-4",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-								className: "text-sm font-semibold",
-								children: t(lang, "journal")
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								className: "mt-1 text-sm text-muted",
-								children: t(lang, "moodQ")
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "mt-2 grid grid-cols-5 gap-2",
-								children: MOODS.map((mood) => {
-									const Icon = mood.icon;
-									const on = today?.mood === mood.id;
-									return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
-										type: "button",
-										"aria-pressed": on,
-										onClick: () => setMood(on ? null : mood.id),
-										className: cn("flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border px-1 text-xs press", on ? "border-fast-fill bg-fast-fill text-on-accent" : "border-line bg-surface-2 text-fg"),
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, { className: "size-4" }), t(lang, mood.key)]
-									}, mood.id);
-								})
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-								className: "mt-3 block text-sm text-muted",
-								children: [t(lang, "notes"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
-									className: "area mt-1",
-									value: today?.notes ?? "",
-									placeholder: t(lang, "notesPh"),
-									onChange: (event) => setNotes(event.target.value)
-								})]
-							}),
-							data.settings.weightEnabled ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-								className: "mt-3 block text-sm text-muted",
-								children: [t(lang, "weight"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-									className: "field mt-1",
-									inputMode: "decimal",
-									type: "number",
-									min: 20,
-									max: 400,
-									step: .1,
-									value: today?.weightKg ?? "",
-									placeholder: t(lang, "kg"),
-									onChange: (event) => {
-										const value = event.target.value;
-										if (!value) {
-											setWeight(null);
-											return;
-										}
-										const kg = Number(value);
-										if (Number.isFinite(kg)) setWeight(Math.round(kg * 10) / 10);
-									}
-								})]
-							}) : null
-						]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-						className: "card flex items-center gap-4 p-4",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ring, {
-							progress: stats.consistency ?? 0,
-							tone: "done",
-							className: "size-16 shrink-0",
-							label: t(lang, "consistency"),
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								className: "tabular text-sm font-semibold",
-								children: stats.consistency === null ? t(lang, "dash") : `${Math.round(stats.consistency * 100)}%`
-							})
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							className: "min-w-0",
-							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-									className: "text-sm font-semibold",
-									children: t(lang, "consistency")
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-									className: "mt-1 text-sm text-fg",
-									children: [
-										t(lang, "completed"),
-										" ",
-										stats.completed,
-										" · ",
-										t(lang, "notActive"),
-										" ",
-										stats.notActive
-									]
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									className: "mt-1 text-xs leading-snug text-muted",
-									children: t(lang, "consistencyHint")
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-									className: "mt-1 text-xs text-muted",
-									children: [
-										"7 ",
-										lang === "th" ? "วัน" : "days",
-										" · ",
-										t(lang, "avgFast"),
-										" ",
-										stats.avgFastHours === null ? t(lang, "dash") : formatHourNumber(stats.avgFastHours, lang)
-									]
-								})
-							]
+		className: "flex min-h-0 flex-1 flex-col gap-2",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+			className: "card flex min-h-0 flex-1 flex-col p-3",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SegmentedTrack, {
+					on: Boolean(today?.active) && !today?.rest,
+					lang,
+					onActivate: activate,
+					onOff: () => {
+						if (shouldConfirmOff(today ?? void 0, now)) requestOff();
+						else requestOff(true);
+					}
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "sr-only",
+					"aria-live": "polite",
+					children: minuteStatus
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "ring-slot py-1",
+					children: view.mode === "eating" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Ring, {
+						progress: derived?.progress ?? 0,
+						tone: "eat",
+						label: minuteStatus,
+						className: "ring-fit",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-xs font-semibold leading-none text-eat",
+							children: t(lang, "eating")
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "tabular mt-1 text-2xl font-semibold leading-none tracking-tight text-fg",
+							children: formatHMS(derived?.phaseElapsedMs ?? 0)
+						})]
+					}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(StageRing, {
+						hours: view.mode === "fasting" ? hours : 0,
+						bands: [...FAST_BANDS],
+						label: minuteStatus,
+						className: cn("ring-fit", view.mode === "fasting" && "ring-live"),
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "text-xs font-semibold leading-none",
+							style: { color: view.mode === "fasting" ? shown.color : void 0 },
+							children: view.mode === "rest" ? t(lang, "rest") : view.mode === "fasting" ? fastBandLabel(shown.hours * 36e5, lang) : t(lang, "notActiveTitle")
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							className: "tabular mt-1 text-2xl font-semibold leading-none tracking-tight text-fg",
+							children: formatHMS(view.mode === "fasting" ? derived?.phaseElapsedMs ?? 0 : 0)
 						})]
 					})
-				]
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-				className: "card p-4 lg:col-span-2",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: "flex items-center justify-between gap-3",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-						className: "text-sm font-semibold",
-						children: t(lang, "recent")
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-						type: "button",
-						className: "min-h-11 text-sm font-medium text-fast press",
-						onClick: () => setView("history"),
-						children: t(lang, "seeAll")
-					})]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
-					className: "mt-2 divide-y divide-line",
-					children: Array.from({ length: 4 }, (_, index) => addDays(view.todayKey, -index)).map((key) => {
-						const record = data.days[key];
-						const outcome = dayOutcome(record, view.todayKey);
-						return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "mt-1 grid shrink-0 grid-cols-7 gap-1",
+					children: FAST_BANDS.filter((item) => item.hours > 0).map((item) => {
+						const reached = view.mode === "fasting" && hours + 1e-9 >= item.hours;
+						const active = shown.id === item.id;
+						return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
 							type: "button",
-							className: "flex min-h-14 w-full items-center gap-3 py-2 text-left press",
-							onClick: () => openDay(key),
-							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									className: cn("size-2.5 shrink-0 rounded-full", dotClass(outcome)),
-									"aria-hidden": "true"
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-									className: "min-w-0 flex-1",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										className: "block text-sm font-medium",
-										children: formatPrettyDate(key, lang)
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										className: "block text-xs text-muted",
-										children: t(lang, outcomeKey(outcome))
-									})]
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									className: "text-xs text-muted",
-									children: record ? formatWords(measure(record, now, view.todayKey).fast, lang) : t(lang, "dash")
+							"aria-pressed": active,
+							title: fastBandNoteFor(item.id, lang),
+							onClick: () => setPicked((current) => current === item.id ? null : item.id),
+							className: cn("flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl press", active ? "stage-on bg-surface-2" : ""),
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								style: { color: active || reached ? item.color : "var(--muted)" },
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StageIcon, {
+									id: item.id,
+									className: "size-4"
 								})
-							]
-						}) }, key);
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "micro font-semibold",
+								style: { color: active || reached ? item.color : "var(--muted)" },
+								children: fastBandLabel(item.hours * 36e5, lang)
+							})]
+						}, item.id);
 					})
-				})]
-			})
-		]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "mt-2 shrink-0 rounded-2xl bg-surface-2 px-3 py-2 text-center",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+						className: "inline-flex items-center justify-center gap-1.5 text-sm font-semibold",
+						style: { color: pickedBand || view.mode === "fasting" ? shown.color : view.mode === "eating" ? "var(--eat)" : "var(--muted)" },
+						children: [view.mode === "eating" && !pickedBand ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Utensils, { className: "size-4" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StageIcon, {
+							id: shown.id,
+							className: "size-4"
+						}), pickedBand ? fastBandLabel(pickedBand.hours * 36e5, lang) : view.mode === "eating" ? t(lang, "eating") : view.mode === "rest" ? t(lang, "rest") : view.mode === "fasting" ? fastBandLabel(shown.hours * 36e5, lang) : t(lang, "notActiveTitle")]
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-1 line-clamp-3 text-xs leading-snug text-muted",
+						children: detail
+					})]
+				}),
+				view.mode === "eating" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "mt-1 text-center text-xs font-medium text-fg",
+					children: t(lang, "eatClock", {
+						time: formatTime(derived?.openMeal?.start ?? null, lang),
+						target: formatHours(eatTarget, lang)
+					})
+				}) : null,
+				score?.mealOk ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "mt-1 text-center text-xs font-semibold text-done",
+					children: t(lang, "inBounds")
+				}) : null,
+				score && score.mealCount > 1 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "mt-1 text-center text-xs font-semibold text-eat",
+					children: t(lang, "outSecond")
+				}) : null,
+				score?.overTarget ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					className: "mt-1 text-center text-xs font-semibold text-eat",
+					children: t(lang, "overWindow")
+				}) : null,
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "mt-2",
+					children: view.mode === "inactive" || view.mode === "rest" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PrimaryButton, {
+						onClick: activate,
+						children: t(lang, "startToday")
+					}) : view.mode === "eating" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(PrimaryButton, {
+						tone: "eat",
+						onClick: stopEat,
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Utensils, { className: "size-5" }), t(lang, "stopEating")]
+					}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(PrimaryButton, {
+						onClick: startEat,
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Utensils, { className: "size-5" }), t(lang, "startEating")]
+					})
+				}),
+				tracking ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "mt-0.5 flex justify-center gap-2",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GhostButton, {
+						onClick: () => view.focusDate && openDay(view.focusDate),
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+							className: "inline-flex items-center gap-1",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pencil, { className: "size-4" }), t(lang, view.mode === "eating" ? "editTime" : "editStart")]
+						})
+					}), view.mode === "eating" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GhostButton, {
+						onClick: requestCancel,
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+							className: "inline-flex items-center gap-1",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: "size-4" }), t(lang, "cancelEating")]
+						})
+					}) : null]
+				}) : null
+			]
+		}), data.settings.waterEnabled ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+			className: "card shrink-0 px-3 py-2.5",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "flex items-center justify-between gap-3",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h2", {
+						className: "inline-flex items-center gap-1.5 text-sm font-semibold",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Droplet, { className: "size-4 text-water" }), t(lang, "water")]
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+						className: "tabular text-sm text-fg",
+						children: [
+							today?.waterMl ?? 0,
+							" / ",
+							data.settings.waterGoalMl,
+							" ",
+							t(lang, "ml")
+						]
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2",
+					"aria-hidden": "true",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "h-full rounded-full bg-water",
+						style: { width: `${Math.min(100, (today?.waterMl ?? 0) / Math.max(1, data.settings.waterGoalMl) * 100)}%` }
+					})
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "mt-1.5 grid grid-cols-6 gap-1",
+					children: [WATER.map((ml) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WaterButton, {
+						ml,
+						onClick: () => addWater(ml)
+					}, ml)), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WaterButton, {
+						ml: -50,
+						onClick: () => addWater(-50)
+					})]
+				})
+			]
+		}) : null]
 	});
-}
-function measure(day, now, todayKey) {
-	if (!day) return {
-		fast: 0,
-		eat: 0
-	};
-	const derived = derive(day, day.date === todayKey ? now : Math.min(now, endOfDay(day.date)), todayKey);
-	return {
-		fast: derived.fastingMs,
-		eat: derived.eatingMs
-	};
 }
 function statusLine(lang, mode, derived) {
 	if (mode === "inactive") return t(lang, "notActiveTitle");
@@ -1749,45 +1973,38 @@ function SegmentedTrack({ on, lang, onActivate, onOff }) {
 			type: "button",
 			role: "radio",
 			"aria-checked": on,
-			className: cn("min-h-11 rounded-xl text-sm font-medium press", on ? "bg-fast-fill text-on-accent" : "text-fg"),
+			className: cn("min-h-10 rounded-xl text-sm font-medium press", on ? "bg-fast-fill text-on-accent" : "text-fg"),
 			onClick: onActivate,
 			children: t(lang, "trackingOn")
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 			type: "button",
 			role: "radio",
 			"aria-checked": !on,
-			className: cn("min-h-11 rounded-xl text-sm font-medium press", !on ? "bg-surface text-fg" : "text-fg"),
+			className: cn("min-h-10 rounded-xl text-sm font-medium press", !on ? "bg-surface text-fg" : "text-fg"),
 			onClick: onOff,
 			children: t(lang, "trackingOff")
 		})]
 	});
 }
-function Stat({ icon, label, value }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		className: "rounded-2xl bg-surface-2 px-3 py-3",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			className: "flex items-center gap-2 text-xs text-muted",
-			children: [icon, label]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-			className: "mt-1 text-sm font-semibold text-fg",
-			children: value
-		})]
-	});
-}
-function Mini({ children, onClick }) {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+function WaterButton({ ml, onClick }) {
+	const minus = ml < 0;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
 		type: "button",
 		onClick,
-		className: "min-h-11 rounded-2xl bg-surface-2 text-sm font-semibold text-fg press",
-		children
+		className: "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl bg-surface-2 press",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GlassWater, { className: cn("size-6", minus ? "text-muted" : "text-water") }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "micro font-medium text-muted",
+			children: minus ? `−${Math.abs(ml)}` : `+${ml}`
+		})]
 	});
 }
 function dotClass(outcome) {
 	if (outcome === "completed") return "bg-done-fill";
-	if (outcome === "in_progress") return "bg-fast-fill";
+	if (outcome === "in_progress") return "bg-fast";
 	if (outcome === "multiple") return "bg-multi";
+	if (outcome === "over") return "bg-eat";
 	if (outcome === "rest") return "bg-rest";
-	if (outcome === "other") return "bg-fast";
+	if (outcome === "other") return "bg-window";
 	return "bg-line";
 }
 var WEEK = [
@@ -1874,7 +2091,7 @@ function CalendarView({ now }) {
 						disabled: future,
 						"aria-label": t(lang, "openDay", { date: key }),
 						onClick: () => openDay(key),
-						className: cn("flex aspect-square flex-col items-center justify-center rounded-2xl text-sm press", key === today ? "border border-fast" : "border border-transparent", future ? "text-muted" : "text-fg"),
+						className: cn("flex aspect-square flex-col items-center justify-center rounded-xl text-sm press", key === today ? "bg-surface-2 text-fast" : "", future ? "text-muted" : "text-fg"),
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: Number(key.slice(-2)) }), !future ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 							className: cn("mt-1 size-1.5 rounded-full", dotClass(outcome)),
 							"aria-hidden": "true"
@@ -1888,12 +2105,12 @@ function CalendarView({ now }) {
 					"completed",
 					"in_progress",
 					"multiple",
+					"over",
 					"rest",
-					"other",
-					"not_active"
+					"other"
 				].map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
 					className: "flex items-center gap-2",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: cn("size-2 rounded-full", dotClass(item)) }), t(lang, item === "in_progress" ? "inProgress" : item === "not_active" ? "notActive" : item)]
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: cn("size-2 rounded-full", dotClass(item)) }), t(lang, item === "in_progress" ? "inProgress" : item === "over" ? "overWindow" : item)]
 				}, item))
 			})
 		]
@@ -1920,7 +2137,9 @@ function blankDay(date, settings) {
 		notes: "",
 		waterMl: 0,
 		weightKg: null,
-		mood: null
+		mood: null,
+		logs: [],
+		mealDraft: ""
 	};
 }
 function withDay(data, date, recipe) {
@@ -1969,7 +2188,11 @@ function startEating(data, now) {
 		fastingStart: day.fastingStart ?? suggestFastingStart(data.days, now),
 		targetFastingMinutes: data.settings.targetFastingMinutes,
 		targetEatingMinutes: data.settings.targetEatingMinutes,
-		meals: [...day.meals, meal]
+		mealDraft: "",
+		meals: [...day.meals, {
+			...meal,
+			description: day.mealDraft || ""
+		}]
 	}));
 }
 function stopEating(data, now) {
@@ -2003,10 +2226,14 @@ function saveDay(data, day) {
 		description: meal.description.slice(0, 500),
 		notes: meal.notes.slice(0, 500)
 	})).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+	const stored = data.days[day.date];
 	const next = {
 		...day,
 		meals,
-		notes: day.notes.slice(0, 2e3)
+		notes: day.notes.slice(0, 2e3),
+		waterMl: stored?.waterMl ?? day.waterMl,
+		logs: stored?.logs ?? day.logs ?? [],
+		mealDraft: (day.mealDraft ?? stored?.mealDraft ?? "").slice(0, 500)
 	};
 	return {
 		data: {
@@ -2075,6 +2302,82 @@ function setNotes(data, notes, now) {
 		notes: notes.slice(0, 2e3)
 	}));
 }
+function addFastLog(data, entry, now) {
+	return withDay(data, localDateKey(new Date(now)), (day) => {
+		const startMs = day.fastingStart ? Date.parse(day.fastingStart) : NaN;
+		const firstMeal = day.meals.map((meal) => Date.parse(meal.start)).filter((stamp) => Number.isFinite(stamp) && stamp <= now).sort((a, b) => a - b)[0];
+		const until = Number.isFinite(firstMeal) ? firstMeal : now;
+		const fastingMs = Number.isFinite(startMs) ? Math.max(0, until - startMs) : 0;
+		const log = {
+			id: crypto.randomUUID(),
+			at: new Date(now).toISOString(),
+			fastingStart: Number.isFinite(startMs) ? day.fastingStart : null,
+			fastingMs,
+			notes: entry.notes.slice(0, 500),
+			mood: entry.mood,
+			weightKg: entry.weightKg
+		};
+		return {
+			...day,
+			notes: log.notes || day.notes,
+			mood: entry.mood ?? day.mood,
+			weightKg: entry.weightKg ?? day.weightKg,
+			logs: [...day.logs ?? [], log].slice(-40)
+		};
+	});
+}
+function setMealDraft(data, text, now) {
+	return withDay(data, localDateKey(new Date(now)), (day) => ({
+		...day,
+		mealDraft: text.slice(0, 500)
+	}));
+}
+/** Old OMAD preset was 20 hours. The 24-hour day with a 1-hour meal is a 23-hour fast. */
+function upgradeOmadGoal(data) {
+	if (data.settings.plan !== "omad" || data.settings.targetFastingMinutes !== 1200 || data.settings.targetEatingMinutes !== 60) return data;
+	const days = { ...data.days };
+	for (const [key, day] of Object.entries(days)) if (day.targetFastingMinutes === 1200 && day.targetEatingMinutes === 60) days[key] = {
+		...day,
+		targetFastingMinutes: 1380
+	};
+	return {
+		...data,
+		settings: {
+			...data.settings,
+			targetFastingMinutes: 1380
+		},
+		days
+	};
+}
+/** Keep a fast that started on Home running after midnight, with the same start time. */
+function carryOpenFast(data, now) {
+	const today = localDateKey(new Date(now));
+	const existing = data.days[today];
+	if (existing?.rest || existing?.fastingStart || existing && !existing.active || (existing?.meals.length ?? 0) > 0) return data;
+	let cursor = addDays(today, -1);
+	for (let i = 0; i < 3; i += 1) {
+		const prev = data.days[cursor];
+		cursor = addDays(cursor, -1);
+		if (!prev) continue;
+		if (prev.rest || !prev.active || !prev.fastingStart) return data;
+		const startMs = Date.parse(prev.fastingStart);
+		if (!Number.isFinite(startMs) || now < startMs || now - startMs > 2592e5) return data;
+		if (prev.meals.some((meal) => {
+			const stamp = Date.parse(meal.start);
+			return Number.isFinite(stamp) && stamp >= startMs;
+		})) return data;
+		const start = prev.fastingStart;
+		return withDay(data, today, (day) => ({
+			...day,
+			active: true,
+			rest: false,
+			fastingStart: start,
+			targetFastingMinutes: prev.targetFastingMinutes,
+			targetEatingMinutes: prev.targetEatingMinutes
+		}));
+	}
+	return data;
+}
 function setMealDescription(data, date, mealId, description) {
 	return withDay(data, date, (day) => ({
 		...day,
@@ -2085,7 +2388,7 @@ function setMealDescription(data, date, mealId, description) {
 	}));
 }
 function DaySheet({ now }) {
-	const { data, sheet, closeSheet, commitDay, deleteDay } = useOmad();
+	const { data, sheet, closeSheet, commitDay, deleteDay, addWater } = useOmad();
 	const open = sheet?.type === "day";
 	const date = open ? sheet.date : "";
 	const lang = data.settings.lang;
@@ -2126,6 +2429,44 @@ function DaySheet({ now }) {
 						formatWords(preview.eatingMs, lang)
 					]
 				}),
+				data.settings.waterEnabled && draft.date === localDateKey(new Date(now)) ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+					className: "inline-flex items-center gap-1.5 text-sm font-semibold text-fg",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Droplet, { className: "size-4 text-water" }),
+						t(lang, "water"),
+						" ",
+						data.days[draft.date]?.waterMl ?? draft.waterMl,
+						" ",
+						t(lang, "ml")
+					]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					className: "mt-2 grid grid-cols-6 gap-1",
+					children: [
+						50,
+						100,
+						150,
+						250,
+						500,
+						-50
+					].map((ml) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+						type: "button",
+						className: "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl bg-surface-2 press",
+						onClick: () => addWater(ml),
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(GlassWater, { className: ml < 0 ? "size-6 text-muted" : "size-6 text-water" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							className: "micro font-medium text-muted",
+							children: ml < 0 ? `−${Math.abs(ml)}` : `+${ml}`
+						})]
+					}, ml))
+				})] }) : null,
+				preview.fastingMs >= 432e5 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+					className: "text-sm font-semibold",
+					style: { color: fastBand(preview.fastingMs).color },
+					children: [
+						fastBandLabel(preview.fastingMs, lang),
+						" · ",
+						fastBandNote(preview.fastingMs, lang)
+					]
+				}) : null,
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleRow, {
 					label: t(lang, "activeDay"),
 					checked: draft.active,
@@ -2309,6 +2650,7 @@ function MealFields({ meal, index, lang, onChange, onRemove }) {
 function labelKey(outcome) {
 	if (outcome === "in_progress") return "inProgress";
 	if (outcome === "not_active") return "notActive";
+	if (outcome === "over") return "overWindow";
 	return outcome;
 }
 function HistoryView({ now }) {
@@ -2325,7 +2667,7 @@ function HistoryView({ now }) {
 				children: t(lang, "history")
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
-				className: "mt-2 divide-y divide-line",
+				className: "mt-3 grid gap-2",
 				children: keys.map((key) => {
 					const record = data.days[key];
 					const outcome = dayOutcome(record, today);
@@ -2336,9 +2678,22 @@ function HistoryView({ now }) {
 						rest: false
 					}, asOf, today) : null;
 					const open = record?.meals.some((meal) => !meal.end);
+					const stage = measured && measured.fastingMs >= 432e5 ? fastBandLabel(measured.fastingMs, lang) : null;
+					const times = measured && (measured.fastingMs > 0 || measured.eatingMs > 0) ? `${t(lang, "fastingShort")} ${formatWords(measured.fastingMs, lang)} · ${t(lang, "eatingShort")} ${formatWords(measured.eatingMs, lang)}` : "";
+					const latest = record?.logs?.at(-1);
+					const score = record ? scoreDay(record, now, today) : null;
+					const won = Boolean(score?.omadWin);
+					const windowBit = score?.overTarget ? t(lang, "overTarget") : score?.mealOk ? t(lang, "mealOk") : "";
+					const detail = [
+						won ? t(lang, "omadWins") : windowBit,
+						stage ?? t(lang, labelKey(outcome)),
+						times,
+						latest?.notes ? latest.notes : "",
+						open ? t(lang, "unclosed") : ""
+					].filter(Boolean).join(" · ");
 					return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
 						type: "button",
-						className: "flex w-full items-center gap-3 py-3 text-left press",
+						className: "flex w-full items-center gap-3 rounded-2xl bg-surface-2 px-3 py-3 text-left press",
 						onClick: () => openDay(key),
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 							className: `size-2.5 shrink-0 rounded-full ${dotClass(outcome)}`,
@@ -2348,13 +2703,9 @@ function HistoryView({ now }) {
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 								className: "block text-sm font-medium",
 								children: formatPrettyDate(key, lang, true)
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 								className: "block text-xs text-muted",
-								children: [
-									t(lang, labelKey(outcome)),
-									measured && (measured.fastingMs > 0 || measured.eatingMs > 0) ? ` · ${t(lang, "fastingShort")} ${formatWords(measured.fastingMs, lang)} · ${t(lang, "eatingShort")} ${formatWords(measured.eatingMs, lang)}` : "",
-									open ? ` · ${t(lang, "unclosed")}` : ""
-								]
+								children: detail
 							})]
 						})]
 					}) }, key);
@@ -2368,6 +2719,313 @@ function HistoryView({ now }) {
 			})
 		]
 	});
+}
+var MOODS = [
+	{
+		id: "good",
+		icon: Smile,
+		key: "moodGood"
+	},
+	{
+		id: "normal",
+		icon: Meh,
+		key: "moodNormal"
+	},
+	{
+		id: "tired",
+		icon: Moon,
+		key: "moodTired"
+	},
+	{
+		id: "difficult",
+		icon: Frown,
+		key: "moodDifficult"
+	},
+	{
+		id: "strong",
+		icon: Zap,
+		key: "moodStrong"
+	}
+];
+function LogView({ now }) {
+	const { data, setMealText, setMealDraft, saveFastLog } = useOmad();
+	const lang = data.settings.lang;
+	const view = present(data.days, now);
+	const today = view.today;
+	const meal = view.derived?.openMeal ?? today?.meals.at(-1) ?? null;
+	const fastingStart = today?.fastingStart ?? null;
+	const fastMs = linkedMs(today, now);
+	const band = fastBand(fastMs);
+	const [mood, setMood] = (0, import_react.useState)(null);
+	const [notes, setNotes] = (0, import_react.useState)("");
+	const [weight, setWeight] = (0, import_react.useState)("");
+	const notesLog = [...today?.logs ?? []].reverse().filter((log) => log.notes || log.mood);
+	const weights = weightRows(data.days);
+	const score = today ? scoreDay(today, now, view.todayKey) : null;
+	const kg = weight.trim() ? Number(weight) : null;
+	const canSave = Boolean(fastingStart) && (kg === null || Number.isFinite(kg) && kg >= 20 && kg <= 400) && (notes.trim().length > 0 || mood !== null || kg !== null);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "grid gap-3",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+				className: "card p-3",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+						className: "text-sm font-semibold",
+						children: t(lang, "journal")
+					}),
+					fastingStart ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-1 text-sm font-semibold",
+						style: { color: band.color },
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+							className: "inline-flex items-center gap-1",
+							style: { color: band.color },
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StageIcon, {
+									id: band.id,
+									className: "size-4"
+								}),
+								t(lang, "fastBegan", { time: formatTime(fastingStart, lang) }),
+								" · ",
+								t(lang, "fastedFor", { time: formatWords(fastMs, lang) })
+							]
+						})
+					}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-1 text-sm text-muted",
+						children: t(lang, "noFastYet")
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-1 text-xs leading-snug text-muted",
+						children: t(lang, "logHint")
+					}),
+					score?.mealStart ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+						className: cn("mt-2 text-sm font-semibold", score.omadWin || score.mealOk ? "text-done" : score.overTarget ? "text-eat" : "text-fg"),
+						children: [
+							t(lang, "startedEat", { time: formatTime(score.mealStart, lang) }),
+							score.eatMinutes != null ? ` · ${t(lang, "ateFor", { time: formatWords(score.eatMinutes * 6e4, lang) })}` : "",
+							" · ",
+							score.omadWin ? t(lang, "omadWin") : score.overTarget ? t(lang, "overTarget") : score.mealOk ? t(lang, "mealOk") : score.open ? t(lang, "eating") : t(lang, "dash")
+						]
+					}) : fastingStart ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-2 text-sm text-muted",
+						children: t(lang, "mealWait")
+					}) : null,
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-3 text-sm text-muted",
+						children: t(lang, "moodQ")
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						className: "mt-2 grid grid-cols-5 gap-1.5",
+						children: MOODS.map((item) => {
+							const Icon = item.icon;
+							const on = mood === item.id;
+							return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+								type: "button",
+								"aria-pressed": on,
+								onClick: () => setMood(on ? null : item.id),
+								className: cn("flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border px-1 text-xs press", on ? "border-fast-fill bg-fast-fill text-on-accent" : "border-line bg-surface-2 text-fg"),
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, { className: "size-4" }), t(lang, item.key)]
+							}, item.id);
+						})
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+						className: "mt-3 block text-sm text-muted",
+						children: [t(lang, "notes"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
+							className: "area mt-1",
+							value: notes,
+							placeholder: t(lang, "notesPh"),
+							onChange: (event) => setNotes(event.target.value)
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+						className: "mt-3 block text-sm text-muted",
+						children: [t(lang, "weight"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+							className: "field mt-1",
+							inputMode: "decimal",
+							type: "number",
+							min: 20,
+							max: 400,
+							step: .1,
+							value: weight,
+							placeholder: today?.weightKg ? String(today.weightKg) : t(lang, "kg"),
+							onChange: (event) => setWeight(event.target.value)
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+						className: "mt-3 block text-sm text-muted",
+						children: [t(lang, "mealFood"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+							className: "field mt-1",
+							value: meal && view.focusDate ? meal.description : today?.mealDraft ?? "",
+							placeholder: t(lang, "mealPh"),
+							onChange: (event) => {
+								if (meal && view.focusDate) setMealText(view.focusDate, meal.id, event.target.value);
+								else setMealDraft(event.target.value);
+							}
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+						type: "button",
+						disabled: !canSave,
+						className: "btn-fast mt-3 min-h-12 w-full rounded-2xl text-sm font-semibold text-on-accent press disabled:opacity-40",
+						onClick: () => {
+							if (!canSave) return;
+							saveFastLog({
+								notes: notes.trim(),
+								mood,
+								weightKg: kg === null ? null : Math.round(kg * 10) / 10
+							});
+							setNotes("");
+							setMood(null);
+							setWeight("");
+						},
+						children: t(lang, "saveLog")
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+				className: "card p-3",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+						className: "text-sm font-semibold",
+						children: t(lang, "weightHistory")
+					}),
+					weights.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-2 text-sm text-muted",
+						children: t(lang, "weightHistEmpty")
+					}) : null,
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+						className: "mt-2 grid gap-2",
+						children: weights.map((row) => {
+							const stage = fastBand(row.fastingMs);
+							return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+								className: "rounded-2xl bg-surface-2 px-3 py-2",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+										className: "tabular text-lg font-semibold",
+										children: [
+											row.kg,
+											" ",
+											t(lang, "kg")
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+										className: "inline-flex items-center gap-1 text-sm font-medium",
+										style: { color: stage.color },
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StageIcon, {
+												id: stage.id,
+												className: "size-4"
+											}),
+											row.fastingStart ? t(lang, "fastBegan", { time: formatTime(row.fastingStart, lang) }) : fastBandLabel(row.fastingMs, lang),
+											" · ",
+											t(lang, "fastedFor", { time: formatWords(row.fastingMs, lang) })
+										]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										className: "text-xs text-muted",
+										children: t(lang, "weighedAt", { time: formatTime(row.at, lang) })
+									}),
+									row.delta != null ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+										className: cn("text-xs font-semibold", row.delta > 0 ? "text-eat" : row.delta < 0 ? "text-done" : "text-muted"),
+										children: [
+											row.delta > 0 ? "+" : "",
+											row.delta.toFixed(1),
+											" ",
+											t(lang, "kg")
+										]
+									}) : null
+								]
+							}, row.id);
+						})
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+				className: "card p-3",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+						className: "text-sm font-semibold",
+						children: t(lang, "noteHistory")
+					}),
+					notesLog.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-2 text-sm text-muted",
+						children: t(lang, "logEmpty")
+					}) : null,
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", {
+						className: "mt-2 grid gap-2",
+						children: notesLog.map((log) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+							className: "rounded-2xl bg-surface-2 px-3 py-2",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+									className: "inline-flex items-center gap-1 text-sm font-semibold",
+									style: { color: fastBand(log.fastingMs).color },
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(StageIcon, {
+											id: fastBand(log.fastingMs).id,
+											className: "size-4"
+										}),
+										fastBandLabel(log.fastingMs, lang),
+										" · ",
+										t(lang, "fastedFor", { time: formatWords(log.fastingMs, lang) })
+									]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "mt-0.5 text-sm text-fg",
+									children: log.notes || t(lang, "dash")
+								}),
+								log.mood ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "text-xs text-muted",
+									children: t(lang, moodKey(log.mood))
+								}) : null
+							]
+						}, log.id))
+					})
+				]
+			})
+		]
+	});
+}
+function linkedMs(day, now) {
+	if (!day?.fastingStart) return 0;
+	const start = Date.parse(day.fastingStart);
+	if (!Number.isFinite(start)) return 0;
+	const first = day.meals.map((meal) => Date.parse(meal.start)).filter((stamp) => Number.isFinite(stamp) && stamp <= now).sort((a, b) => a - b)[0];
+	return Math.max(0, (first ?? now) - start);
+}
+function weightRows(days) {
+	const rows = [];
+	for (const day of Object.values(days)) {
+		const logged = (day.logs ?? []).filter((log) => typeof log.weightKg === "number");
+		for (const log of logged) rows.push({
+			id: log.id,
+			at: log.at,
+			kg: log.weightKg,
+			fastingStart: log.fastingStart ?? day.fastingStart,
+			fastingMs: log.fastingMs,
+			delta: null
+		});
+		if (typeof day.weightKg === "number" && logged.length === 0) rows.push({
+			id: `${day.date}-weight`,
+			at: day.fastingStart ?? `${day.date}T12:00:00`,
+			kg: day.weightKg,
+			fastingStart: day.fastingStart,
+			fastingMs: linkedMs(day, day.fastingStart ? Date.parse(day.fastingStart) + 1 : Date.now()),
+			delta: null
+		});
+	}
+	const ordered = rows.sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).slice(0, 30);
+	for (let i = 0; i < ordered.length; i += 1) {
+		const older = ordered[i + 1];
+		ordered[i].delta = older ? Math.round((ordered[i].kg - older.kg) * 10) / 10 : null;
+	}
+	return ordered;
+}
+function moodKey(mood) {
+	if (mood === "good") return "moodGood";
+	if (mood === "tired") return "moodTired";
+	if (mood === "difficult") return "moodDifficult";
+	if (mood === "strong") return "moodStrong";
+	return "moodNormal";
 }
 var PLANS = [
 	{
@@ -2387,7 +3045,7 @@ var PLANS = [
 	},
 	{
 		id: "omad",
-		fast: 1200,
+		fast: 1380,
 		eat: 60
 	},
 	{
@@ -2434,50 +3092,60 @@ function SettingsView() {
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
 						className: "text-sm text-muted",
-						children: [t(lang, "goalFast"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-							className: "field mt-1",
-							type: "number",
-							min: 1,
-							max: 72,
-							step: .5,
-							value: data.settings.targetFastingMinutes / 60,
-							onChange: (event) => {
-								const hours = Number(event.target.value);
-								if (!Number.isFinite(hours)) return;
-								updateSettings({
-									plan: "custom",
-									targetFastingMinutes: Math.round(Math.min(72, Math.max(1, hours)) * 60)
-								});
-							}
-						})]
+						children: [
+							t(lang, "goalFast"),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+								className: "field mt-1",
+								type: "number",
+								min: 1,
+								max: 72,
+								step: .5,
+								value: data.settings.targetFastingMinutes / 60,
+								onChange: (event) => {
+									const hours = Number(event.target.value);
+									if (!Number.isFinite(hours)) return;
+									updateSettings({
+										plan: "custom",
+										targetFastingMinutes: Math.round(Math.min(72, Math.max(1, hours)) * 60)
+									});
+								}
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "mt-1 block text-xs leading-snug",
+								children: t(lang, "goalFastHint")
+							})
+						]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
 						className: "text-sm text-muted",
-						children: [t(lang, "goalEat"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-							className: "field mt-1",
-							type: "number",
-							min: .25,
-							max: 16,
-							step: .25,
-							value: data.settings.targetEatingMinutes / 60,
-							onChange: (event) => {
-								const hours = Number(event.target.value);
-								if (!Number.isFinite(hours)) return;
-								updateSettings({
-									plan: "custom",
-									targetEatingMinutes: Math.round(Math.min(16, Math.max(.25, hours)) * 60)
-								});
-							}
-						})]
+						children: [
+							t(lang, "goalEat"),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+								className: "field mt-1",
+								type: "number",
+								min: .25,
+								max: 16,
+								step: .25,
+								value: data.settings.targetEatingMinutes / 60,
+								onChange: (event) => {
+									const hours = Number(event.target.value);
+									if (!Number.isFinite(hours)) return;
+									updateSettings({
+										plan: "custom",
+										targetEatingMinutes: Math.round(Math.min(16, Math.max(.25, hours)) * 60)
+									});
+								}
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "mt-1 block text-xs leading-snug",
+								children: t(lang, "goalEatHint")
+							})
+						]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-						className: "text-sm text-muted",
-						children: [t(lang, "preferredEat"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-							className: "field mt-1",
-							type: "time",
-							value: data.settings.preferredEatingTime,
-							onChange: (event) => updateSettings({ preferredEatingTime: event.target.value || "14:00" })
-						})]
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClockField, {
+						lang,
+						value: data.settings.preferredEatingTime,
+						onChange: (value) => updateSettings({ preferredEatingTime: value })
 					})
 				]
 			}),
@@ -2648,6 +3316,50 @@ function SettingsView() {
 		]
 	});
 }
+function ClockField({ lang, value, onChange }) {
+	const [rawH, rawM] = value.split(":");
+	const hour = String(Math.min(23, Math.max(0, Number(rawH) || 0))).padStart(2, "0");
+	const minute = String(Math.min(59, Math.max(0, Number(rawM) || 0))).padStart(2, "0");
+	const hours = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, "0"));
+	const minutes = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, "0"));
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("fieldset", {
+		className: "text-sm text-muted",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("legend", { children: t(lang, "preferredEat") }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "mt-1 grid grid-cols-2 gap-2",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [t(lang, "hourLabel"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", {
+					className: "field mt-1",
+					value: hour,
+					onChange: (event) => onChange(`${event.target.value}:${minute}`),
+					children: hours.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+						value: item,
+						children: item
+					}, item))
+				})] }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [t(lang, "minuteLabel"), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", {
+					className: "field mt-1",
+					value: minute,
+					onChange: (event) => onChange(`${hour}:${event.target.value}`),
+					children: minutes.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+						value: item,
+						children: item
+					}, item))
+				})] })]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+				className: "mt-1 block text-xs leading-snug",
+				children: [
+					t(lang, "clockHint"),
+					" · ",
+					hour,
+					":",
+					minute,
+					lang === "th" ? " น." : ""
+				]
+			})
+		]
+	});
+}
 function StatsView({ now }) {
 	const { data } = useOmad();
 	const lang = data.settings.lang;
@@ -2657,12 +3369,22 @@ function StatsView({ now }) {
 		...bar,
 		label: range === "7" ? formatPrettyDate(bar.date, lang).split(" ")[0] : bar.date.slice(8)
 	}));
-	const weights = Object.values(data.days).filter((day) => typeof day.weightKg === "number").sort((a, b) => a.date.localeCompare(b.date)).map((day) => ({
-		date: day.date,
-		label: day.date.slice(5),
-		kg: day.weightKg
-	}));
+	const weights = Object.values(data.days).flatMap((day) => {
+		const logged = (day.logs ?? []).filter((log) => typeof log.weightKg === "number");
+		if (logged.length) return logged.map((log) => ({
+			date: log.at,
+			label: day.date.slice(5),
+			kg: log.weightKg
+		}));
+		return typeof day.weightKg === "number" ? [{
+			date: day.date,
+			label: day.date.slice(5),
+			kg: day.weightKg
+		}] : [];
+	}).sort((a, b) => a.date.localeCompare(b.date));
 	const tracked = stats.completed + stats.inProgress + stats.multiple + stats.other;
+	const wins = Object.values(data.days).filter((day) => scoreDay(day, now, localDateKey(new Date(now))).omadWin).length;
+	const streak = winStreak(data.days, now);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "grid gap-4 lg:grid-cols-2",
 		children: [
@@ -2699,7 +3421,7 @@ function StatsView({ now }) {
 						className: "size-28 shrink-0",
 						label: t(lang, "consistency"),
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							className: "tabular text-xl font-semibold",
+							className: "tabular block text-xs font-semibold leading-none whitespace-nowrap",
 							children: stats.consistency === null ? t(lang, "dash") : `${Math.round(stats.consistency * 100)}%`
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -2752,6 +3474,14 @@ function StatsView({ now }) {
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
 						label: t(lang, "activeDays"),
 						value: String(tracked)
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
+						label: t(lang, "omadWins"),
+						value: String(wins)
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
+						label: t(lang, "winStreak"),
+						value: String(streak)
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tile, {
 						label: t(lang, "notActiveDays"),
@@ -2829,15 +3559,12 @@ function StatsView({ now }) {
 					})
 				]
 			}),
-			data.settings.weightEnabled ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+			weights.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
 				className: "card p-4 lg:col-span-2",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
 					className: "text-sm font-semibold",
 					children: t(lang, "weightChart")
-				}), weights.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					className: "py-8 text-center text-sm text-muted",
-					children: t(lang, "weightEmpty")
-				}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 					className: "mt-3 h-44 w-full min-w-0",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ResponsiveContainer, {
 						width: "100%",
@@ -2928,6 +3655,10 @@ var TONE = {
 	other: {
 		bg: "#fff6d8",
 		fg: "#8a5a10"
+	},
+	over: {
+		bg: "#fde8ee",
+		fg: "#9f1239"
 	}
 };
 var MOOD_KEY = {
@@ -2980,11 +3711,18 @@ function headers(labels) {
 		height: 28
 	}));
 }
-function outcomeLabel(outcome, lang) {
+function journalText(day, lang) {
+	if (!day) return null;
+	const extra = (day.logs ?? []).map((log) => log.notes ? `${fastBandLabel(log.fastingMs, lang)}: ${log.notes}` : fastBandLabel(log.fastingMs, lang)).join(" · ");
+	return [day.notes, extra].filter(Boolean).join(" · ") || null;
+}
+function outcomeLabel(outcome, lang, hours = 0) {
+	if (outcome === "over") return t(lang, "overWindow");
+	if (outcome === "multiple") return t(lang, "multiple");
+	if (hours >= 12) return fastBandLabel(hours * 36e5, lang);
 	if (outcome === "not_active") return t(lang, "notActive");
 	if (outcome === "in_progress") return t(lang, "inProgress");
 	if (outcome === "completed") return t(lang, "completed");
-	if (outcome === "multiple") return t(lang, "multiple");
 	if (outcome === "rest") return t(lang, "rest");
 	return t(lang, "other");
 }
@@ -3049,8 +3787,8 @@ function buildWorkbook(data, now = Date.now()) {
 			format: "0"
 		},
 		{
-			label: t(lang, "rest"),
-			value: stats.rest,
+			label: t(lang, "omadWins"),
+			value: keys.filter((key) => scoreDay(data.days[key], now, today).omadWin).length,
 			format: "0"
 		},
 		{
@@ -3135,7 +3873,7 @@ function buildWorkbook(data, now = Date.now()) {
 				...base,
 				align: "center"
 			}),
-			cell(outcomeLabel(outcome, lang), {
+			cell(outcomeLabel(outcome, lang, sample.hours), {
 				...base,
 				textColor: tone.fg,
 				fontWeight: "bold",
@@ -3165,7 +3903,7 @@ function buildWorkbook(data, now = Date.now()) {
 				...base,
 				align: "center"
 			}),
-			cell(day?.notes || null, {
+			cell(journalText(day, lang), {
 				...base,
 				wrap: true,
 				align: "left"
@@ -3178,6 +3916,79 @@ function buildWorkbook(data, now = Date.now()) {
 		align: "center",
 		height: 28
 	}), ...Array.from({ length: 8 }, () => null)]);
+	dash.push([cell(lang === "th" ? "วิเคราะห์ OMAD" : "OMAD analysis", {
+		columnSpan: cols,
+		backgroundColor: SECTION,
+		fontWeight: "bold",
+		fontSize: 13,
+		borderColor: "#e2d3c4",
+		height: 24
+	}), ...Array.from({ length: 8 }, () => null)]);
+	dash.push(headers([
+		lang === "th" ? "วันที่" : "Date",
+		lang === "th" ? "เริ่มอด" : "Fast start",
+		lang === "th" ? "เริ่มกิน" : "Meal start",
+		lang === "th" ? "จบกิน" : "Meal end",
+		lang === "th" ? "กิน (นาที)" : "Eat (min)",
+		lang === "th" ? "หน้าต่าง 1 ชม." : "1h window",
+		lang === "th" ? "ช่วงที่ถึง" : "Stage",
+		t(lang, "omadWins"),
+		t(lang, "weight")
+	]));
+	for (const key of keys) {
+		const day = data.days[key];
+		if (!day?.active && day?.meals.length !== 1 && !day?.logs?.length) continue;
+		if (!day) continue;
+		const score = scoreDay(day, now, today);
+		const base = {
+			backgroundColor: TONE[dayOutcome(day, today)].bg,
+			textColor: INK
+		};
+		const windowLabel = score.eatMinutes == null ? "—" : score.overTarget ? t(lang, "overTarget") : t(lang, "withinTarget");
+		const food = day.meals.map((meal) => meal.description.trim()).filter(Boolean).join(", ");
+		const stage = fastBandLabel(score.fastHours * 36e5, lang);
+		dash.push([
+			cell(formatPrettyDate(key, lang, true), base),
+			cell(clock(score.fastingStart, lang), {
+				...base,
+				align: "center"
+			}),
+			cell(clock(score.mealStart, lang), {
+				...base,
+				align: "center"
+			}),
+			cell(clock(score.mealEnd, lang), {
+				...base,
+				align: "center"
+			}),
+			cell(score.eatMinutes, {
+				...base,
+				format: "0",
+				align: "right"
+			}),
+			cell(windowLabel, {
+				...base,
+				align: "center",
+				fontWeight: "bold",
+				textColor: score.overTarget ? "#9f1239" : score.mealOk ? "#3f6212" : INK
+			}),
+			cell(food ? `${stage} · ${food}` : stage, {
+				...base,
+				align: "left",
+				wrap: true
+			}),
+			cell(score.omadWin ? t(lang, "omadWins") : score.mealOk ? t(lang, "mealOk") : "—", {
+				...base,
+				align: "center",
+				fontWeight: "bold"
+			}),
+			cell(day.weightKg, {
+				...base,
+				format: "0.00",
+				align: "right"
+			})
+		]);
+	}
 	const detail = [headers([
 		lang === "th" ? "วันที่" : "Date",
 		lang === "th" ? "รหัสวัน" : "ISO date",
@@ -3213,7 +4024,7 @@ function buildWorkbook(data, now = Date.now()) {
 					...base,
 					align: "center"
 				}),
-				cell(outcomeLabel(outcome, lang), {
+				cell(outcomeLabel(outcome, lang, index === 0 ? sample.hours : 0), {
 					...base,
 					textColor: tone.fg,
 					fontWeight: "bold"
@@ -3262,7 +4073,7 @@ function buildWorkbook(data, now = Date.now()) {
 					...base,
 					wrap: true
 				}),
-				cell(index === 0 ? day?.notes || null : null, {
+				cell(index === 0 ? journalText(day, lang) : null, {
 					...base,
 					wrap: true
 				})
@@ -3457,9 +4268,9 @@ var NAV = [
 		label: "history"
 	},
 	{
-		id: "settings",
-		icon: Settings,
-		label: "settings"
+		id: "log",
+		icon: NotebookPen,
+		label: "log"
 	}
 ];
 function OmadApp() {
@@ -3474,14 +4285,14 @@ function OmadApp() {
 	dataRef.current = data;
 	(0, import_react.useEffect)(() => {
 		const loaded = loadPersisted(localStorage.getItem(STORAGE_KEY));
-		setData(loaded);
+		setData(carryOpenFast(upgradeOmadGoal(loaded), Date.now()));
 	}, []);
 	(0, import_react.useEffect)(() => {
 		if (!data) return;
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 		document.documentElement.dataset.theme = data.settings.theme;
 		document.documentElement.lang = data.settings.lang === "en" ? "en" : "th";
-		document.querySelector("meta[name=\"theme-color\"]")?.setAttribute("content", data.settings.theme === "light" ? "#f6f1ea" : "#14110e");
+		document.querySelector("meta[name=\"theme-color\"]")?.setAttribute("content", data.settings.theme === "light" ? "#eef2f5" : "#0e141b");
 	}, [data]);
 	(0, import_react.useEffect)(() => {
 		setNow(Date.now());
@@ -3505,7 +4316,10 @@ function OmadApp() {
 	(0, import_react.useEffect)(() => {
 		const tick = (prime) => {
 			const current = dataRef.current;
-			if (!current || typeof Notification === "undefined" || Notification.permission !== "granted") return;
+			if (!current) return;
+			const carried = carryOpenFast(current, Date.now());
+			if (carried !== current) setData(carried);
+			if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
 			for (const notice of dueNotices(current, Date.now(), seen.current, prime)) try {
 				new Notification(notice.title, {
 					body: notice.body,
@@ -3549,7 +4363,10 @@ function OmadApp() {
 				setSheet(null);
 			},
 			startEat: () => {
-				setData((current) => current && startEating(current, Date.now()));
+				const stamp = Date.now();
+				const second = (data.days[localDateKey(new Date(stamp))]?.meals.length ?? 0) > 0;
+				setData((current) => current && startEating(current, stamp));
+				if (second) say("outSecond");
 				navigator.vibrate?.(12);
 			},
 			stopEat: () => {
@@ -3558,14 +4375,25 @@ function OmadApp() {
 				const next = stopEating(data, stamp);
 				setData(next);
 				const todayKey = localDateKey(new Date(stamp));
-				const outcome = open ? dayOutcome(next.days[open.date], todayKey) : "other";
-				say(outcome === "completed" ? "savedOmad" : "savedMeal");
+				const fastMs = open ? derive(next.days[open.date], stamp, todayKey).fastingMs : 0;
+				const scored = open ? scoreDay(next.days[open.date], stamp, todayKey) : null;
+				if ((scored?.mealCount ?? 0) > 1) say("outSecond");
+				else if (scored?.overTarget) setBanner(t(lang, "overEat", { time: formatHours(next.days[open?.date ?? ""]?.targetEatingMinutes ?? data.settings.targetEatingMinutes, lang) }));
+				else if (scored?.omadWin) say("omadWin");
+				else if (scored?.mealOk) say("inBounds");
+				else if (fastMs >= 432e5) setBanner(`${fastBandLabel(fastMs, lang)} · ${fastBandNote(fastMs, lang)}`);
+				else say("savedMeal");
 				navigator.vibrate?.(12);
 			},
 			requestCancel: () => setSheet({ type: "cancel-meal" }),
 			addWater: (delta) => setData((current) => current && addWater(current, delta, Date.now())),
 			setMood: (mood) => setData((current) => current && setMood(current, mood, Date.now())),
 			setNotes: (notes) => setData((current) => current && setNotes(current, notes, Date.now())),
+			saveFastLog: (entry) => {
+				setData((current) => current && addFastLog(current, entry, Date.now()));
+				setBanner(t(lang, "logSaved"));
+			},
+			setMealDraft: (text) => setData((current) => current && setMealDraft(current, text, Date.now())),
 			setWeight: (kg) => setData((current) => current && setWeight(current, kg, Date.now())),
 			setMealText: (date, mealId, text) => setData((current) => current && setMealDescription(current, date, mealId, text)),
 			updateSettings: (patch) => setData((current) => current && updateSettings(current, patch, Date.now())),
@@ -3633,6 +4461,7 @@ function OmadApp() {
 			confirmCancel: () => {
 				setData((current) => current && cancelOpenMeal(current, Date.now()));
 				setSheet(null);
+				say("cancelKept");
 			},
 			confirmImport: () => {
 				if (sheet?.type !== "import") return;
@@ -3680,9 +4509,9 @@ function OmadApp() {
 		value: api,
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "min-h-dvh lg:flex",
+				className: cn("lg:flex", view === "home" ? "h-dvh overflow-hidden" : "min-h-dvh"),
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("aside", {
-					className: "sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-r border-line bg-surface/80 px-4 py-6 backdrop-blur-md lg:flex",
+					className: "sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 border-r border-line bg-surface px-4 py-6 lg:flex",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 						className: "flex items-center gap-3 px-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mark, { className: "size-9 text-fast" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
@@ -3707,48 +4536,34 @@ function OmadApp() {
 						})
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					className: "min-w-0 flex-1",
+					className: cn("flex min-h-0 min-w-0 flex-1 flex-col", view === "home" && "h-dvh"),
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", {
-							className: "sticky top-0 z-20 border-b border-line bg-bg/80 backdrop-blur-md",
+							className: "sticky top-0 z-20 border-b border-line bg-surface",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "mx-auto flex min-h-16 w-full max-w-6xl items-center gap-3 px-4 py-2 lg:px-8",
+								className: "mx-auto flex min-h-14 w-full max-w-6xl items-center gap-3 px-3 py-2 lg:px-6",
 								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mark, { className: "size-8 text-fast lg:hidden" }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mark, { className: "size-9 text-fast lg:hidden" }),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 										className: "min-w-0 flex-1",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											className: "truncate text-sm font-semibold lg:text-base",
-											children: t(lang, "appName")
+											className: "truncate text-base font-semibold leading-tight",
+											children: formatPrettyDate(localDateKey(new Date(now)), lang, true)
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 											className: "truncate text-xs text-muted",
-											children: formatPrettyDate(localDateKey(new Date(now)), lang, true)
+											children: t(lang, "tagline")
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 										type: "button",
-										className: "grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 press",
-										"aria-label": t(lang, "exportJson"),
-										onClick: api.exportJson,
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileJson, { className: "size-5" })
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-										type: "button",
-										className: "grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 press",
-										"aria-label": t(lang, "exportExcel"),
-										onClick: () => void api.exportExcel(),
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileSpreadsheet, { className: "size-5" })
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-										type: "button",
-										className: "grid size-11 place-items-center rounded-full press",
+										className: "grid size-11 shrink-0 place-items-center rounded-full press",
 										"aria-label": t(lang, "themeToggle"),
 										onClick: () => api.setTheme(data.settings.theme === "dark" ? "light" : "dark"),
 										children: data.settings.theme === "dark" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sun, { className: "size-5" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Moon, { className: "size-5" })
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 										type: "button",
-										className: "grid size-11 place-items-center rounded-full press lg:hidden",
+										className: cn("grid size-11 shrink-0 place-items-center rounded-full press", view === "settings" && "bg-surface-2 text-fast"),
 										"aria-label": t(lang, "settings"),
 										onClick: () => setView("settings"),
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Settings, { className: "size-5" })
@@ -3757,36 +4572,36 @@ function OmadApp() {
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", {
-							className: "mx-auto w-full max-w-6xl px-4 pt-4 pb-28 lg:px-8 lg:pb-10",
+							className: cn("mx-auto flex w-full max-w-6xl flex-col px-3 lg:px-6", view === "home" ? "min-h-0 flex-1 overflow-hidden pt-1 pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-3" : "pt-1 pb-28 lg:pb-10"),
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "rise",
+								className: cn("rise", view === "home" && "flex min-h-0 flex-1 flex-col"),
 								children: [
 									view === "home" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HomeView, { now }) : null,
 									view === "calendar" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarView, { now }) : null,
 									view === "stats" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StatsView, { now }) : null,
 									view === "history" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HistoryView, { now }) : null,
+									view === "log" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LogView, { now }) : null,
 									view === "settings" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsView, {}) : null
 								]
 							}, view)
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", {
-							className: "fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/90 backdrop-blur-md lg:hidden",
+							className: "fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface lg:hidden",
 							style: { paddingBottom: "env(safe-area-inset-bottom)" },
 							"aria-label": "main",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "mx-auto grid max-w-lg grid-cols-5",
+								className: "mx-auto grid max-w-lg grid-cols-5 px-1",
 								children: NAV.map((item) => {
 									const Icon = item.icon;
 									const on = view === item.id;
 									return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
 										type: "button",
 										onClick: () => setView(item.id),
-										className: cn("relative flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium", on ? "text-fast" : "text-muted"),
-										children: [
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: cn("absolute top-0 h-0.5 w-8 rounded-full bg-fast-fill", on ? "opacity-100" : "opacity-0") }),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, { className: "size-5" }),
-											t(lang, item.label)
-										]
+										className: cn("flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium", on ? "text-fast" : "text-muted"),
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											className: cn("grid size-8 place-items-center rounded-xl", on ? "bg-fast-fill text-on-accent" : ""),
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, { className: "size-4" })
+										}), t(lang, item.label)]
 									}, item.id);
 								})
 							})
@@ -3796,7 +4611,7 @@ function OmadApp() {
 			}),
 			banner ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				role: "status",
-				className: "fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-done-fill px-4 py-2 text-sm font-semibold text-on-accent shadow",
+				className: "fixed top-4 left-1/2 z-50 max-w-[90vw] -translate-x-1/2 rounded-2xl bg-surface px-4 py-2 text-sm font-semibold text-fg shadow",
 				children: banner
 			}) : null,
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DaySheet, { now }),

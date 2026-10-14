@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Droplet, GlassWater, Pencil, Utensils } from "lucide-react";
+import { Droplet, GlassWater, Pencil, Utensils, X } from "lucide-react";
 import { useOmad } from "@/components/omad/context";
 import { GhostButton, PrimaryButton, Ring, StageIcon, StageRing, cn } from "@/components/omad/parts";
 import { t } from "@/lib/omad/i18n";
@@ -139,7 +139,14 @@ export function HomeView({ now }: { now: number }) {
                 {t(lang, view.mode === "eating" ? "editTime" : "editStart")}
               </span>
             </GhostButton>
-            {view.mode === "eating" ? <GhostButton onClick={requestCancel}>{t(lang, "cancelEating")}</GhostButton> : null}
+            {view.mode === "eating" ? (
+              <GhostButton onClick={requestCancel}>
+                <span className="inline-flex items-center gap-1">
+                  <X className="size-4" />
+                  {t(lang, "cancelEating")}
+                </span>
+              </GhostButton>
+            ) : null}
           </div>
         ) : null}
       </section>

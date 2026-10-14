@@ -1,4 +1,4 @@
-//#region node_modules/fast-equals/dist/es/index.mjs
+//#region node_modules/.pnpm/fast-equals@5.4.4/node_modules/fast-equals/dist/es/index.mjs
 var { getOwnPropertyNames, getOwnPropertySymbols } = Object;
 var { hasOwnProperty } = Object.prototype;
 /**
@@ -55,8 +55,11 @@ function sameValueZeroEqual(a, b) {
 var PREACT_VNODE = "__v";
 var PREACT_OWNER = "__o";
 var REACT_OWNER = "_owner";
-var HAS_FLOAT_16_ARRAY = typeof Float16Array !== "undefined";
 var { getOwnPropertyDescriptor, keys } = Object;
+/**
+* Identify the element type of TypedArrays across realms and subclasses.
+*/
+var getTypedArrayTag = getOwnPropertyDescriptor(Object.getPrototypeOf(Int8Array.prototype), Symbol.toStringTag).get;
 /**
 * Whether the array buffers are equal in value.
 */
@@ -211,7 +214,8 @@ function areSetsEqual(a, b, state) {
 function areTypedArraysEqual(a, b) {
 	let index = a.length;
 	if (b.length !== index || a.byteOffset !== b.byteOffset) return false;
-	if (a instanceof Float64Array || a instanceof Float32Array || HAS_FLOAT_16_ARRAY && a instanceof Float16Array) {
+	const tag = getTypedArrayTag.call(a);
+	if (tag === "Float64Array" || tag === "Float32Array" || tag === "Float16Array") {
 		while (index-- > 0) if (a[index] !== b[index] && (a[index] === a[index] || b[index] === b[index])) return false;
 		return true;
 	}
