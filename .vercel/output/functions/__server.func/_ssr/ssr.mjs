@@ -1,10 +1,7 @@
 import { n as __exportAll } from "../_runtime.mjs";
 import { n as require_react } from "../_libs/@radix-ui/react-compose-refs+[...].mjs";
-import { A as getStylesheetHref, B as isPromise, C as fromJSON, E as toCrossJSONStream, F as executeRewriteInput, H as isRedirect, I as invariant, M as resolveManifestCssLink, N as waitForReason, P as _getRenderedMatches, T as toCrossJSONAsync, U as rootRouteId, W as isNotFound, a as isSsrResponse, c as stripSsrResponseBody, i as disposeSsrResponse, j as resolveManifestAssetLink, k as getScriptPreloadAttrs, n as bindSsrResponseToRequest, o as normalizeSsrResponse, p as RouterProvider, r as defineHandlerCallback, s as replaceSsrResponse, t as renderRouterToStream, z as isDangerousProtocol } from "../_libs/@tanstack/react-router+[...].mjs";
-import { n as createServerHistory } from "../_libs/tanstack__history.mjs";
-import { a as defaultSerovalDeserializerPlugins, i as createRawStreamRPCPlugin, n as attachRouterServerSsrUtils, o as makeSerovalPlugin, r as getNormalizedURL, s as createSerializationAdapter, t as mergeHeaders } from "../_libs/@tanstack/router-core+[...].mjs";
+import { a as RouterProvider, n as defineHandlerCallback, t as renderRouterToStream } from "../_libs/@tanstack/react-router+[...].mjs";
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
-import { n as toResponse, t as H3Event } from "../_libs/h3-v2+rou3.mjs";
 import { AsyncLocalStorage } from "node:async_hooks";
 //#region node_modules/.nitro/vite/services/ssr/index.js
 var ssr_exports = /* @__PURE__ */ __exportAll({
@@ -22,74 +19,3753 @@ var defaultStreamHandler = defineHandlerCallback(({ request, router, responseHea
 	responseHeaders,
 	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StartServer, { router })
 }));
-var GLOBAL_EVENT_STORAGE_KEY = Symbol.for("tanstack-start:event-storage");
-var globalObj$1 = globalThis;
-if (!globalObj$1[GLOBAL_EVENT_STORAGE_KEY]) globalObj$1[GLOBAL_EVENT_STORAGE_KEY] = new AsyncLocalStorage();
-var eventStorage = globalObj$1[GLOBAL_EVENT_STORAGE_KEY];
-function isPromiseLike(value) {
-	return (typeof value === "object" || typeof value === "function") && value !== null && typeof value.then === "function";
+var COOKIE_MAX_AGE_LIMIT = 3456e4;
+var maxAgeRegExp = /^-?\d+$/;
+var _nullProto = /* @__PURE__ */ Object.getPrototypeOf({});
+function parseSetCookie(str, options) {
+	const len = str.length;
+	let _endIdx = len;
+	let eqIdx = -1;
+	for (let i = 0; i < len; i++) {
+		const c = str.charCodeAt(i);
+		if (c === 59) {
+			_endIdx = i;
+			break;
+		}
+		if (c === 61 && eqIdx === -1) eqIdx = i;
+	}
+	if (eqIdx >= _endIdx) eqIdx = -1;
+	const name = eqIdx === -1 ? "" : _trim(str, 0, eqIdx);
+	if (name && name in _nullProto) return void 0;
+	let value = eqIdx === -1 ? _trim(str, 0, _endIdx) : _trim(str, eqIdx + 1, _endIdx);
+	if (!name && !value) return void 0;
+	if (name.length + value.length > 4096) return void 0;
+	if (options?.decode !== false) value = _decode(value, options?.decode);
+	const setCookie = {
+		name,
+		value
+	};
+	let index = _endIdx + 1;
+	while (index < len) {
+		let endIdx = len;
+		let attrEqIdx = -1;
+		for (let i = index; i < len; i++) {
+			const c = str.charCodeAt(i);
+			if (c === 59) {
+				endIdx = i;
+				break;
+			}
+			if (c === 61 && attrEqIdx === -1) attrEqIdx = i;
+		}
+		if (attrEqIdx >= endIdx) attrEqIdx = -1;
+		const attr = attrEqIdx === -1 ? _trim(str, index, endIdx) : _trim(str, index, attrEqIdx);
+		const val = attrEqIdx === -1 ? void 0 : _trim(str, attrEqIdx + 1, endIdx);
+		if (val === void 0 || val.length <= 1024) switch (attr.toLowerCase()) {
+			case "httponly":
+				setCookie.httpOnly = true;
+				break;
+			case "secure":
+				setCookie.secure = true;
+				break;
+			case "partitioned":
+				setCookie.partitioned = true;
+				break;
+			case "domain":
+				if (val) setCookie.domain = (val.charCodeAt(0) === 46 ? val.slice(1) : val).toLowerCase();
+				break;
+			case "path":
+				setCookie.path = val;
+				break;
+			case "max-age":
+				if (val && maxAgeRegExp.test(val)) setCookie.maxAge = Math.min(Number(val), COOKIE_MAX_AGE_LIMIT);
+				break;
+			case "expires": {
+				if (!val) break;
+				const date = new Date(val);
+				if (Number.isFinite(date.valueOf())) {
+					const maxDate = new Date(Date.now() + COOKIE_MAX_AGE_LIMIT * 1e3);
+					setCookie.expires = date > maxDate ? maxDate : date;
+				}
+				break;
+			}
+			case "priority": {
+				if (!val) break;
+				const priority = val.toLowerCase();
+				if (priority === "low" || priority === "medium" || priority === "high") setCookie.priority = priority;
+				break;
+			}
+			case "samesite": {
+				if (!val) break;
+				const sameSite = val.toLowerCase();
+				if (sameSite === "lax" || sameSite === "strict" || sameSite === "none") setCookie.sameSite = sameSite;
+				else setCookie.sameSite = "lax";
+				break;
+			}
+			default: {
+				const attrLower = attr.toLowerCase();
+				if (attrLower && !(attrLower in _nullProto)) setCookie[attrLower] = val;
+			}
+		}
+		index = endIdx + 1;
+	}
+	return setCookie;
+}
+function _trim(str, start, end) {
+	if (start === end) return "";
+	let s = start;
+	let e = end;
+	while (s < e && (str.charCodeAt(s) === 32 || str.charCodeAt(s) === 9)) s++;
+	while (e > s && (str.charCodeAt(e - 1) === 32 || str.charCodeAt(e - 1) === 9)) e--;
+	return str.slice(s, e);
+}
+function _decode(value, decode) {
+	if (!decode && !value.includes("%")) return value;
+	try {
+		return (decode || decodeURIComponent)(value);
+	} catch {
+		return value;
+	}
+}
+function splitSetCookieString(cookiesString) {
+	if (Array.isArray(cookiesString)) return cookiesString.flatMap((c) => splitSetCookieString(c));
+	if (typeof cookiesString !== "string") return [];
+	const cookiesStrings = [];
+	let pos = 0;
+	let start;
+	let ch;
+	let lastComma;
+	let nextStart;
+	let cookiesSeparatorFound;
+	const skipWhitespace = () => {
+		while (pos < cookiesString.length && /\s/.test(cookiesString.charAt(pos))) pos += 1;
+		return pos < cookiesString.length;
+	};
+	const notSpecialChar = () => {
+		ch = cookiesString.charAt(pos);
+		return ch !== "=" && ch !== ";" && ch !== ",";
+	};
+	while (pos < cookiesString.length) {
+		start = pos;
+		cookiesSeparatorFound = false;
+		while (skipWhitespace()) {
+			ch = cookiesString.charAt(pos);
+			if (ch === ",") {
+				lastComma = pos;
+				pos += 1;
+				skipWhitespace();
+				nextStart = pos;
+				while (pos < cookiesString.length && notSpecialChar()) pos += 1;
+				if (pos < cookiesString.length && cookiesString.charAt(pos) === "=") {
+					cookiesSeparatorFound = true;
+					pos = nextStart;
+					cookiesStrings.push(cookiesString.slice(start, lastComma));
+					start = pos;
+				} else pos = lastComma + 1;
+			} else pos += 1;
+		}
+		if (!cookiesSeparatorFound || pos >= cookiesString.length) cookiesStrings.push(cookiesString.slice(start));
+	}
+	return cookiesStrings;
 }
 function getSetCookieValues(headers) {
 	const headersWithSetCookie = headers;
 	if (typeof headersWithSetCookie.getSetCookie === "function") return headersWithSetCookie.getSetCookie();
 	const value = headers.get("set-cookie");
-	return value ? [value] : [];
+	return value ? splitSetCookieString(value) : [];
 }
-function mergeEventResponseHeaders(response, event) {
-	if (response.ok) return;
-	const eventSetCookies = getSetCookieValues(event.res.headers);
-	if (eventSetCookies.length === 0) return;
-	const responseSetCookies = getSetCookieValues(response.headers);
-	response.headers.delete("set-cookie");
-	for (const cookie of responseSetCookies) response.headers.append("set-cookie", cookie);
-	for (const cookie of eventSetCookies) response.headers.append("set-cookie", cookie);
+/** Determine if a value is a TanStack Router not-found error. */
+function isNotFound(obj) {
+	return obj?.isNotFound === true;
 }
-function finalizeResponse(value, event) {
-	const response = ensureResponse(value);
-	mergeEventResponseHeaders(response, event);
-	return response;
+/** Stable identifier used for the root route in a route tree. */
+var rootRouteId = "__root__";
+/** Check whether a value is a TanStack Router redirect Response. */
+function isRedirect(obj) {
+	return obj instanceof Response && !!obj.options;
 }
-function finalizeMaybeResponse(value, event) {
-	if (isPromiseLike(value)) return Promise.resolve(value).then((resolved) => finalizeResponse(resolved, event), (error) => finalizeResponse(handleResponseError(error), event));
-	return finalizeResponse(value, event);
+function dehydrateSsrMatchId(id) {
+	return id.replaceAll("/", "#");
 }
-function ensureResponse(value) {
-	if (value instanceof Response) return value;
-	return new Response("Internal Server Error", { status: 500 });
-}
-function handleResponseError(error) {
-	if (error instanceof Response) return error;
-	if (error instanceof Error) throw error;
-	return new Response("Internal Server Error", { status: 500 });
-}
-function requestHandler(handler) {
-	return (request, requestOpts) => {
-		let h3Event;
-		try {
-			h3Event = new H3Event(request);
-		} catch (error) {
-			if (error instanceof URIError) return new Response(null, {
-				status: 400,
-				statusText: "Bad Request"
-			});
-			throw error;
+/**
+* A fixed-capacity cache using the SIEVE eviction algorithm
+* (https://cachemon.github.io/SIEVE-website/).
+*
+* Entries live in the Map's FIFO insertion order; a hit only flips a `visited`
+* bit instead of relinking the entry, which makes `get` (by far the hottest
+* operation here) one `Map.get` plus a boolean store. Eviction sweeps a `hand`
+* from the oldest entry towards the newest, clearing `visited` bits until it
+* finds an unvisited entry to drop, so entries touched since the last sweep
+* survive one more round. This keeps LRU-like hit ratios while being
+* scan-resistant.
+*/
+function createSieveCache(max) {
+	const cache = /* @__PURE__ */ new Map();
+	let hand;
+	let newest;
+	return {
+		get(key) {
+			const entry = cache.get(key);
+			if (!entry) return;
+			entry.visited = true;
+			return entry.value;
+		},
+		set(key, value) {
+			const existing = cache.get(key);
+			if (existing) {
+				existing.value = value;
+				return;
+			}
+			if (cache.size >= max) {
+				let node = hand?.next().value;
+				while (!node || node.visited) {
+					if (node) node.visited = false;
+					else hand = cache.values();
+					node = hand.next().value;
+				}
+				if (node === newest) hand = void 0;
+				cache.delete(node.key);
+			}
+			const entry = {
+				key,
+				value,
+				visited: false
+			};
+			newest = entry;
+			cache.set(key, entry);
+		},
+		clear() {
+			cache.clear();
+			hand = void 0;
+			newest = void 0;
 		}
-		let response;
-		try {
-			response = eventStorage.run({ h3Event }, () => handler(request, requestOpts));
-		} catch (error) {
-			response = handleResponseError(error);
-		}
-		return toResponse(finalizeMaybeResponse(response, h3Event), h3Event);
 	};
 }
-function getH3Event() {
+function invariant() {
+	throw new Error("Invariant failed");
+}
+var stateIndexKey = "__TSR_index";
+/**
+* Turn protocol-relative inputs such as "//evil.example" into paths
+* such as "/evil.example", keeping navigation on the current origin.
+*
+* For HTTP(S) URLs, WHATWG parsing ignores leading C0 controls and spaces,
+* removes tabs/newlines, and treats backslashes as slashes, so inputs like
+* "/\evil.example" also need normalization. This only allocates when those
+* rules would make the input protocol-relative.
+*/
+var protocolRelativePrefix = /^[\x00-\x20]*(?:[\\/][\t\n\r]*){2,}/;
+function normalizeProtocolRelative(url) {
+	const match = protocolRelativePrefix.exec(url);
+	return match ? "/" + url.slice(match[0].length) : url;
+}
+function normalizeHref(href) {
+	if (/[\x00-\x1f\x7f]/.test(href)) href = href.replace(/[\x00-\x1f\x7f]/g, (character) => "	\n\r".includes(character) ? "" : encodeURIComponent(character));
+	return normalizeProtocolRelative(href);
+}
+var noop = () => {};
+var ServerHistory = class {
+	constructor(location) {
+		this.location = location;
+	}
+	get length() {
+		return 1;
+	}
+	get subscribers() {
+		return this._subscribers ??= /* @__PURE__ */ new Set();
+	}
+	subscribe() {
+		return noop;
+	}
+	push() {}
+	replace() {}
+	go() {}
+	back() {}
+	forward() {}
+	canGoBack() {
+		return false;
+	}
+	createHref(href) {
+		return normalizeHref(href);
+	}
+	block() {
+		return noop;
+	}
+	flush() {}
+	destroy() {}
+	notify() {}
+	_getBlockers() {
+		return [];
+	}
+};
+/** A fixed request location; server navigation is a no-op. */
+function createServerHistory(href) {
+	return new ServerHistory(parseHref(href, void 0));
+}
+function parseHref(href, state) {
+	const sanitizedHref = normalizeHref(href);
+	const hashIndex = sanitizedHref.indexOf("#");
+	const searchIndex = sanitizedHref.indexOf("?");
+	if (!state) {
+		const key = createRandomKey();
+		state = {
+			[stateIndexKey]: 0,
+			key,
+			__TSR_key: key
+		};
+	}
+	return {
+		href: sanitizedHref,
+		pathname: sanitizedHref.slice(0, hashIndex > -1 ? searchIndex > -1 ? Math.min(hashIndex, searchIndex) : hashIndex : searchIndex > -1 ? searchIndex : sanitizedHref.length),
+		hash: hashIndex > -1 ? sanitizedHref.slice(hashIndex) : "",
+		search: searchIndex > -1 ? sanitizedHref.slice(searchIndex, hashIndex === -1 ? void 0 : hashIndex) : "",
+		state
+	};
+}
+function createRandomKey() {
+	return (Math.random() + 1).toString(36).slice(7);
+}
+/** Return the structural lane through the first terminal render boundary. */
+function _getRenderedMatches(matches) {
+	const end = matches.findIndex((match) => match.status !== "success" || match._notFound) + 1;
+	return end && end < matches.length ? matches.slice(0, end) : matches;
+}
+function observeLate(callback, value) {
+	if (!callback) return;
+	try {
+		const result = callback(value);
+		if (result !== void 0) Promise.resolve(result).catch(() => {});
+	} catch {}
+}
+/**
+* Await `value` unless `signal` aborts first. A result that settles after the
+* abort is passed to `onLate` / `onLateError` instead.
+*
+* One abort listener per wait: SSR requests nest at most a few waits on one
+* signal, so pooling them was measurably slower than this.
+*/
+function waitForReason(value, signal, onLate, onLateError) {
+	const promise = Promise.resolve(value);
+	if (signal.aborted) {
+		promise.then((result) => observeLate(onLate, result), (error) => observeLate(onLateError, error));
+		return Promise.reject(signal.reason);
+	}
+	return new Promise((resolve, reject) => {
+		const abort = () => reject(signal.reason);
+		signal.addEventListener("abort", abort, { once: true });
+		promise.then((result) => {
+			signal.removeEventListener("abort", abort);
+			if (signal.aborted) observeLate(onLate, result);
+			else resolve(result);
+		}, (error) => {
+			signal.removeEventListener("abort", abort);
+			if (signal.aborted) observeLate(onLateError, error);
+			else reject(error);
+		});
+	});
+}
+function isPromise(value) {
+	return Boolean(value && typeof value === "object" && typeof value.then === "function");
+}
+/**
+* Re-encode characters that are unsafe in URL paths.
+* Includes ASCII control characters (0x00-0x1F, 0x7F) and a subset of the
+* WHATWG URL "path percent-encode set" (", <, >, `, {, }).
+*
+* Space (0x20) is intentionally excluded — decodeURI decodes %20 to space
+* and the router stores decoded spaces in location.pathname. The existing
+* encodePathLikeUrl already handles re-encoding spaces for outgoing URLs.
+*
+* These characters are decoded by decodeURI but must remain percent-encoded
+* in paths to match how upstream layers (CDNs, edge middleware, browsers)
+* interpret the URL, preventing infinite redirect loops and path mismatches.
+*/
+var PATH_UNSAFE_RE = /[\x00-\x1f\x7f"<>`{}]/g;
+function sanitizePathSegment(segment) {
+	return segment.replace(PATH_UNSAFE_RE, (ch) => "%" + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0"));
+}
+function decodeSegment(segment) {
+	let decoded;
+	try {
+		decoded = decodeURI(segment);
+	} catch {
+		decoded = segment.replaceAll(/%[0-9A-F]{2}/gi, (match) => {
+			try {
+				return decodeURI(match);
+			} catch {
+				return match;
+			}
+		});
+	}
+	return sanitizePathSegment(decoded);
+}
+/**
+* Extract the explicit URL scheme, including its colon, using WHATWG
+* normalization rules. This does not validate the rest of the URL.
+*
+* Returning `undefined` means "no explicit scheme", not "safe URL";
+* protocol-relative URLs such as "//evil.example" require a separate check.
+*/
+function getUrlScheme(url) {
+	if (url[0] === "/") return;
+	if (!url.includes(":")) return;
+	return /^[\x00-\x20]*([a-z][a-z\d+.\t\n\r-]*:)/i.exec(url)?.[1]?.replace(/[\t\n\r]/g, "").toLowerCase();
+}
+var protocolRelativePrefixRegex = /^[\x00-\x20]*[\\/][\t\n\r]*[\\/]/;
+/**
+* Check if a URL string uses a protocol that is not in the allowlist or is
+* protocol-relative (e.g. "//evil.example"), which can navigate to another host.
+* Returns true for blocked protocols like javascript:, blob:, and data:, as
+* well as slash/backslash variants of protocol-relative URLs.
+*
+* Scheme parsing normalizes:
+* - Mixed case (JavaScript: → javascript:)
+* - Whitespace/control characters (java\nscript: → javascript:)
+* - Leading whitespace
+*
+* For relative URLs without a protocol-relative prefix, returns false.
+*
+* @param url - The URL string to check
+* @param allowlist - Set of protocols to allow
+* @returns true if the URL uses a protocol that is not allowed or can escape
+* the current origin through a protocol-relative URL
+*/
+function isDangerousProtocol(url, allowlist) {
+	if (!url) return false;
+	if (protocolRelativePrefixRegex.test(url)) return true;
+	const scheme = getUrlScheme(url);
+	return scheme ? !allowlist.has(scheme) : false;
+}
+function decodePath(path) {
+	if (!path) return path;
+	let result = path;
+	if (/[%\\\x00-\x1f\x7f]/.test(path)) {
+		const re = /%25|%5C/gi;
+		let cursor = 0;
+		let match;
+		result = "";
+		while (null !== (match = re.exec(path))) {
+			result += decodeSegment(path.slice(cursor, match.index)) + match[0];
+			cursor = re.lastIndex;
+		}
+		result += decodeSegment(cursor ? path.slice(cursor) : path);
+	}
+	return result;
+}
+function getAssetCrossOrigin(assetCrossOrigin, kind) {
+	if (!assetCrossOrigin) return;
+	if (typeof assetCrossOrigin === "string") return assetCrossOrigin;
+	return assetCrossOrigin[kind];
+}
+function getManifestScriptFormat(manifest) {
+	return manifest?.scriptFormat ?? "module";
+}
+function getScriptPreloadAttrs(manifest, link, assetCrossOrigin) {
+	const preloadLink = resolveManifestAssetLink(link);
+	const crossOrigin = getAssetCrossOrigin(assetCrossOrigin, "script") ?? preloadLink.crossOrigin;
+	return {
+		...getManifestScriptFormat(manifest) === "iife" ? {
+			rel: "preload",
+			as: "script"
+		} : { rel: "modulepreload" },
+		href: preloadLink.href,
+		...crossOrigin ? { crossOrigin } : {}
+	};
+}
+function resolveManifestAssetLink(link) {
+	if (typeof link === "string") return {
+		href: link,
+		crossOrigin: void 0
+	};
+	return link;
+}
+function getStylesheetHref(asset) {
+	return resolveManifestCssLink(asset).href;
+}
+function resolveManifestCssLink(link) {
+	if (typeof link === "string") return {
+		href: link,
+		crossOrigin: void 0
+	};
+	return link;
+}
+function createInlineCssStyleAsset(css) {
+	return {
+		attrs: { suppressHydrationWarning: true },
+		children: css
+	};
+}
+function createInlineCssPlaceholderAsset() {
+	return { attrs: { suppressHydrationWarning: true } };
+}
+/**
+* Create a strongly-typed serialization adapter for SSR hydration.
+* Use to register custom types with the router serializer.
+*/
+function createSerializationAdapter(opts) {
+	return opts;
+}
+var SYM_ASYNC_ITERATOR = Symbol.asyncIterator;
+var SYM_HAS_INSTANCE = Symbol.hasInstance;
+var SYM_IS_CONCAT_SPREADABLE = Symbol.isConcatSpreadable;
+var SYM_ITERATOR = Symbol.iterator;
+var SYM_MATCH = Symbol.match;
+var SYM_MATCH_ALL = Symbol.matchAll;
+var SYM_REPLACE = Symbol.replace;
+var SYM_SEARCH = Symbol.search;
+var SYM_SPECIES = Symbol.species;
+var SYM_SPLIT = Symbol.split;
+var SYM_TO_PRIMITIVE = Symbol.toPrimitive;
+var SYM_TO_STRING_TAG = Symbol.toStringTag;
+var SYM_UNSCOPABLES = Symbol.unscopables;
+var SYMBOL_STRING = {
+	[0]: "Symbol.asyncIterator",
+	[1]: "Symbol.hasInstance",
+	[2]: "Symbol.isConcatSpreadable",
+	[3]: "Symbol.iterator",
+	[4]: "Symbol.match",
+	[5]: "Symbol.matchAll",
+	[6]: "Symbol.replace",
+	[7]: "Symbol.search",
+	[8]: "Symbol.species",
+	[9]: "Symbol.split",
+	[10]: "Symbol.toPrimitive",
+	[11]: "Symbol.toStringTag",
+	[12]: "Symbol.unscopables"
+};
+var INV_SYMBOL_REF = {
+	[SYM_ASYNC_ITERATOR]: 0,
+	[SYM_HAS_INSTANCE]: 1,
+	[SYM_IS_CONCAT_SPREADABLE]: 2,
+	[SYM_ITERATOR]: 3,
+	[SYM_MATCH]: 4,
+	[SYM_MATCH_ALL]: 5,
+	[SYM_REPLACE]: 6,
+	[SYM_SEARCH]: 7,
+	[SYM_SPECIES]: 8,
+	[SYM_SPLIT]: 9,
+	[SYM_TO_PRIMITIVE]: 10,
+	[SYM_TO_STRING_TAG]: 11,
+	[SYM_UNSCOPABLES]: 12
+};
+var SYMBOL_REF = {
+	[0]: SYM_ASYNC_ITERATOR,
+	[1]: SYM_HAS_INSTANCE,
+	[2]: SYM_IS_CONCAT_SPREADABLE,
+	[3]: SYM_ITERATOR,
+	[4]: SYM_MATCH,
+	[5]: SYM_MATCH_ALL,
+	[6]: SYM_REPLACE,
+	[7]: SYM_SEARCH,
+	[8]: SYM_SPECIES,
+	[9]: SYM_SPLIT,
+	[10]: SYM_TO_PRIMITIVE,
+	[11]: SYM_TO_STRING_TAG,
+	[12]: SYM_UNSCOPABLES
+};
+var CONSTANT_STRING = {
+	[2]: "!0",
+	[3]: "!1",
+	[1]: "void 0",
+	[0]: "null",
+	[4]: "-0",
+	[5]: "1/0",
+	[6]: "-1/0",
+	[7]: "0/0"
+};
+var CONSTANT_VAL = {
+	[2]: true,
+	[3]: false,
+	[1]: void 0,
+	[0]: null,
+	[4]: -0,
+	[5]: Number.POSITIVE_INFINITY,
+	[6]: Number.NEGATIVE_INFINITY,
+	[7]: NaN
+};
+var ERROR_CONSTRUCTOR_STRING = {
+	[0]: "Error",
+	[1]: "EvalError",
+	[2]: "RangeError",
+	[3]: "ReferenceError",
+	[4]: "SyntaxError",
+	[5]: "TypeError",
+	[6]: "URIError"
+};
+var ERROR_CONSTRUCTOR = {
+	[0]: Error,
+	[1]: EvalError,
+	[2]: RangeError,
+	[3]: ReferenceError,
+	[4]: SyntaxError,
+	[5]: TypeError,
+	[6]: URIError
+};
+function createSerovalNode(t, i, s, c, m, p, e, a, f, b, o, l) {
+	return {
+		t,
+		i,
+		s,
+		c,
+		m,
+		p,
+		e,
+		a,
+		f,
+		b,
+		o,
+		l
+	};
+}
+function createConstantNode(value) {
+	return createSerovalNode(2, void 0, value, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+var TRUE_NODE = /* @__PURE__ */ createConstantNode(2);
+var FALSE_NODE = /* @__PURE__ */ createConstantNode(3);
+var UNDEFINED_NODE = /* @__PURE__ */ createConstantNode(1);
+var NULL_NODE = /* @__PURE__ */ createConstantNode(0);
+var NEG_ZERO_NODE = /* @__PURE__ */ createConstantNode(4);
+var INFINITY_NODE = /* @__PURE__ */ createConstantNode(5);
+var NEG_INFINITY_NODE = /* @__PURE__ */ createConstantNode(6);
+var NAN_NODE = /* @__PURE__ */ createConstantNode(7);
+var MIN_JSON_STRINGIFY_LENGTH = 64;
+var JSON_ESCAPE_DIFFERENCES = /[\x00-\x07\x0b\x0e-\x1f<\u2028\u2029\ud800-\udfff]/;
+function serializeChar(str) {
+	switch (str) {
+		case "\"": return "\\\"";
+		case "\\": return "\\\\";
+		case "\n": return "\\n";
+		case "\r": return "\\r";
+		case "\b": return "\\b";
+		case "	": return "\\t";
+		case "\f": return "\\f";
+		case "<": return "\\x3C";
+		case "\u2028": return "\\u2028";
+		case "\u2029": return "\\u2029";
+		default: return;
+	}
+}
+function serializeString(str) {
+	if (str.length >= MIN_JSON_STRINGIFY_LENGTH && !JSON_ESCAPE_DIFFERENCES.test(str)) return JSON.stringify(str).slice(1, -1);
+	let result = "";
+	let lastPos = 0;
+	let replacement;
+	for (let i = 0, len = str.length; i < len; i++) {
+		replacement = serializeChar(str[i]);
+		if (replacement) {
+			result += str.slice(lastPos, i) + replacement;
+			lastPos = i + 1;
+		}
+	}
+	if (lastPos === 0) result = str;
+	else result += str.slice(lastPos);
+	return result;
+}
+function deserializeReplacer(str) {
+	switch (str) {
+		case "\\\\": return "\\";
+		case "\\\"": return "\"";
+		case "\\n": return "\n";
+		case "\\r": return "\r";
+		case "\\b": return "\b";
+		case "\\t": return "	";
+		case "\\f": return "\f";
+		case "\\x3C": return "<";
+		case "\\u2028": return "\u2028";
+		case "\\u2029": return "\u2029";
+		default: return str;
+	}
+}
+function deserializeString(str) {
+	if (typeof str === "string" && !str.includes("\\")) return str;
+	return str.replace(/(\\\\|\\"|\\n|\\r|\\b|\\t|\\f|\\u2028|\\u2029|\\x3C)/g, deserializeReplacer);
+}
+var { toString: objectToString } = Object.prototype;
+var STEP_ERROR_CODES = {
+	parsing: 1,
+	serialization: 2,
+	deserialization: 3
+};
+function getErrorMessageProd(type) {
+	return `Seroval Error (step: ${STEP_ERROR_CODES[type]})`;
+}
+var getErrorMessage = (type, cause) => getErrorMessageProd(type);
+var SerovalError = class extends Error {
+	constructor(type, cause) {
+		super(getErrorMessage(type, cause));
+		this.cause = cause;
+	}
+};
+var SerovalParserError = class extends SerovalError {
+	constructor(cause) {
+		super("parsing", cause);
+	}
+};
+var SerovalDeserializationError = class extends SerovalError {
+	constructor(cause) {
+		super("deserialization", cause);
+	}
+};
+function getSpecificErrorMessage(code) {
+	return `Seroval Error (specific: ${code})`;
+}
+var SerovalUnsupportedTypeError = class extends Error {
+	constructor(value) {
+		super(getSpecificErrorMessage(1));
+		this.value = value;
+	}
+};
+var SerovalUnsupportedNodeError = class extends Error {
+	constructor(node) {
+		super(getSpecificErrorMessage(2));
+	}
+};
+var SerovalMissingPluginError = class extends Error {
+	constructor(tag) {
+		super(getSpecificErrorMessage(3));
+	}
+};
+var SerovalMissingInstanceError = class extends Error {
+	constructor(tag) {
+		super(getSpecificErrorMessage(4));
+	}
+};
+var SerovalMissingReferenceError = class extends Error {
+	constructor(value) {
+		super(getSpecificErrorMessage(5));
+		this.value = value;
+	}
+};
+var SerovalMissingReferenceForIdError = class extends Error {
+	constructor(id) {
+		super(getSpecificErrorMessage(6));
+	}
+};
+var SerovalUnknownTypedArrayError = class extends Error {
+	constructor(name) {
+		super(getSpecificErrorMessage(7));
+	}
+};
+var SerovalMalformedNodeError = class extends Error {
+	constructor(node) {
+		super(getSpecificErrorMessage(8));
+	}
+};
+var SerovalDepthLimitError = class extends Error {
+	constructor(limit) {
+		super(getSpecificErrorMessage(9));
+	}
+};
+var REFERENCES_KEY = "__SEROVAL_REFS__";
+var GLOBAL_CONTEXT_R = `self.\$R`;
+function getCrossReferenceHeader(id) {
+	if (id == null) return `${GLOBAL_CONTEXT_R}=${GLOBAL_CONTEXT_R}||[]`;
+	return `(${GLOBAL_CONTEXT_R}=${GLOBAL_CONTEXT_R}||{})["${serializeString(id)}"]=[]`;
+}
+var REFERENCE = /* @__PURE__ */ new Map();
+var INV_REFERENCE = /* @__PURE__ */ new Map();
+function hasReferenceID(value) {
+	return REFERENCE.has(value);
+}
+function hasReference(id) {
+	return INV_REFERENCE.has(id);
+}
+function getReferenceID(value) {
+	if (hasReferenceID(value)) return REFERENCE.get(value);
+	throw new SerovalMissingReferenceError(value);
+}
+function getReference(id) {
+	if (hasReference(id)) return INV_REFERENCE.get(id);
+	throw new SerovalMissingReferenceForIdError(id);
+}
+if (typeof globalThis !== "undefined") Object.defineProperty(globalThis, REFERENCES_KEY, {
+	value: INV_REFERENCE,
+	configurable: true,
+	writable: false,
+	enumerable: false
+});
+else if (typeof window !== "undefined") Object.defineProperty(window, REFERENCES_KEY, {
+	value: INV_REFERENCE,
+	configurable: true,
+	writable: false,
+	enumerable: false
+});
+else if (typeof self !== "undefined") Object.defineProperty(self, REFERENCES_KEY, {
+	value: INV_REFERENCE,
+	configurable: true,
+	writable: false,
+	enumerable: false
+});
+else if (typeof global !== "undefined") Object.defineProperty(global, REFERENCES_KEY, {
+	value: INV_REFERENCE,
+	configurable: true,
+	writable: false,
+	enumerable: false
+});
+function getErrorConstructor(error) {
+	if (error instanceof EvalError) return 1;
+	if (error instanceof RangeError) return 2;
+	if (error instanceof ReferenceError) return 3;
+	if (error instanceof SyntaxError) return 4;
+	if (error instanceof TypeError) return 5;
+	if (error instanceof URIError) return 6;
+	return 0;
+}
+function getInitialErrorOptions(error) {
+	const construct = ERROR_CONSTRUCTOR_STRING[getErrorConstructor(error)];
+	if (error.name !== construct) return { name: error.name };
+	if (error.constructor.name !== construct) return { name: error.constructor.name };
+	return {};
+}
+function getErrorOptions(error, features) {
+	let options = getInitialErrorOptions(error);
+	const names = Object.getOwnPropertyNames(error);
+	for (let i = 0, len = names.length, name; i < len; i++) {
+		name = names[i];
+		if (name !== "name" && name !== "message") {
+			if (name === "stack") {
+				if (features & 4) {
+					options = options || {};
+					options[name] = error[name];
+				}
+			} else {
+				options = options || {};
+				options[name] = error[name];
+			}
+		}
+	}
+	return options;
+}
+function getObjectFlag(obj) {
+	if (Object.isFrozen(obj)) return 3;
+	if (Object.isSealed(obj)) return 2;
+	if (Object.isExtensible(obj)) return 0;
+	return 1;
+}
+function createNumberNode(value) {
+	switch (value) {
+		case Number.POSITIVE_INFINITY: return INFINITY_NODE;
+		case Number.NEGATIVE_INFINITY: return NEG_INFINITY_NODE;
+	}
+	if (value !== value) return NAN_NODE;
+	if (Object.is(value, -0)) return NEG_ZERO_NODE;
+	return createSerovalNode(0, void 0, value, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createStringNode(value) {
+	return createSerovalNode(1, void 0, serializeString(value), void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createBigIntNode(current) {
+	return createSerovalNode(3, void 0, "" + current, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createIndexedValueNode(id) {
+	return createSerovalNode(4, id, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createDateNode(id, current) {
+	const timestamp = current.valueOf();
+	return createSerovalNode(5, id, timestamp !== timestamp ? "" : current.toISOString(), void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createTemporalNode(id, type, current) {
+	return createSerovalNode(36, id, current.toString(), type, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createRegExpNode(id, current) {
+	return createSerovalNode(6, id, void 0, serializeString(current.source), current.flags, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createWKSymbolNode(id, current) {
+	return createSerovalNode(17, id, INV_SYMBOL_REF[current], void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createReferenceNode(id, ref) {
+	return createSerovalNode(18, id, serializeString(getReferenceID(ref)), void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createPluginNode(id, tag, value) {
+	return createSerovalNode(25, id, value, serializeString(tag), void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createArrayNode(id, current, parsedItems) {
+	return createSerovalNode(9, id, void 0, void 0, void 0, void 0, void 0, parsedItems, void 0, void 0, getObjectFlag(current), void 0);
+}
+function createBoxedNode(id, boxed) {
+	return createSerovalNode(21, id, void 0, void 0, void 0, void 0, void 0, void 0, boxed, void 0, void 0, void 0);
+}
+var MAX_TYPED_ARRAY_LENGTH = 1e6;
+function createTypedArrayNode(id, current, buffer) {
+	if (current.length > MAX_TYPED_ARRAY_LENGTH) throw new SerovalUnsupportedTypeError(current);
+	return createSerovalNode(15, id, void 0, current.constructor.name, void 0, void 0, void 0, void 0, buffer, current.byteOffset, void 0, current.length);
+}
+function createBigIntTypedArrayNode(id, current, buffer) {
+	if (current.length > MAX_TYPED_ARRAY_LENGTH) throw new SerovalUnsupportedTypeError(current);
+	return createSerovalNode(16, id, void 0, current.constructor.name, void 0, void 0, void 0, void 0, buffer, current.byteOffset, void 0, current.length);
+}
+function createDataViewNode(id, current, buffer) {
+	if (current.byteLength > MAX_TYPED_ARRAY_LENGTH) throw new SerovalUnsupportedTypeError(current);
+	return createSerovalNode(20, id, void 0, void 0, void 0, void 0, void 0, void 0, buffer, current.byteOffset, void 0, current.byteLength);
+}
+function createErrorNode(id, current, options) {
+	return createSerovalNode(13, id, getErrorConstructor(current), void 0, serializeString(current.message), options, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createAggregateErrorNode(id, current, options) {
+	return createSerovalNode(14, id, getErrorConstructor(current), void 0, serializeString(current.message), options, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function createSetNode(id, items) {
+	return createSerovalNode(7, id, void 0, void 0, void 0, void 0, void 0, items, void 0, void 0, void 0, void 0);
+}
+function createIteratorFactoryInstanceNode(factory, items) {
+	return createSerovalNode(28, void 0, void 0, void 0, void 0, void 0, void 0, [factory, items], void 0, void 0, void 0, void 0);
+}
+function createAsyncIteratorFactoryInstanceNode(factory, items) {
+	return createSerovalNode(30, void 0, void 0, void 0, void 0, void 0, void 0, [factory, items], void 0, void 0, void 0, void 0);
+}
+function createStreamConstructorNode(id, factory, sequence) {
+	return createSerovalNode(31, id, void 0, void 0, void 0, void 0, void 0, sequence, factory, void 0, void 0, void 0);
+}
+function createStreamNextNode(id, parsed) {
+	return createSerovalNode(32, id, void 0, void 0, void 0, void 0, void 0, void 0, parsed, void 0, void 0, void 0);
+}
+function createStreamThrowNode(id, parsed) {
+	return createSerovalNode(33, id, void 0, void 0, void 0, void 0, void 0, void 0, parsed, void 0, void 0, void 0);
+}
+function createStreamReturnNode(id, parsed) {
+	return createSerovalNode(34, id, void 0, void 0, void 0, void 0, void 0, void 0, parsed, void 0, void 0, void 0);
+}
+function createSequenceNode(id, sequence, throwAt, doneAt) {
+	return createSerovalNode(35, id, throwAt, void 0, void 0, void 0, void 0, sequence, void 0, void 0, void 0, doneAt);
+}
+/**
+* An opaque reference allows hiding values from the serializer.
+*/
+var OpaqueReference = class {
+	constructor(value, replacement) {
+		this.value = value;
+		this.replacement = replacement;
+	}
+};
+var PROMISE_CONSTRUCTOR = () => {
+	const resolver = {
+		p: 0,
+		s: 0,
+		f: 0
+	};
+	resolver.p = new Promise((resolve, reject) => {
+		resolver.s = resolve;
+		resolver.f = reject;
+	});
+	return resolver;
+};
+var PROMISE_SUCCESS = (resolver, data) => {
+	resolver.s(data);
+	resolver.p.s = 1;
+	resolver.p.v = data;
+};
+var PROMISE_FAILURE = (resolver, data) => {
+	resolver.f(data);
+	resolver.p.s = 2;
+	resolver.p.v = data;
+};
+var SERIALIZED_PROMISE_CONSTRUCTOR = /* @__PURE__ */ PROMISE_CONSTRUCTOR.toString();
+var SERIALIZED_PROMISE_SUCCESS = /* @__PURE__ */ PROMISE_SUCCESS.toString();
+var SERIALIZED_PROMISE_FAILURE = /* @__PURE__ */ PROMISE_FAILURE.toString();
+var STREAM_CONSTRUCTOR = () => {
+	const buffer = [];
+	const listeners = [];
+	let alive = true;
+	let success = false;
+	let count = 0;
+	const internal = {
+		flush(value, mode, x) {
+			for (x = 0; x < count; x++) {
+				const listener = listeners[x];
+				if (listener) listener[mode](value);
+			}
+		},
+		up(listener, x, z, current) {
+			for (x = 0, z = buffer.length; x < z; x++) {
+				current = buffer[x];
+				if (!alive && x === z - 1) listener[success ? "return" : "throw"](current);
+				else listener.next(current);
+			}
+		},
+		on(listener, temp = 0) {
+			let subscribed = alive;
+			if (alive) {
+				for (temp = 0; temp < count; temp++) if (!listeners[temp]) break;
+				if (temp === count) count++;
+				listeners[temp] = listener;
+			}
+			internal.up(listener);
+			return () => {
+				if (alive && subscribed) {
+					subscribed = false;
+					listeners[temp] = void 0;
+					while (count > 0 && !listeners[count - 1]) count--;
+					listeners.length = count;
+				}
+			};
+		}
+	};
+	return {
+		__SEROVAL_STREAM__: true,
+		on(listener) {
+			return internal.on(listener);
+		},
+		next(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "next");
+			}
+		},
+		throw(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "throw");
+				alive = false;
+				success = false;
+				listeners.length = 0;
+			}
+		},
+		return(value) {
+			if (alive) {
+				buffer.push(value);
+				internal.flush(value, "return");
+				alive = false;
+				success = true;
+				listeners.length = 0;
+			}
+		}
+	};
+};
+var SERIALIZED_STREAM_CONSTRUCTOR = /* @__PURE__ */ STREAM_CONSTRUCTOR.toString();
+var ITERATOR_CONSTRUCTOR = (symbol) => (sequence) => () => {
+	let index = 0;
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (index > sequence.d) return {
+				done: true,
+				value: void 0
+			};
+			const currentIndex = index++;
+			const data = sequence.v[currentIndex];
+			if (currentIndex === sequence.t) throw data;
+			return {
+				done: currentIndex === sequence.d,
+				value: data
+			};
+		}
+	};
+	return instance;
+};
+var SERIALIZED_ITERATOR_CONSTRUCTOR = /* @__PURE__ */ ITERATOR_CONSTRUCTOR.toString();
+var ASYNC_ITERATOR_CONSTRUCTOR = (symbol, createPromise) => (stream) => () => {
+	let count = 0;
+	let doneAt = -1;
+	let isThrow = false;
+	const buffer = [];
+	const pending = [];
+	const internal = { finalize(i = 0, len = pending.length) {
+		for (; i < len; i++) pending[i].s({
+			done: true,
+			value: void 0
+		});
+	} };
+	stream.on({
+		next(value) {
+			const temp = pending.shift();
+			if (temp) temp.s({
+				done: false,
+				value
+			});
+			buffer.push(value);
+		},
+		throw(value) {
+			const temp = pending.shift();
+			if (temp) temp.f(value);
+			internal.finalize();
+			doneAt = buffer.length;
+			isThrow = true;
+			buffer.push(value);
+		},
+		return(value) {
+			const temp = pending.shift();
+			if (temp) temp.s({
+				done: true,
+				value
+			});
+			internal.finalize();
+			doneAt = buffer.length;
+			buffer.push(value);
+		}
+	});
+	const instance = {
+		[symbol]() {
+			return instance;
+		},
+		next() {
+			if (doneAt === -1) {
+				const index = count++;
+				if (index >= buffer.length) {
+					const temp = createPromise();
+					pending.push(temp);
+					return temp.p;
+				}
+				return {
+					done: false,
+					value: buffer[index]
+				};
+			}
+			if (count > doneAt) return {
+				done: true,
+				value: void 0
+			};
+			const index = count++;
+			const value = buffer[index];
+			if (index !== doneAt) return {
+				done: false,
+				value
+			};
+			if (isThrow) throw value;
+			return {
+				done: true,
+				value
+			};
+		}
+	};
+	return instance;
+};
+var SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR = /* @__PURE__ */ ASYNC_ITERATOR_CONSTRUCTOR.toString();
+var ARRAY_BUFFER_CONSTRUCTOR = (b64) => {
+	const decoded = atob(b64);
+	const length = decoded.length;
+	const arr = new Uint8Array(length);
+	for (let i = 0; i < length; i++) arr[i] = decoded.charCodeAt(i);
+	return arr.buffer;
+};
+var SERIALIZED_ARRAY_BUFFER_CONSTRUCTOR = /* @__PURE__ */ ARRAY_BUFFER_CONSTRUCTOR.toString();
+/**
+* An internal class rather than a tagged POJO: identity is checked with
+* `instanceof`, which untrusted input cannot forge (the class is not exported).
+* The eval-based `deserialize` path still rebuilds a `{__SEROVAL_SEQUENCE__…}`
+* POJO from embedded source - it has no access to this class - so a value read
+* back through `deserialize` is not an instance and, by design, is not treated
+* as a genuine Sequence on re-serialization.
+*/
+var Sequence = class {
+	constructor(values, throwAt, doneAt) {
+		this.v = values;
+		this.t = throwAt;
+		this.d = doneAt;
+	}
+};
+function isSequence(value) {
+	return value instanceof Sequence;
+}
+function createSequence(values, throwAt, doneAt) {
+	return new Sequence(values, throwAt, doneAt);
+}
+function createSequenceFromIterable(source) {
+	const values = [];
+	let throwsAt = -1;
+	let doneAt = -1;
+	const iterator = source[SYM_ITERATOR]();
+	while (true) try {
+		const value = iterator.next();
+		values.push(value.value);
+		if (value.done) {
+			doneAt = values.length - 1;
+			break;
+		}
+	} catch (error) {
+		throwsAt = values.length;
+		doneAt = throwsAt;
+		values.push(error);
+		break;
+	}
+	return createSequence(values, throwsAt, doneAt);
+}
+var createIterator = ITERATOR_CONSTRUCTOR(SYM_ITERATOR);
+function sequenceToIterator(sequence) {
+	return createIterator(sequence);
+}
+var ITERATOR = {};
+var ASYNC_ITERATOR = {};
+/**
+* Placeholder references
+*/
+var SPECIAL_REFS = {
+	[0]: {},
+	[1]: {},
+	[2]: {},
+	[3]: {},
+	[4]: {},
+	[5]: {}
+};
+var SPECIAL_REF_STRING = {
+	[0]: "[]",
+	[1]: SERIALIZED_PROMISE_CONSTRUCTOR,
+	[2]: SERIALIZED_PROMISE_SUCCESS,
+	[3]: SERIALIZED_PROMISE_FAILURE,
+	[4]: SERIALIZED_STREAM_CONSTRUCTOR,
+	[5]: SERIALIZED_ARRAY_BUFFER_CONSTRUCTOR
+};
+/**
+* An internal class rather than a tagged POJO: identity is checked with
+* `instanceof`, which untrusted input cannot forge (the class is not exported).
+*
+* The behavior is intentionally duplicated from `STREAM_CONSTRUCTOR`. That
+* constructor's source is embedded verbatim into the eval-based `deserialize`
+* output, which has no access to this class, so the two cannot be shared. A
+* stream read back through `deserialize` is therefore a plain POJO and, by
+* design, is not treated as a genuine Stream on re-serialization. Keep the two
+* implementations in sync.
+*/
+var Stream = class {
+	constructor() {
+		this.buffer = [];
+		this.listeners = [];
+		this.alive = true;
+		this.success = false;
+		this.count = 0;
+	}
+	flush(value, mode) {
+		for (let x = 0; x < this.count; x++) {
+			var _this$listeners$x;
+			(_this$listeners$x = this.listeners[x]) === null || _this$listeners$x === void 0 || _this$listeners$x[mode](value);
+		}
+	}
+	replay(listener) {
+		for (let x = 0, z = this.buffer.length; x < z; x++) {
+			const current = this.buffer[x];
+			if (!this.alive && x === z - 1) listener[this.success ? "return" : "throw"](current);
+			else listener.next(current);
+		}
+	}
+	on(listener) {
+		let subscribed = this.alive;
+		let temp = 0;
+		if (subscribed) {
+			for (; temp < this.count; temp++) if (!this.listeners[temp]) break;
+			if (temp === this.count) this.count++;
+			this.listeners[temp] = listener;
+		}
+		this.replay(listener);
+		return () => {
+			if (this.alive && subscribed) {
+				subscribed = false;
+				this.listeners[temp] = void 0;
+				while (this.count > 0 && !this.listeners[this.count - 1]) this.count--;
+				this.listeners.length = this.count;
+			}
+		};
+	}
+	next(value) {
+		if (this.alive) {
+			this.buffer.push(value);
+			this.flush(value, "next");
+		}
+	}
+	throw(value) {
+		if (this.alive) {
+			this.buffer.push(value);
+			this.flush(value, "throw");
+			this.alive = false;
+			this.success = false;
+			this.listeners.length = 0;
+		}
+	}
+	return(value) {
+		if (this.alive) {
+			this.buffer.push(value);
+			this.flush(value, "return");
+			this.alive = false;
+			this.success = true;
+			this.listeners.length = 0;
+		}
+	}
+};
+function isStream(value) {
+	return value instanceof Stream;
+}
+function createStream() {
+	return new Stream();
+}
+function createStreamFromAsyncIterable(iterable, cleanups) {
+	const stream = createStream();
+	const iterator = iterable[SYM_ASYNC_ITERATOR]();
+	let cancelled = false;
+	let done = false;
+	cleanups === null || cleanups === void 0 || cleanups.push(() => {
+		if (!(done || cancelled)) {
+			cancelled = true;
+			Promise.resolve().then(() => {
+				var _iterator$return;
+				return (_iterator$return = iterator.return) === null || _iterator$return === void 0 ? void 0 : _iterator$return.call(iterator);
+			}).catch(() => {});
+		}
+	});
+	async function push() {
+		try {
+			while (!cancelled) {
+				const value = await iterator.next();
+				if (cancelled) return;
+				if (value.done) {
+					done = true;
+					stream.return(value.value);
+					break;
+				}
+				stream.next(value.value);
+			}
+		} catch (error) {
+			done = true;
+			if (!cancelled) stream.throw(error);
+		}
+	}
+	push().catch(() => {});
+	return stream;
+}
+var createAsyncIterable = ASYNC_ITERATOR_CONSTRUCTOR(SYM_ASYNC_ITERATOR, PROMISE_CONSTRUCTOR);
+function streamToAsyncIterable(stream) {
+	return createAsyncIterable(stream);
+}
+async function promiseToResult(current) {
+	try {
+		return [1, await current];
+	} catch (e) {
+		return [0, e];
+	}
+}
+function createBaseParserContext(mode, options) {
+	var _options$compactArray;
+	return {
+		plugins: options.plugins,
+		mode,
+		marked: /* @__PURE__ */ new Set(),
+		features: 127 ^ (options.disabledFeatures || 0),
+		refs: options.refs || /* @__PURE__ */ new Map(),
+		depthLimit: options.depthLimit || 1e3,
+		compactArrayBufferViews: (_options$compactArray = options.compactArrayBufferViews) !== null && _options$compactArray !== void 0 ? _options$compactArray : false
+	};
+}
+/**
+* Ensures that the value (based on an identifier) has been visited by the parser.
+* @param ctx
+* @param id
+*/
+function markParserRef(ctx, id) {
+	ctx.marked.add(id);
+}
+/**
+* Creates an identifier for a value
+* @param ctx
+* @param current
+*/
+function createIndexForValue(ctx, current) {
+	const id = ctx.refs.size;
+	ctx.refs.set(current, id);
+	return id;
+}
+function getNodeForIndexedValue(ctx, current) {
+	const registeredId = ctx.refs.get(current);
+	if (registeredId != null) {
+		markParserRef(ctx, registeredId);
+		return {
+			type: 1,
+			value: createIndexedValueNode(registeredId)
+		};
+	}
+	return {
+		type: 0,
+		value: createIndexForValue(ctx, current)
+	};
+}
+function getReferenceNode(ctx, current) {
+	const indexed = getNodeForIndexedValue(ctx, current);
+	if (indexed.type === 1) return indexed;
+	if (hasReferenceID(current)) return {
+		type: 2,
+		value: createReferenceNode(indexed.value, current)
+	};
+	return indexed;
+}
+/**
+* Parsing methods
+*/
+function parseWellKnownSymbol(ctx, current) {
+	const ref = getReferenceNode(ctx, current);
+	if (ref.type !== 0) return ref.value;
+	if (current in INV_SYMBOL_REF) return createWKSymbolNode(ref.value, current);
+	throw new SerovalUnsupportedTypeError(current);
+}
+function parseSpecialReference(ctx, ref) {
+	const result = getNodeForIndexedValue(ctx, SPECIAL_REFS[ref]);
+	if (result.type === 1) return result.value;
+	return createSerovalNode(26, result.value, ref, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0);
+}
+function parseIteratorFactory(ctx) {
+	const result = getNodeForIndexedValue(ctx, ITERATOR);
+	if (result.type === 1) return result.value;
+	return createSerovalNode(27, result.value, void 0, void 0, void 0, void 0, void 0, void 0, parseWellKnownSymbol(ctx, SYM_ITERATOR), void 0, void 0, void 0);
+}
+function parseAsyncIteratorFactory(ctx) {
+	const result = getNodeForIndexedValue(ctx, ASYNC_ITERATOR);
+	if (result.type === 1) return result.value;
+	return createSerovalNode(29, result.value, void 0, void 0, void 0, void 0, void 0, [parseSpecialReference(ctx, 1), parseWellKnownSymbol(ctx, SYM_ASYNC_ITERATOR)], void 0, void 0, void 0, void 0);
+}
+function createObjectNode(id, current, empty, record) {
+	return createSerovalNode(empty ? 11 : 10, id, void 0, void 0, void 0, record, void 0, void 0, void 0, void 0, getObjectFlag(current), void 0);
+}
+function createMapNode(ctx, id, k, v) {
+	return createSerovalNode(8, id, void 0, void 0, void 0, void 0, {
+		k,
+		v
+	}, void 0, parseSpecialReference(ctx, 0), void 0, void 0, void 0);
+}
+function createPromiseConstructorNode(ctx, id, resolver) {
+	return createSerovalNode(22, id, resolver, void 0, void 0, void 0, void 0, void 0, parseSpecialReference(ctx, 1), void 0, void 0, void 0);
+}
+function getArrayBufferView(ctx, current) {
+	if (!ctx.compactArrayBufferViews) return current;
+	const buffer = new Uint8Array(current.buffer, current.byteOffset, current.byteLength).slice().buffer;
+	const Constructor = current.constructor;
+	return new Constructor(buffer);
+}
+function encodeArrayBuffer(current) {
+	if (typeof Buffer !== "undefined") return Buffer.from(current).toString("base64");
+	const bytes = new Uint8Array(current);
+	if (typeof bytes.toBase64 === "function") return bytes.toBase64();
+	let result = "";
+	for (let i = 0, len = bytes.length; i < len; i++) result += String.fromCharCode(bytes[i]);
+	return btoa(result);
+}
+function createArrayBufferNode(ctx, id, current) {
+	return createSerovalNode(19, id, encodeArrayBuffer(current), void 0, void 0, void 0, void 0, void 0, parseSpecialReference(ctx, 5), void 0, void 0, void 0);
+}
+function createAsyncParserContext(mode, options) {
+	return {
+		base: createBaseParserContext(mode, options),
+		child: void 0
+	};
+}
+var AsyncParsePluginContext = class {
+	constructor(_p, depth) {
+		this._p = _p;
+		this.depth = depth;
+	}
+	parse(current) {
+		return parseAsync(this._p, this.depth, current);
+	}
+};
+async function parseItems$1(ctx, depth, current) {
+	const nodes = [];
+	for (let i = 0, len = current.length; i < len; i++) if (i in current) nodes[i] = await parseAsync(ctx, depth, current[i]);
+	else nodes[i] = 0;
+	return nodes;
+}
+async function parseArray$1(ctx, depth, id, current) {
+	return createArrayNode(id, current, await parseItems$1(ctx, depth, current));
+}
+async function parseProperties$1(ctx, depth, properties) {
+	const entries = Object.entries(properties);
+	const keyNodes = [];
+	const valueNodes = [];
+	for (let i = 0, len = entries.length; i < len; i++) {
+		keyNodes.push(serializeString(entries[i][0]));
+		valueNodes.push(await parseAsync(ctx, depth, entries[i][1]));
+	}
+	if (SYM_ITERATOR in properties) {
+		keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ITERATOR));
+		valueNodes.push(createIteratorFactoryInstanceNode(parseIteratorFactory(ctx.base), await parseAsync(ctx, depth, createSequenceFromIterable(properties))));
+	}
+	if (SYM_ASYNC_ITERATOR in properties) {
+		keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ASYNC_ITERATOR));
+		valueNodes.push(createAsyncIteratorFactoryInstanceNode(parseAsyncIteratorFactory(ctx.base), await parseAsync(ctx, depth, createStreamFromAsyncIterable(properties))));
+	}
+	if (SYM_TO_STRING_TAG in properties) {
+		keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_TO_STRING_TAG));
+		valueNodes.push(createStringNode(properties[SYM_TO_STRING_TAG]));
+	}
+	if (SYM_IS_CONCAT_SPREADABLE in properties) {
+		keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_IS_CONCAT_SPREADABLE));
+		valueNodes.push(properties[SYM_IS_CONCAT_SPREADABLE] ? TRUE_NODE : FALSE_NODE);
+	}
+	return {
+		k: keyNodes,
+		v: valueNodes
+	};
+}
+async function parsePlainObject$1(ctx, depth, id, current, empty) {
+	return createObjectNode(id, current, empty, await parseProperties$1(ctx, depth, current));
+}
+async function parseBoxed$1(ctx, depth, id, current) {
+	return createBoxedNode(id, await parseAsync(ctx, depth, current.valueOf()));
+}
+async function parseTypedArray$1(ctx, depth, id, current) {
+	current = getArrayBufferView(ctx.base, current);
+	return createTypedArrayNode(id, current, await parseAsync(ctx, depth, current.buffer));
+}
+async function parseBigIntTypedArray$1(ctx, depth, id, current) {
+	current = getArrayBufferView(ctx.base, current);
+	return createBigIntTypedArrayNode(id, current, await parseAsync(ctx, depth, current.buffer));
+}
+async function parseDataView$1(ctx, depth, id, current) {
+	current = getArrayBufferView(ctx.base, current);
+	return createDataViewNode(id, current, await parseAsync(ctx, depth, current.buffer));
+}
+async function parseError$1(ctx, depth, id, current) {
+	const options = getErrorOptions(current, ctx.base.features);
+	return createErrorNode(id, current, options ? await parseProperties$1(ctx, depth, options) : void 0);
+}
+async function parseAggregateError$1(ctx, depth, id, current) {
+	const options = getErrorOptions(current, ctx.base.features);
+	return createAggregateErrorNode(id, current, options ? await parseProperties$1(ctx, depth, options) : void 0);
+}
+async function parseMap$1(ctx, depth, id, current) {
+	const keyNodes = [];
+	const valueNodes = [];
+	for (const [key, value] of current.entries()) {
+		keyNodes.push(await parseAsync(ctx, depth, key));
+		valueNodes.push(await parseAsync(ctx, depth, value));
+	}
+	return createMapNode(ctx.base, id, keyNodes, valueNodes);
+}
+async function parseSet$1(ctx, depth, id, current) {
+	const items = [];
+	for (const item of current.keys()) items.push(await parseAsync(ctx, depth, item));
+	return createSetNode(id, items);
+}
+async function parsePlugin$1(ctx, depth, id, current) {
+	const currentPlugins = ctx.base.plugins;
+	if (currentPlugins) for (let i = 0, len = currentPlugins.length; i < len; i++) {
+		const plugin = currentPlugins[i];
+		if (plugin.parse.async && plugin.test(current)) return createPluginNode(id, plugin.tag, await plugin.parse.async(current, new AsyncParsePluginContext(ctx, depth), { id }));
+	}
+}
+async function parsePromise$1(ctx, depth, id, current) {
+	const [status, result] = await promiseToResult(current);
+	return createSerovalNode(12, id, status, void 0, void 0, void 0, void 0, void 0, await parseAsync(ctx, depth, result), void 0, void 0, void 0);
+}
+function parseStreamHandle(depth, id, current, resolve, reject) {
+	const sequence = [];
+	const cleanup = current.on({
+		next: (value) => {
+			markParserRef(this.base, id);
+			parseAsync(this, depth, value).then((data) => {
+				sequence.push(createStreamNextNode(id, data));
+			}, (data) => {
+				reject(data);
+				cleanup();
+			});
+		},
+		throw: (value) => {
+			markParserRef(this.base, id);
+			parseAsync(this, depth, value).then((data) => {
+				sequence.push(createStreamThrowNode(id, data));
+				resolve(sequence);
+				cleanup();
+			}, (data) => {
+				reject(data);
+				cleanup();
+			});
+		},
+		return: (value) => {
+			markParserRef(this.base, id);
+			parseAsync(this, depth, value).then((data) => {
+				sequence.push(createStreamReturnNode(id, data));
+				resolve(sequence);
+				cleanup();
+			}, (data) => {
+				reject(data);
+				cleanup();
+			});
+		}
+	});
+}
+async function parseStream$1(ctx, depth, id, current) {
+	return createStreamConstructorNode(id, parseSpecialReference(ctx.base, 4), await new Promise(parseStreamHandle.bind(ctx, depth, id, current)));
+}
+async function parseSequence$1(ctx, depth, id, current) {
+	const nodes = [];
+	for (let i = 0, len = current.v.length; i < len; i++) nodes[i] = await parseAsync(ctx, depth, current.v[i]);
+	return createSequenceNode(id, nodes, current.t, current.d);
+}
+async function parseObjectAsync(ctx, depth, id, current) {
+	if (Array.isArray(current)) return parseArray$1(ctx, depth, id, current);
+	if (isStream(current)) return parseStream$1(ctx, depth, id, current);
+	if (isSequence(current)) return parseSequence$1(ctx, depth, id, current);
+	let currentClass = current.constructor;
+	if (currentClass !== void 0 && typeof currentClass !== "function") {
+		const proto = Object.getPrototypeOf(current);
+		currentClass = proto === null ? void 0 : proto.constructor;
+	}
+	if (currentClass === OpaqueReference) return parseAsync(ctx, depth, current.replacement);
+	const parsed = await parsePlugin$1(ctx, depth, id, current);
+	if (parsed) return parsed;
+	switch (currentClass) {
+		case Object: return parsePlainObject$1(ctx, depth, id, current, false);
+		case void 0: return parsePlainObject$1(ctx, depth, id, current, true);
+		case Date: return createDateNode(id, current);
+		case Error:
+		case EvalError:
+		case RangeError:
+		case ReferenceError:
+		case SyntaxError:
+		case TypeError:
+		case URIError: return parseError$1(ctx, depth, id, current);
+		case Number:
+		case Boolean:
+		case String:
+		case BigInt: return parseBoxed$1(ctx, depth, id, current);
+		case ArrayBuffer: return createArrayBufferNode(ctx.base, id, current);
+		case Int8Array:
+		case Int16Array:
+		case Int32Array:
+		case Uint8Array:
+		case Uint16Array:
+		case Uint32Array:
+		case Uint8ClampedArray:
+		case Float32Array:
+		case Float64Array: return parseTypedArray$1(ctx, depth, id, current);
+		case DataView: return parseDataView$1(ctx, depth, id, current);
+		case Map: return parseMap$1(ctx, depth, id, current);
+		case Set: return parseSet$1(ctx, depth, id, current);
+	}
+	if (currentClass === Promise || current instanceof Promise) return parsePromise$1(ctx, depth, id, current);
+	const currentFeatures = ctx.base.features;
+	if (currentFeatures & 32 && currentClass === RegExp) return createRegExpNode(id, current);
+	if (currentFeatures & 16) switch (currentClass) {
+		case BigInt64Array:
+		case BigUint64Array: return parseBigIntTypedArray$1(ctx, depth, id, current);
+	}
+	if (currentFeatures & 1 && typeof AggregateError !== "undefined" && (currentClass === AggregateError || current instanceof AggregateError)) return parseAggregateError$1(ctx, depth, id, current);
+	if (currentFeatures & 64 && typeof Temporal !== "undefined") switch (currentClass) {
+		case Temporal.Instant: return createTemporalNode(id, 0, current);
+		case Temporal.Duration: return createTemporalNode(id, 1, current);
+		case Temporal.PlainDate: return createTemporalNode(id, 2, current);
+		case Temporal.PlainDateTime: return createTemporalNode(id, 3, current);
+		case Temporal.PlainMonthDay: return createTemporalNode(id, 4, current);
+		case Temporal.PlainTime: return createTemporalNode(id, 5, current);
+		case Temporal.PlainYearMonth: return createTemporalNode(id, 6, current);
+		case Temporal.ZonedDateTime: return createTemporalNode(id, 7, current);
+	}
+	if (current instanceof Error) return parseError$1(ctx, depth, id, current);
+	if (SYM_ITERATOR in current || SYM_ASYNC_ITERATOR in current) return parsePlainObject$1(ctx, depth, id, current, !!currentClass);
+	throw new SerovalUnsupportedTypeError(current);
+}
+async function parseFunctionAsync(ctx, depth, current) {
+	const ref = getReferenceNode(ctx.base, current);
+	if (ref.type !== 0) return ref.value;
+	const plugin = await parsePlugin$1(ctx, depth, ref.value, current);
+	if (plugin) return plugin;
+	throw new SerovalUnsupportedTypeError(current);
+}
+async function parseAsync(ctx, depth, current) {
+	if (depth >= ctx.base.depthLimit) throw new SerovalDepthLimitError(ctx.base.depthLimit);
+	switch (typeof current) {
+		case "boolean": return current ? TRUE_NODE : FALSE_NODE;
+		case "undefined": return UNDEFINED_NODE;
+		case "string": return createStringNode(current);
+		case "number": return createNumberNode(current);
+		case "bigint": return createBigIntNode(current);
+		case "object":
+			if (current) {
+				const ref = getReferenceNode(ctx.base, current);
+				return ref.type === 0 ? await parseObjectAsync(ctx, depth + 1, ref.value, current) : ref.value;
+			}
+			return NULL_NODE;
+		case "symbol": return parseWellKnownSymbol(ctx.base, current);
+		case "function": return parseFunctionAsync(ctx, depth, current);
+		default: throw new SerovalUnsupportedTypeError(current);
+	}
+}
+async function parseTopAsync(ctx, current) {
+	try {
+		return await parseAsync(ctx, 0, current);
+	} catch (error) {
+		throw error instanceof SerovalParserError ? error : new SerovalParserError(error);
+	}
+}
+function createPlugin(plugin) {
+	return plugin;
+}
+function dedupePlugins(deduped, plugins) {
+	for (let i = 0, len = plugins.length; i < len; i++) {
+		const current = plugins[i];
+		if (!deduped.has(current)) {
+			deduped.add(current);
+			if (current.extends) dedupePlugins(deduped, current.extends);
+		}
+	}
+}
+function resolvePlugins(plugins) {
+	if (plugins) {
+		const deduped = /* @__PURE__ */ new Set();
+		dedupePlugins(deduped, plugins);
+		return [...deduped];
+	}
+}
+function getTypedArrayConstructor(name) {
+	switch (name) {
+		case "Int8Array": return Int8Array;
+		case "Int16Array": return Int16Array;
+		case "Int32Array": return Int32Array;
+		case "Uint8Array": return Uint8Array;
+		case "Uint16Array": return Uint16Array;
+		case "Uint32Array": return Uint32Array;
+		case "Uint8ClampedArray": return Uint8ClampedArray;
+		case "Float32Array": return Float32Array;
+		case "Float64Array": return Float64Array;
+		case "BigInt64Array": return BigInt64Array;
+		case "BigUint64Array": return BigUint64Array;
+		default: throw new SerovalUnknownTypedArrayError(name);
+	}
+}
+function isValidKey(key) {
+	switch (key) {
+		case "constructor":
+		case "__proto__":
+		case "prototype":
+		case "__defineGetter__":
+		case "__defineSetter__":
+		case "__lookupGetter__":
+		case "__lookupSetter__": return false;
+		default: return true;
+	}
+}
+function isValidSymbol(symbol) {
+	switch (symbol) {
+		case SYM_ASYNC_ITERATOR:
+		case SYM_IS_CONCAT_SPREADABLE:
+		case SYM_TO_STRING_TAG:
+		case SYM_ITERATOR: return true;
+		default: return false;
+	}
+}
+var DEFAULT_MAX_BASE64_LENGTH = 1e6;
+var MIN_NATIVE_BASE64_LENGTH = 512;
+var MAX_BIGINT_LENGTH = 1e4;
+var MAX_REGEXP_SOURCE_LENGTH = 2e4;
+function applyObjectFlag(obj, flag) {
+	switch (flag) {
+		case 3: return Object.freeze(obj);
+		case 1: return Object.preventExtensions(obj);
+		case 2: return Object.seal(obj);
+		default: return obj;
+	}
+}
+var DEFAULT_DEPTH_LIMIT = 1e3;
+function createBaseDeserializerContext(mode, options) {
+	var _options$maxBase64Len, _options$features;
+	const maxBase64Length = (_options$maxBase64Len = options.maxBase64Length) !== null && _options$maxBase64Len !== void 0 ? _options$maxBase64Len : DEFAULT_MAX_BASE64_LENGTH;
+	if (!Number.isSafeInteger(maxBase64Length) || maxBase64Length < 0) throw new RangeError("maxBase64Length must be a non-negative safe integer");
+	const refs = options.refs || /* @__PURE__ */ new Map();
+	if (!("types" in refs)) Object.assign(refs, { types: /* @__PURE__ */ new Map() });
+	return {
+		mode,
+		plugins: options.plugins,
+		refs,
+		features: (_options$features = options.features) !== null && _options$features !== void 0 ? _options$features : 127 ^ (options.disabledFeatures || 0),
+		depthLimit: options.depthLimit || DEFAULT_DEPTH_LIMIT,
+		maxBase64Length
+	};
+}
+function createVanillaDeserializerContext(options) {
+	return {
+		mode: 1,
+		base: createBaseDeserializerContext(1, options),
+		child: void 0,
+		state: { marked: new Set(options.markedRefs) }
+	};
+}
+var DeserializePluginContext = class {
+	constructor(_p, depth) {
+		this._p = _p;
+		this.depth = depth;
+	}
+	deserialize(node) {
+		return deserialize$1(this._p, this.depth, node);
+	}
+};
+function guardIndexedValue(ctx, id) {
+	if (id < 0 || !Number.isFinite(id) || !Number.isInteger(id)) throw new SerovalMalformedNodeError({
+		t: 4,
+		i: id
+	});
+	if (ctx.refs.has(id)) throw new Error("Conflicted ref id: " + id);
+}
+function isThennable(value) {
+	return !!value && (typeof value === "object" || typeof value === "function") && "then" in value && typeof value.then === "function";
+}
+function assignIndexedValueVanilla(ctx, id, value) {
+	guardIndexedValue(ctx.base, id);
+	if (ctx.state.marked.has(id)) ctx.base.refs.set(id, value);
+	return value;
+}
+function assignIndexedValueCross(ctx, id, value) {
+	guardIndexedValue(ctx.base, id);
+	ctx.base.refs.set(id, value);
+	return value;
+}
+function assignIndexedValue$1(ctx, id, value) {
+	return ctx.mode === 1 ? assignIndexedValueVanilla(ctx, id, value) : assignIndexedValueCross(ctx, id, value);
+}
+function deserializeKnownValue(node, record, key) {
+	if (Object.hasOwn(record, key)) return record[key];
+	throw new SerovalMalformedNodeError(node);
+}
+function deserializeReference(ctx, node) {
+	return assignIndexedValue$1(ctx, node.i, getReference(deserializeString(node.s)));
+}
+function validateNodeList(node, list) {
+	if (!Array.isArray(list)) throw new SerovalMalformedNodeError(node);
+}
+function deserializeArray(ctx, depth, node) {
+	const items = node.a;
+	validateNodeList(node, items);
+	const len = items.length;
+	const result = assignIndexedValue$1(ctx, node.i, new Array(len));
+	for (let i = 0, item; i < len; i++) {
+		item = items[i];
+		if (item) result[i] = deserialize$1(ctx, depth, item);
+	}
+	applyObjectFlag(result, node.o);
+	return result;
+}
+function assignStringProperty(object, key, value) {
+	if (isValidKey(key)) object[key] = value;
+	else Object.defineProperty(object, key, {
+		value,
+		configurable: true,
+		enumerable: true,
+		writable: true
+	});
+}
+function assignProperty(ctx, depth, object, key, value) {
+	if (typeof key === "string") assignStringProperty(object, deserializeString(key), deserialize$1(ctx, depth, value));
+	else {
+		const actual = deserialize$1(ctx, depth, key);
+		switch (typeof actual) {
+			case "string":
+				assignStringProperty(object, actual, deserialize$1(ctx, depth, value));
+				break;
+			case "symbol":
+				if (isValidSymbol(actual)) object[actual] = deserialize$1(ctx, depth, value);
+				break;
+			default: throw new SerovalMalformedNodeError(key);
+		}
+	}
+}
+function assignNodeType(ctx, id, type) {
+	ctx.base.refs.types.set(id, type);
+}
+function validateNodeType(ctx, node, id, type) {
+	if (ctx.base.refs.types.get(id) !== type) throw new SerovalMalformedNodeError(node);
+}
+function deserializeProperties(ctx, depth, node, result) {
+	const keys = node.k;
+	validateNodeList(node, keys);
+	validateNodeList(node, node.v);
+	if (keys.length > 0) for (let i = 0, vals = node.v, len = keys.length; i < len; i++) assignProperty(ctx, depth, result, keys[i], vals[i]);
+	return result;
+}
+function deserializeObject(ctx, depth, node) {
+	const result = assignIndexedValue$1(ctx, node.i, node.t === 10 ? {} : Object.create(null));
+	deserializeProperties(ctx, depth, node.p, result);
+	applyObjectFlag(result, node.o);
+	return result;
+}
+function deserializeDate(ctx, node) {
+	return assignIndexedValue$1(ctx, node.i, new Date(node.s));
+}
+function deserializeTemporal(ctx, node) {
+	if (!(ctx.base.features & 64)) throw new SerovalUnsupportedNodeError(node);
+	let value;
+	switch (node.c) {
+		case 0:
+			value = Temporal.Instant.from(node.s);
+			break;
+		case 1:
+			value = Temporal.Duration.from(node.s);
+			break;
+		case 2:
+			value = Temporal.PlainDate.from(node.s);
+			break;
+		case 3:
+			value = Temporal.PlainDateTime.from(node.s);
+			break;
+		case 4:
+			value = Temporal.PlainMonthDay.from(node.s);
+			break;
+		case 5:
+			value = Temporal.PlainTime.from(node.s);
+			break;
+		case 6:
+			value = Temporal.PlainYearMonth.from(node.s);
+			break;
+		case 7:
+			value = Temporal.ZonedDateTime.from(node.s);
+			break;
+		default: throw new SerovalMalformedNodeError(node);
+	}
+	return assignIndexedValue$1(ctx, node.i, value);
+}
+function deserializeRegExp(ctx, node) {
+	if (ctx.base.features & 32) {
+		const source = deserializeString(node.c);
+		if (source.length > MAX_REGEXP_SOURCE_LENGTH) throw new SerovalMalformedNodeError(node);
+		return assignIndexedValue$1(ctx, node.i, new RegExp(source, node.m));
+	}
+	throw new SerovalUnsupportedNodeError(node);
+}
+function deserializeSet(ctx, depth, node) {
+	const result = assignIndexedValue$1(ctx, node.i, /* @__PURE__ */ new Set());
+	validateNodeList(node, node.a);
+	for (let i = 0, items = node.a, len = items.length; i < len; i++) result.add(deserialize$1(ctx, depth, items[i]));
+	return result;
+}
+function deserializeMap(ctx, depth, node) {
+	const result = assignIndexedValue$1(ctx, node.i, /* @__PURE__ */ new Map());
+	validateNodeList(node, node.e.k);
+	validateNodeList(node, node.e.v);
+	for (let i = 0, keys = node.e.k, vals = node.e.v, len = keys.length; i < len; i++) result.set(deserialize$1(ctx, depth, keys[i]), deserialize$1(ctx, depth, vals[i]));
+	return result;
+}
+function deserializeArrayBuffer(ctx, node) {
+	if (typeof node.s !== "string") throw new SerovalMalformedNodeError(node);
+	if (node.s.length > ctx.base.maxBase64Length) throw new RangeError("ArrayBuffer exceeds maxBase64Length (" + ctx.base.maxBase64Length + ")");
+	const source = deserializeString(node.s);
+	let buffer;
+	if (source.length < MIN_NATIVE_BASE64_LENGTH || typeof Buffer === "undefined") buffer = ARRAY_BUFFER_CONSTRUCTOR(source);
+	else {
+		const decoded = atob(source);
+		buffer = new ArrayBuffer(decoded.length);
+		Buffer.from(buffer).write(decoded, "latin1");
+	}
+	return assignIndexedValue$1(ctx, node.i, buffer);
+}
+function deserializeTypedArray(ctx, depth, node) {
+	var _node$b;
+	const construct = getTypedArrayConstructor(node.c);
+	const source = deserialize$1(ctx, depth, node.f);
+	if (!(source instanceof ArrayBuffer)) throw new SerovalMalformedNodeError(node);
+	const offset = (_node$b = node.b) !== null && _node$b !== void 0 ? _node$b : 0;
+	if (offset < 0 || offset > source.byteLength) throw new SerovalMalformedNodeError(node);
+	return assignIndexedValue$1(ctx, node.i, new construct(source, offset, node.l));
+}
+function deserializeDataView(ctx, depth, node) {
+	var _node$b2;
+	const source = deserialize$1(ctx, depth, node.f);
+	if (!(source instanceof ArrayBuffer)) throw new SerovalMalformedNodeError(node);
+	const offset = (_node$b2 = node.b) !== null && _node$b2 !== void 0 ? _node$b2 : 0;
+	if (offset < 0 || offset > source.byteLength) throw new SerovalMalformedNodeError(node);
+	return assignIndexedValue$1(ctx, node.i, new DataView(source, offset, node.l));
+}
+function deserializeDictionary(ctx, depth, node, result) {
+	if (node.p) {
+		const fields = deserializeProperties(ctx, depth, node.p, {});
+		Object.defineProperties(result, Object.getOwnPropertyDescriptors(fields));
+	}
+	return result;
+}
+function deserializeAggregateError(ctx, depth, node) {
+	return deserializeDictionary(ctx, depth, node, assignIndexedValue$1(ctx, node.i, new AggregateError([], deserializeString(node.m))));
+}
+function deserializeError(ctx, depth, node) {
+	const construct = deserializeKnownValue(node, ERROR_CONSTRUCTOR, node.s);
+	return deserializeDictionary(ctx, depth, node, assignIndexedValue$1(ctx, node.i, new construct(deserializeString(node.m))));
+}
+function deserializePromise(ctx, depth, node) {
+	const deferred = PROMISE_CONSTRUCTOR();
+	const result = assignIndexedValue$1(ctx, node.i, deferred.p);
+	const deserialized = deserialize$1(ctx, depth, node.f);
+	if (isThennable(deserialized)) throw new SerovalMalformedNodeError(node.f);
+	if (node.s) deferred.s(deserialized);
+	else deferred.f(deserialized);
+	return result;
+}
+function deserializeBoxed(ctx, depth, node) {
+	return assignIndexedValue$1(ctx, node.i, Object(deserialize$1(ctx, depth, node.f)));
+}
+function deserializePlugin(ctx, depth, node) {
+	const currentPlugins = ctx.base.plugins;
+	if (currentPlugins) {
+		const tag = deserializeString(node.c);
+		for (let i = 0, len = currentPlugins.length; i < len; i++) {
+			const plugin = currentPlugins[i];
+			if (plugin.tag === tag) return assignIndexedValue$1(ctx, node.i, plugin.deserialize(node.s, new DeserializePluginContext(ctx, depth), { id: node.i }));
+		}
+	}
+	throw new SerovalMissingPluginError(node.c);
+}
+function deserializePromiseConstructor(ctx, node) {
+	const value = assignIndexedValue$1(ctx, node.i, assignIndexedValue$1(ctx, node.s, PROMISE_CONSTRUCTOR()).p);
+	assignNodeType(ctx, node.s, 22);
+	return value;
+}
+function deserializePromiseFulfill(ctx, depth, node) {
+	const deferred = ctx.base.refs.get(node.i);
+	if (deferred) {
+		validateNodeType(ctx, node, node.i, 22);
+		const deserialized = deserialize$1(ctx, depth, node.a[1]);
+		if (isThennable(deserialized)) throw new SerovalMalformedNodeError(node.a[1]);
+		if (node.t === 23) deferred.s(deserialized);
+		else deferred.f(deserialized);
+		return;
+	}
+	throw new SerovalMissingInstanceError("Promise");
+}
+function deserializeIteratorFactoryInstance(ctx, depth, node) {
+	deserialize$1(ctx, depth, node.a[0]);
+	const source = deserialize$1(ctx, depth, node.a[1]);
+	if (!isSequence(source)) throw new SerovalMalformedNodeError(node.a[1]);
+	return sequenceToIterator(source);
+}
+function deserializeAsyncIteratorFactoryInstance(ctx, depth, node) {
+	deserialize$1(ctx, depth, node.a[0]);
+	const source = deserialize$1(ctx, depth, node.a[1]);
+	if (!isStream(source)) throw new SerovalMalformedNodeError(node.a[1]);
+	return streamToAsyncIterable(source);
+}
+function deserializeStreamConstructor(ctx, depth, node) {
+	const result = assignIndexedValue$1(ctx, node.i, createStream());
+	assignNodeType(ctx, node.i, 31);
+	const items = node.a;
+	validateNodeList(node, items);
+	const len = items.length;
+	if (len) for (let i = 0; i < len; i++) deserialize$1(ctx, depth, items[i]);
+	return result;
+}
+function deserializeStreamNext(ctx, depth, node) {
+	const deferred = ctx.base.refs.get(node.i);
+	if (deferred) {
+		validateNodeType(ctx, node, node.i, 31);
+		deferred.next(deserialize$1(ctx, depth, node.f));
+		return;
+	}
+	throw new SerovalMissingInstanceError("Stream");
+}
+function deserializeStreamThrow(ctx, depth, node) {
+	const deferred = ctx.base.refs.get(node.i);
+	if (deferred) {
+		validateNodeType(ctx, node, node.i, 31);
+		deferred.throw(deserialize$1(ctx, depth, node.f));
+		return;
+	}
+	throw new SerovalMissingInstanceError("Stream");
+}
+function deserializeStreamReturn(ctx, depth, node) {
+	const deferred = ctx.base.refs.get(node.i);
+	if (deferred) {
+		validateNodeType(ctx, node, node.i, 31);
+		deferred.return(deserialize$1(ctx, depth, node.f));
+		return;
+	}
+	throw new SerovalMissingInstanceError("Stream");
+}
+function deserializeIteratorFactory(ctx, depth, node) {
+	deserialize$1(ctx, depth, node.f);
+}
+function deserializeAsyncIteratorFactory(ctx, depth, node) {
+	deserialize$1(ctx, depth, node.a[1]);
+}
+function isSequenceIndex(value, size) {
+	return Number.isInteger(value) && value >= -1 && value < size;
+}
+function deserializeSequence(ctx, depth, node) {
+	validateNodeList(node, node.a);
+	const size = node.a.length;
+	if (!(isSequenceIndex(node.s, size) && isSequenceIndex(node.l, size))) throw new SerovalMalformedNodeError(node);
+	const result = assignIndexedValue$1(ctx, node.i, createSequence([], node.s, node.l));
+	for (let i = 0; i < size; i++) result.v[i] = deserialize$1(ctx, depth, node.a[i]);
+	return result;
+}
+function deserialize$1(ctx, depth, node) {
+	if (depth > ctx.base.depthLimit) throw new SerovalDepthLimitError(ctx.base.depthLimit);
+	depth += 1;
+	switch (node.t) {
+		case 2: return deserializeKnownValue(node, CONSTANT_VAL, node.s);
+		case 0: return Number(node.s);
+		case 1: return deserializeString(String(node.s));
+		case 3:
+			if (String(node.s).length > MAX_BIGINT_LENGTH) throw new SerovalMalformedNodeError(node);
+			return BigInt(node.s);
+		case 4: return ctx.base.refs.get(node.i);
+		case 18: return deserializeReference(ctx, node);
+		case 9: return deserializeArray(ctx, depth, node);
+		case 10:
+		case 11: return deserializeObject(ctx, depth, node);
+		case 5: return deserializeDate(ctx, node);
+		case 6: return deserializeRegExp(ctx, node);
+		case 7: return deserializeSet(ctx, depth, node);
+		case 8: return deserializeMap(ctx, depth, node);
+		case 19: return deserializeArrayBuffer(ctx, node);
+		case 16:
+		case 15: return deserializeTypedArray(ctx, depth, node);
+		case 20: return deserializeDataView(ctx, depth, node);
+		case 14: return deserializeAggregateError(ctx, depth, node);
+		case 13: return deserializeError(ctx, depth, node);
+		case 12: return deserializePromise(ctx, depth, node);
+		case 17: return deserializeKnownValue(node, SYMBOL_REF, node.s);
+		case 21: return deserializeBoxed(ctx, depth, node);
+		case 25: return deserializePlugin(ctx, depth, node);
+		case 22: return deserializePromiseConstructor(ctx, node);
+		case 23:
+		case 24: return deserializePromiseFulfill(ctx, depth, node);
+		case 28: return deserializeIteratorFactoryInstance(ctx, depth, node);
+		case 30: return deserializeAsyncIteratorFactoryInstance(ctx, depth, node);
+		case 31: return deserializeStreamConstructor(ctx, depth, node);
+		case 32: return deserializeStreamNext(ctx, depth, node);
+		case 33: return deserializeStreamThrow(ctx, depth, node);
+		case 34: return deserializeStreamReturn(ctx, depth, node);
+		case 27: return deserializeIteratorFactory(ctx, depth, node);
+		case 29: return deserializeAsyncIteratorFactory(ctx, depth, node);
+		case 35: return deserializeSequence(ctx, depth, node);
+		case 36: return deserializeTemporal(ctx, node);
+		default: throw new SerovalUnsupportedNodeError(node);
+	}
+}
+function deserializeTop(ctx, node) {
+	try {
+		return deserialize$1(ctx, 0, node);
+	} catch (error) {
+		throw new SerovalDeserializationError(error);
+	}
+}
+var RETURN = () => T;
+var SERIALIZED_RETURN = /* @__PURE__ */ RETURN.toString();
+var IS_MODERN = /* @__PURE__ */ /=>/.test(SERIALIZED_RETURN);
+function createFunction(parameters, body) {
+	if (IS_MODERN) return (parameters.length === 1 ? parameters[0] : "(" + parameters.join(",") + ")") + "=>" + (body.startsWith("{") ? "(" + body + ")" : body);
+	return "function(" + parameters.join(",") + "){return " + body + "}";
+}
+function createEffectfulFunction(parameters, body) {
+	if (IS_MODERN) return (parameters.length === 1 ? parameters[0] : "(" + parameters.join(",") + ")") + "=>{" + body + "}";
+	return "function(" + parameters.join(",") + "){" + body + "}";
+}
+var REF_START_CHARS = "hjkmoquxzABCDEFGHIJKLNPQRTUVWXYZ$_";
+var REF_START_CHARS_LEN = 34;
+var REF_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$_";
+var REF_CHARS_LEN = 64;
+function getIdentifier(index) {
+	let mod = index % REF_START_CHARS_LEN;
+	let ref = REF_START_CHARS[mod];
+	index = (index - mod) / REF_START_CHARS_LEN;
+	while (index > 0) {
+		mod = index % REF_CHARS_LEN;
+		ref += REF_CHARS[mod];
+		index = (index - mod) / REF_CHARS_LEN;
+	}
+	return ref;
+}
+var IDENTIFIER_CHECK = /^[$A-Z_][0-9A-Z_$]*$/i;
+function isValidIdentifier(name) {
+	const char = name[0];
+	return (char === "$" || char === "_" || char >= "A" && char <= "Z" || char >= "a" && char <= "z") && IDENTIFIER_CHECK.test(name);
+}
+function getAssignmentExpression(assignment) {
+	switch (assignment.t) {
+		case 0: return assignment.s + "=" + assignment.v;
+		case 2: return assignment.s + ".set(" + assignment.k + "," + assignment.v + ")";
+		case 1: return assignment.s + ".add(" + assignment.v + ")";
+		case 3: return assignment.s + ".delete(" + assignment.k + ")";
+		case 4: return "Object.defineProperty(" + assignment.s + ",\"__proto__\",{value:" + assignment.k + ",configurable:!0,enumerable:!0,writable:!0})";
+	}
+}
+function mergeAssignments(assignments) {
+	const newAssignments = [];
+	let current = assignments[0];
+	for (let i = 1, len = assignments.length, item, prev = current; i < len; i++) {
+		item = assignments[i];
+		if (item.t === 0 && item.v === prev.v) current = {
+			t: 0,
+			s: item.s,
+			k: void 0,
+			v: getAssignmentExpression(current)
+		};
+		else if (item.t === 2 && item.s === prev.s) current = {
+			t: 2,
+			s: getAssignmentExpression(current),
+			k: item.k,
+			v: item.v
+		};
+		else if (item.t === 1 && item.s === prev.s) current = {
+			t: 1,
+			s: getAssignmentExpression(current),
+			k: void 0,
+			v: item.v
+		};
+		else if (item.t === 3 && item.s === prev.s) current = {
+			t: 3,
+			s: getAssignmentExpression(current),
+			k: item.k,
+			v: void 0
+		};
+		else {
+			newAssignments.push(current);
+			current = item;
+		}
+		prev = item;
+	}
+	newAssignments.push(current);
+	return newAssignments;
+}
+function resolveAssignments(assignments) {
+	if (assignments.length) {
+		let result = "";
+		const merged = mergeAssignments(assignments);
+		for (let i = 0, len = merged.length; i < len; i++) result += getAssignmentExpression(merged[i]) + ",";
+		return result;
+	}
+}
+var NULL_CONSTRUCTOR = "Object.create(null)";
+var SET_CONSTRUCTOR = "new Set";
+var MAP_CONSTRUCTOR = "new Map";
+var PROMISE_RESOLVE = "Promise.resolve";
+var PROMISE_REJECT = "Promise.reject";
+var OBJECT_FLAG_CONSTRUCTOR = {
+	[3]: "Object.freeze",
+	[2]: "Object.seal",
+	[1]: "Object.preventExtensions",
+	[0]: void 0
+};
+function createBaseSerializerContext(mode, options) {
+	return {
+		mode,
+		plugins: options.plugins,
+		features: options.features,
+		marked: new Set(options.markedRefs),
+		stack: [],
+		flags: [],
+		assignments: []
+	};
+}
+function createCrossSerializerContext(options) {
+	return {
+		mode: 2,
+		base: createBaseSerializerContext(2, options),
+		state: options,
+		child: void 0
+	};
+}
+var SerializePluginContext = class {
+	constructor(_p) {
+		this._p = _p;
+	}
+	serialize(node) {
+		return serialize$1(this._p, node);
+	}
+};
+/**
+* Creates the reference param (identifier) from the given reference ID
+* Calling this function means the value has been referenced somewhere
+*/
+function getVanillaRefParam(state, index) {
+	/**
+	* Creates a new reference ID from a given reference ID
+	* This new reference ID means that the reference itself
+	* has been referenced at least once, and is used to generate
+	* the variables
+	*/
+	let actualIndex = state.valid.get(index);
+	if (actualIndex == null) {
+		actualIndex = state.valid.size;
+		state.valid.set(index, actualIndex);
+	}
+	let identifier = state.vars[actualIndex];
+	if (identifier == null) {
+		identifier = getIdentifier(actualIndex);
+		state.vars[actualIndex] = identifier;
+	}
+	return identifier;
+}
+function getCrossRefParam(id) {
+	return "$R[" + id + "]";
+}
+/**
+* Converts the ID of a reference into a identifier string
+* that is used to refer to the object instance in the
+* generated script.
+*/
+function getRefParam(ctx, id) {
+	return ctx.mode === 1 ? getVanillaRefParam(ctx.state, id) : getCrossRefParam(id);
+}
+function markSerializerRef(ctx, id) {
+	ctx.marked.add(id);
+}
+function isSerializerRefMarked(ctx, id) {
+	return ctx.marked.has(id);
+}
+function pushObjectFlag(ctx, flag, id) {
+	if (flag !== 0) {
+		markSerializerRef(ctx.base, id);
+		ctx.base.flags.push({
+			type: flag,
+			value: getRefParam(ctx, id)
+		});
+	}
+}
+function resolveFlags(ctx) {
+	let result = "";
+	for (let i = 0, current = ctx.flags, len = current.length; i < len; i++) {
+		const flag = current[i];
+		result += OBJECT_FLAG_CONSTRUCTOR[flag.type] + "(" + flag.value + "),";
+	}
+	return result;
+}
+function resolvePatches(ctx) {
+	const assignments = resolveAssignments(ctx.assignments);
+	const flags = resolveFlags(ctx);
+	if (assignments) {
+		if (flags) return assignments + flags;
+		return assignments;
+	}
+	return flags;
+}
+/**
+* Generates the inlined assignment for the reference
+* This is different from the assignments array as this one
+* signifies creation rather than mutation
+*/
+function createAssignment(ctx, source, value) {
+	ctx.assignments.push({
+		t: 0,
+		s: source,
+		k: void 0,
+		v: value
+	});
+}
+function createAddAssignment(ctx, ref, value) {
+	ctx.base.assignments.push({
+		t: 1,
+		s: getRefParam(ctx, ref),
+		k: void 0,
+		v: value
+	});
+}
+function createSetAssignment(ctx, ref, key, value) {
+	ctx.base.assignments.push({
+		t: 2,
+		s: getRefParam(ctx, ref),
+		k: key,
+		v: value
+	});
+}
+function createDeleteAssignment(ctx, ref, key) {
+	ctx.base.assignments.push({
+		t: 3,
+		s: getRefParam(ctx, ref),
+		k: key,
+		v: void 0
+	});
+}
+function createArrayAssign(ctx, ref, index, value) {
+	createAssignment(ctx.base, getRefParam(ctx, ref) + "[" + index + "]", value);
+}
+function createObjectAssign(ctx, ref, key, value) {
+	if (!isValidKey(key)) {
+		ctx.base.assignments.push({
+			t: 4,
+			s: getRefParam(ctx, ref),
+			k: value,
+			v: void 0
+		});
+		return;
+	}
+	createAssignment(ctx.base, getRefParam(ctx, ref) + "." + key, value);
+}
+function createSequenceAssign(ctx, ref, index, value) {
+	createAssignment(ctx.base, getRefParam(ctx, ref) + ".v[" + index + "]", value);
+}
+/**
+* Checks if the value is in the stack. Stack here is a reference
+* structure to know if a object is to be accessed in a TDZ.
+*/
+function isIndexedValueInStack(ctx, node) {
+	return node.t === 4 && ctx.stack.includes(node.i);
+}
+/**
+* Produces an assignment expression. `id` generates a reference
+* parameter (through `getRefParam`) and has the option to
+* return the reference parameter directly or assign a value to
+* it.
+*/
+function assignIndexedValue(ctx, index, value) {
+	if (ctx.mode === 1 && !isSerializerRefMarked(ctx.base, index)) return value;
+	/**
+	* In cross-reference, we have to assume that
+	* every reference are going to be referenced
+	* in the future, and so we need to store
+	* all of it into the reference array.
+	*
+	* otherwise in vanilla, we only do this if it
+	* is actually referenced
+	*/
+	return getRefParam(ctx, index) + "=" + value;
+}
+function serializeReference(node) {
+	return "__SEROVAL_REFS__.get(\"" + node.s + "\")";
+}
+function serializeArrayItem(ctx, id, item, index) {
+	if (item) {
+		if (isIndexedValueInStack(ctx.base, item)) {
+			markSerializerRef(ctx.base, id);
+			createArrayAssign(ctx, id, index, getRefParam(ctx, item.i));
+			return "";
+		}
+		return serialize$1(ctx, item);
+	}
+	return "";
+}
+function serializeArray(ctx, node) {
+	const id = node.i;
+	const list = node.a;
+	const len = list.length;
+	if (len > 0) {
+		ctx.base.stack.push(id);
+		let values = serializeArrayItem(ctx, id, list[0], 0);
+		let isHoley = values === "";
+		for (let i = 1, item; i < len; i++) {
+			item = serializeArrayItem(ctx, id, list[i], i);
+			values += "," + item;
+			isHoley = item === "";
+		}
+		ctx.base.stack.pop();
+		pushObjectFlag(ctx, node.o, node.i);
+		return "[" + values + (isHoley ? ",]" : "]");
+	}
+	return "[]";
+}
+function serializeProperty(ctx, source, key, val) {
+	if (typeof key === "string") {
+		const check = Number(key);
+		const isIdentifier = check >= 0 && check.toString() === key || isValidIdentifier(key);
+		if (isIndexedValueInStack(ctx.base, val)) {
+			const refParam = getRefParam(ctx, val.i);
+			markSerializerRef(ctx.base, source.i);
+			if (isIdentifier && check !== check) createObjectAssign(ctx, source.i, key, refParam);
+			else createArrayAssign(ctx, source.i, isIdentifier ? key : "\"" + key + "\"", refParam);
+			return "";
+		}
+		if (isValidKey(key)) return (isIdentifier ? key : "\"" + key + "\"") + ":" + serialize$1(ctx, val);
+		return "[\"" + key + "\"]:" + serialize$1(ctx, val);
+	}
+	return "[" + serialize$1(ctx, key) + "]:" + serialize$1(ctx, val);
+}
+function serializeProperties(ctx, source, record) {
+	const keys = record.k;
+	const len = keys.length;
+	if (len > 0) {
+		const values = record.v;
+		ctx.base.stack.push(source.i);
+		let result = serializeProperty(ctx, source, keys[0], values[0]);
+		for (let i = 1, item = result; i < len; i++) {
+			item = serializeProperty(ctx, source, keys[i], values[i]);
+			result += (item && result && ",") + item;
+		}
+		ctx.base.stack.pop();
+		return "{" + result + "}";
+	}
+	return "{}";
+}
+function serializeObject(ctx, node) {
+	pushObjectFlag(ctx, node.o, node.i);
+	return serializeProperties(ctx, node, node.p);
+}
+function serializeWithObjectAssign(ctx, source, value, serialized) {
+	const fields = serializeProperties(ctx, source, value);
+	if (fields !== "{}") return "Object.assign(" + serialized + "," + fields + ")";
+	return serialized;
+}
+function serializeStringKeyAssignment(ctx, source, mainAssignments, key, value) {
+	const base = ctx.base;
+	const serialized = serialize$1(ctx, value);
+	const check = Number(key);
+	const isIdentifier = check >= 0 && check.toString() === key || isValidIdentifier(key);
+	if (isIndexedValueInStack(base, value)) {
+		if (isIdentifier && check !== check) createObjectAssign(ctx, source.i, key, serialized);
+		else createArrayAssign(ctx, source.i, isIdentifier ? key : "\"" + key + "\"", serialized);
+	} else {
+		const parentAssignment = base.assignments;
+		base.assignments = mainAssignments;
+		if (isIdentifier && check !== check) createObjectAssign(ctx, source.i, key, serialized);
+		else createArrayAssign(ctx, source.i, isIdentifier ? key : "\"" + key + "\"", serialized);
+		base.assignments = parentAssignment;
+	}
+}
+function serializeAssignment(ctx, source, mainAssignments, key, value) {
+	if (typeof key === "string") serializeStringKeyAssignment(ctx, source, mainAssignments, key, value);
+	else {
+		const base = ctx.base;
+		const parent = base.stack;
+		base.stack = [];
+		const serialized = serialize$1(ctx, value);
+		base.stack = parent;
+		const parentAssignment = base.assignments;
+		base.assignments = mainAssignments;
+		createArrayAssign(ctx, source.i, serialize$1(ctx, key), serialized);
+		base.assignments = parentAssignment;
+	}
+}
+function serializeAssignments(ctx, source, node) {
+	const keys = node.k;
+	const len = keys.length;
+	if (len > 0) {
+		const mainAssignments = [];
+		const values = node.v;
+		ctx.base.stack.push(source.i);
+		for (let i = 0; i < len; i++) serializeAssignment(ctx, source, mainAssignments, keys[i], values[i]);
+		ctx.base.stack.pop();
+		return resolveAssignments(mainAssignments);
+	}
+}
+function serializeDictionary(ctx, node, init) {
+	if (node.p) {
+		const base = ctx.base;
+		if (base.features & 8) init = serializeWithObjectAssign(ctx, node, node.p, init);
+		else {
+			markSerializerRef(base, node.i);
+			const assignments = serializeAssignments(ctx, node, node.p);
+			if (assignments) return "(" + assignIndexedValue(ctx, node.i, init) + "," + assignments + getRefParam(ctx, node.i) + ")";
+		}
+	}
+	return init;
+}
+function serializeNullConstructor(ctx, node) {
+	pushObjectFlag(ctx, node.o, node.i);
+	return serializeDictionary(ctx, node, NULL_CONSTRUCTOR);
+}
+function serializeDate(node) {
+	return "new Date(\"" + node.s + "\")";
+}
+var TEMPORAL_CONSTRUCTOR = {
+	[0]: "Temporal.Instant",
+	[1]: "Temporal.Duration",
+	[2]: "Temporal.PlainDate",
+	[3]: "Temporal.PlainDateTime",
+	[4]: "Temporal.PlainMonthDay",
+	[5]: "Temporal.PlainTime",
+	[6]: "Temporal.PlainYearMonth",
+	[7]: "Temporal.ZonedDateTime"
+};
+function serializeTemporal(ctx, node) {
+	if (ctx.base.features & 64) return TEMPORAL_CONSTRUCTOR[node.c] + ".from(\"" + node.s + "\")";
+	throw new SerovalUnsupportedNodeError(node);
+}
+function serializeRegExp(ctx, node) {
+	if (ctx.base.features & 32) return "/" + deserializeString(node.c) + "/" + node.m;
+	throw new SerovalUnsupportedNodeError(node);
+}
+function serializeSetItem(ctx, id, item) {
+	const base = ctx.base;
+	if (isIndexedValueInStack(base, item)) {
+		markSerializerRef(base, id);
+		createAddAssignment(ctx, id, getRefParam(ctx, item.i));
+		return "";
+	}
+	return serialize$1(ctx, item);
+}
+function serializeSet(ctx, node) {
+	let serialized = SET_CONSTRUCTOR;
+	const items = node.a;
+	const size = items.length;
+	const id = node.i;
+	if (size > 0) {
+		ctx.base.stack.push(id);
+		let result = serializeSetItem(ctx, id, items[0]);
+		for (let i = 1, item = result; i < size; i++) {
+			item = serializeSetItem(ctx, id, items[i]);
+			result += (item && result && ",") + item;
+		}
+		ctx.base.stack.pop();
+		if (result) serialized += "([" + result + "])";
+	}
+	return serialized;
+}
+function serializeMapEntry(ctx, id, key, val, sentinel) {
+	const base = ctx.base;
+	if (isIndexedValueInStack(base, key)) {
+		const keyRef = getRefParam(ctx, key.i);
+		markSerializerRef(base, id);
+		if (isIndexedValueInStack(base, val)) {
+			createSetAssignment(ctx, id, keyRef, getRefParam(ctx, val.i));
+			return "";
+		}
+		if (val.t !== 4 && val.i != null && isSerializerRefMarked(base, val.i)) {
+			const serialized = "(" + serialize$1(ctx, val) + ",[" + sentinel + "," + sentinel + "])";
+			createSetAssignment(ctx, id, keyRef, getRefParam(ctx, val.i));
+			createDeleteAssignment(ctx, id, sentinel);
+			return serialized;
+		}
+		const parent = base.stack;
+		base.stack = [];
+		createSetAssignment(ctx, id, keyRef, serialize$1(ctx, val));
+		base.stack = parent;
+		return "";
+	}
+	if (isIndexedValueInStack(base, val)) {
+		const valueRef = getRefParam(ctx, val.i);
+		markSerializerRef(base, id);
+		if (key.t !== 4 && key.i != null && isSerializerRefMarked(base, key.i)) {
+			const serialized = "(" + serialize$1(ctx, key) + ",[" + sentinel + "," + sentinel + "])";
+			createSetAssignment(ctx, id, getRefParam(ctx, key.i), valueRef);
+			createDeleteAssignment(ctx, id, sentinel);
+			return serialized;
+		}
+		const parent = base.stack;
+		base.stack = [];
+		createSetAssignment(ctx, id, serialize$1(ctx, key), valueRef);
+		base.stack = parent;
+		return "";
+	}
+	return "[" + serialize$1(ctx, key) + "," + serialize$1(ctx, val) + "]";
+}
+function serializeMap(ctx, node) {
+	let serialized = MAP_CONSTRUCTOR;
+	const keys = node.e.k;
+	const size = keys.length;
+	const id = node.i;
+	const sentinel = node.f;
+	const sentinelId = getRefParam(ctx, sentinel.i);
+	const base = ctx.base;
+	if (size > 0) {
+		const vals = node.e.v;
+		base.stack.push(id);
+		let result = serializeMapEntry(ctx, id, keys[0], vals[0], sentinelId);
+		for (let i = 1, item = result; i < size; i++) {
+			item = serializeMapEntry(ctx, id, keys[i], vals[i], sentinelId);
+			result += (item && result && ",") + item;
+		}
+		base.stack.pop();
+		if (result) serialized += "([" + result + "])";
+	}
+	if (sentinel.t === 26) {
+		markSerializerRef(base, sentinel.i);
+		serialized = "(" + serialize$1(ctx, sentinel) + "," + serialized + ")";
+	}
+	return serialized;
+}
+function serializeArrayBuffer(ctx, node) {
+	return getConstructor(ctx, node.f) + "(\"" + node.s + "\")";
+}
+function serializeTypedArray(ctx, node) {
+	return "new " + node.c + "(" + serialize$1(ctx, node.f) + "," + node.b + "," + node.l + ")";
+}
+function serializeDataView(ctx, node) {
+	return "new DataView(" + serialize$1(ctx, node.f) + "," + node.b + "," + node.l + ")";
+}
+function serializeAggregateError(ctx, node) {
+	const id = node.i;
+	ctx.base.stack.push(id);
+	const serialized = serializeDictionary(ctx, node, "new AggregateError([],\"" + node.m + "\")");
+	ctx.base.stack.pop();
+	return serialized;
+}
+function serializeError(ctx, node) {
+	return serializeDictionary(ctx, node, "new " + ERROR_CONSTRUCTOR_STRING[node.s] + "(\"" + node.m + "\")");
+}
+function serializePromise(ctx, node) {
+	let serialized;
+	const fulfilled = node.f;
+	const id = node.i;
+	const promiseConstructor = node.s ? PROMISE_RESOLVE : PROMISE_REJECT;
+	const base = ctx.base;
+	if (isIndexedValueInStack(base, fulfilled)) {
+		const ref = getRefParam(ctx, fulfilled.i);
+		serialized = promiseConstructor + (node.s ? "().then(" + createFunction([], ref) + ")" : "().catch(" + createEffectfulFunction([], "throw " + ref) + ")");
+	} else {
+		base.stack.push(id);
+		const result = serialize$1(ctx, fulfilled);
+		base.stack.pop();
+		serialized = promiseConstructor + "(" + result + ")";
+	}
+	return serialized;
+}
+function serializeBoxed(ctx, node) {
+	return "Object(" + serialize$1(ctx, node.f) + ")";
+}
+function getConstructor(ctx, node) {
+	const current = serialize$1(ctx, node);
+	return node.t === 4 ? current : "(" + current + ")";
+}
+function serializePromiseConstructor(ctx, node) {
+	if (ctx.mode === 1) throw new SerovalUnsupportedNodeError(node);
+	return "(" + assignIndexedValue(ctx, node.s, getConstructor(ctx, node.f) + "()") + ").p";
+}
+function serializePromiseResolve(ctx, node) {
+	if (ctx.mode === 1) throw new SerovalUnsupportedNodeError(node);
+	return getConstructor(ctx, node.a[0]) + "(" + getRefParam(ctx, node.i) + "," + serialize$1(ctx, node.a[1]) + ")";
+}
+function serializePromiseReject(ctx, node) {
+	if (ctx.mode === 1) throw new SerovalUnsupportedNodeError(node);
+	return getConstructor(ctx, node.a[0]) + "(" + getRefParam(ctx, node.i) + "," + serialize$1(ctx, node.a[1]) + ")";
+}
+function serializePlugin(ctx, node) {
+	const currentPlugins = ctx.base.plugins;
+	if (currentPlugins) for (let i = 0, len = currentPlugins.length; i < len; i++) {
+		const plugin = currentPlugins[i];
+		if (plugin.tag === node.c) {
+			if (ctx.child == null) ctx.child = new SerializePluginContext(ctx);
+			return plugin.serialize(node.s, ctx.child, { id: node.i });
+		}
+	}
+	throw new SerovalMissingPluginError(node.c);
+}
+function serializeIteratorFactory(ctx, node) {
+	let result = "";
+	let initialized = false;
+	if (node.f.t !== 4) {
+		markSerializerRef(ctx.base, node.f.i);
+		result = "(" + serialize$1(ctx, node.f) + ",";
+		initialized = true;
+	}
+	result += assignIndexedValue(ctx, node.i, "(" + SERIALIZED_ITERATOR_CONSTRUCTOR + ")(" + getRefParam(ctx, node.f.i) + ")");
+	if (initialized) result += ")";
+	return result;
+}
+function serializeIteratorFactoryInstance(ctx, node) {
+	return getConstructor(ctx, node.a[0]) + "(" + serialize$1(ctx, node.a[1]) + ")";
+}
+function serializeAsyncIteratorFactory(ctx, node) {
+	const promise = node.a[0];
+	const symbol = node.a[1];
+	const base = ctx.base;
+	let result = "";
+	if (promise.t !== 4) {
+		markSerializerRef(base, promise.i);
+		result += "(" + serialize$1(ctx, promise);
+	}
+	if (symbol.t !== 4) {
+		markSerializerRef(base, symbol.i);
+		result += (result ? "," : "(") + serialize$1(ctx, symbol);
+	}
+	if (result) result += ",";
+	const iterator = assignIndexedValue(ctx, node.i, "(" + SERIALIZED_ASYNC_ITERATOR_CONSTRUCTOR + ")(" + getRefParam(ctx, symbol.i) + "," + getRefParam(ctx, promise.i) + ")");
+	if (result) return result + iterator + ")";
+	return iterator;
+}
+function serializeAsyncIteratorFactoryInstance(ctx, node) {
+	return getConstructor(ctx, node.a[0]) + "(" + serialize$1(ctx, node.a[1]) + ")";
+}
+function serializeStreamConstructor(ctx, node) {
+	const result = assignIndexedValue(ctx, node.i, getConstructor(ctx, node.f) + "()");
+	const len = node.a.length;
+	if (len) {
+		let values = serialize$1(ctx, node.a[0]);
+		for (let i = 1; i < len; i++) values += "," + serialize$1(ctx, node.a[i]);
+		return "(" + result + "," + values + "," + getRefParam(ctx, node.i) + ")";
+	}
+	return result;
+}
+function serializeStreamNext(ctx, node) {
+	return getRefParam(ctx, node.i) + ".next(" + serialize$1(ctx, node.f) + ")";
+}
+function serializeStreamThrow(ctx, node) {
+	return getRefParam(ctx, node.i) + ".throw(" + serialize$1(ctx, node.f) + ")";
+}
+function serializeStreamReturn(ctx, node) {
+	return getRefParam(ctx, node.i) + ".return(" + serialize$1(ctx, node.f) + ")";
+}
+function serializeSequenceItem(ctx, id, index, item) {
+	const base = ctx.base;
+	if (isIndexedValueInStack(base, item)) {
+		markSerializerRef(base, id);
+		createSequenceAssign(ctx, id, index, getRefParam(ctx, item.i));
+		return "";
+	}
+	return serialize$1(ctx, item);
+}
+function serializeSequence(ctx, node) {
+	const items = node.a;
+	const size = items.length;
+	const id = node.i;
+	if (size > 0) {
+		ctx.base.stack.push(id);
+		let result = serializeSequenceItem(ctx, id, 0, items[0]);
+		for (let i = 1, item = result; i < size; i++) {
+			item = serializeSequenceItem(ctx, id, i, items[i]);
+			result += (item && result && ",") + item;
+		}
+		ctx.base.stack.pop();
+		if (result) return "{__SEROVAL_SEQUENCE__:!0,v:[" + result + "],t:" + node.s + ",d:" + node.l + "}";
+	}
+	return "{__SEROVAL_SEQUENCE__:!0,v:[],t:-1,d:0}";
+}
+function serializeAssignable(ctx, node) {
+	switch (node.t) {
+		case 17: return SYMBOL_STRING[node.s];
+		case 18: return serializeReference(node);
+		case 9: return serializeArray(ctx, node);
+		case 10: return serializeObject(ctx, node);
+		case 11: return serializeNullConstructor(ctx, node);
+		case 5: return serializeDate(node);
+		case 6: return serializeRegExp(ctx, node);
+		case 7: return serializeSet(ctx, node);
+		case 8: return serializeMap(ctx, node);
+		case 19: return serializeArrayBuffer(ctx, node);
+		case 16:
+		case 15: return serializeTypedArray(ctx, node);
+		case 20: return serializeDataView(ctx, node);
+		case 14: return serializeAggregateError(ctx, node);
+		case 13: return serializeError(ctx, node);
+		case 12: return serializePromise(ctx, node);
+		case 21: return serializeBoxed(ctx, node);
+		case 22: return serializePromiseConstructor(ctx, node);
+		case 25: return serializePlugin(ctx, node);
+		case 26: return SPECIAL_REF_STRING[node.s];
+		case 35: return serializeSequence(ctx, node);
+		case 36: return serializeTemporal(ctx, node);
+		default: throw new SerovalUnsupportedNodeError(node);
+	}
+}
+function serialize$1(ctx, node) {
+	switch (node.t) {
+		case 2: return CONSTANT_STRING[node.s];
+		case 0: return "" + node.s;
+		case 1: return "\"" + node.s + "\"";
+		case 3: return node.s + "n";
+		case 4: return getRefParam(ctx, node.i);
+		case 23: return serializePromiseResolve(ctx, node);
+		case 24: return serializePromiseReject(ctx, node);
+		case 27: return serializeIteratorFactory(ctx, node);
+		case 28: return serializeIteratorFactoryInstance(ctx, node);
+		case 29: return serializeAsyncIteratorFactory(ctx, node);
+		case 30: return serializeAsyncIteratorFactoryInstance(ctx, node);
+		case 31: return serializeStreamConstructor(ctx, node);
+		case 32: return serializeStreamNext(ctx, node);
+		case 33: return serializeStreamThrow(ctx, node);
+		case 34: return serializeStreamReturn(ctx, node);
+		default: return assignIndexedValue(ctx, node.i, serializeAssignable(ctx, node));
+	}
+}
+function serializeTopCross(ctx, tree) {
+	const result = serialize$1(ctx, tree);
+	const id = tree.i;
+	if (id == null) return result;
+	const patches = resolvePatches(ctx.base);
+	const ref = getRefParam(ctx, id);
+	const scopeId = ctx.state.scopeId;
+	const params = scopeId == null ? "" : "$R";
+	const body = patches ? "(" + result + "," + patches + ref + ")" : result;
+	if (params === "") {
+		if (tree.t === 10 && !patches) return "(" + body + ")";
+		return body;
+	}
+	const args = scopeId == null ? "()" : "($R[\"" + serializeString(scopeId) + "\"])";
+	return "(" + createFunction([params], body) + ")" + args;
+}
+var SyncParsePluginContext = class {
+	constructor(_p, depth) {
+		this._p = _p;
+		this.depth = depth;
+	}
+	parse(current) {
+		return parseSOS(this._p, this.depth, current);
+	}
+};
+var StreamParsePluginContext = class {
+	constructor(_p, depth) {
+		this._p = _p;
+		this.depth = depth;
+	}
+	parse(current) {
+		return parseSOS(this._p, this.depth, current);
+	}
+	parseWithError(current) {
+		return parseWithError(this._p, this.depth, current);
+	}
+	isAlive() {
+		return this._p.state.alive;
+	}
+	pushPendingState() {
+		pushPendingState(this._p);
+	}
+	popPendingState() {
+		popPendingState(this._p);
+	}
+	onParse(node) {
+		onParse(this._p, node);
+	}
+	onError(error) {
+		onError(this._p, error);
+	}
+	addCleanup(callback) {
+		this._p.state.cleanups.push(callback);
+	}
+};
+function createStreamParserState(options) {
+	return {
+		alive: true,
+		pending: 0,
+		initial: true,
+		buffer: [],
+		onParse: options.onParse,
+		onError: options.onError,
+		onDone: options.onDone,
+		cleanups: []
+	};
+}
+function createStreamParserContext(options) {
+	return {
+		type: 2,
+		base: createBaseParserContext(2, options),
+		state: createStreamParserState(options)
+	};
+}
+function parseItems(ctx, depth, current) {
+	const nodes = [];
+	for (let i = 0, len = current.length; i < len; i++) if (i in current) nodes[i] = parseSOS(ctx, depth, current[i]);
+	else nodes[i] = 0;
+	return nodes;
+}
+function parseArray(ctx, depth, id, current) {
+	return createArrayNode(id, current, parseItems(ctx, depth, current));
+}
+function parseProperties(ctx, depth, properties) {
+	const entries = Object.entries(properties);
+	const keyNodes = [];
+	const valueNodes = [];
+	for (let i = 0, len = entries.length; i < len; i++) {
+		keyNodes.push(serializeString(entries[i][0]));
+		valueNodes.push(parseSOS(ctx, depth, entries[i][1]));
+	}
+	if (SYM_ITERATOR in properties) {
+		keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ITERATOR));
+		valueNodes.push(createIteratorFactoryInstanceNode(parseIteratorFactory(ctx.base), parseSOS(ctx, depth, createSequenceFromIterable(properties))));
+	}
+	if (SYM_ASYNC_ITERATOR in properties) {
+		keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_ASYNC_ITERATOR));
+		valueNodes.push(createAsyncIteratorFactoryInstanceNode(parseAsyncIteratorFactory(ctx.base), parseSOS(ctx, depth, ctx.type === 1 ? createStream() : createStreamFromAsyncIterable(properties, ctx.state.cleanups))));
+	}
+	if (SYM_TO_STRING_TAG in properties) {
+		keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_TO_STRING_TAG));
+		valueNodes.push(createStringNode(properties[SYM_TO_STRING_TAG]));
+	}
+	if (SYM_IS_CONCAT_SPREADABLE in properties) {
+		keyNodes.push(parseWellKnownSymbol(ctx.base, SYM_IS_CONCAT_SPREADABLE));
+		valueNodes.push(properties[SYM_IS_CONCAT_SPREADABLE] ? TRUE_NODE : FALSE_NODE);
+	}
+	return {
+		k: keyNodes,
+		v: valueNodes
+	};
+}
+function parsePlainObject(ctx, depth, id, current, empty) {
+	return createObjectNode(id, current, empty, parseProperties(ctx, depth, current));
+}
+function parseBoxed(ctx, depth, id, current) {
+	return createBoxedNode(id, parseSOS(ctx, depth, current.valueOf()));
+}
+function parseTypedArray(ctx, depth, id, current) {
+	current = getArrayBufferView(ctx.base, current);
+	return createTypedArrayNode(id, current, parseSOS(ctx, depth, current.buffer));
+}
+function parseBigIntTypedArray(ctx, depth, id, current) {
+	current = getArrayBufferView(ctx.base, current);
+	return createBigIntTypedArrayNode(id, current, parseSOS(ctx, depth, current.buffer));
+}
+function parseDataView(ctx, depth, id, current) {
+	current = getArrayBufferView(ctx.base, current);
+	return createDataViewNode(id, current, parseSOS(ctx, depth, current.buffer));
+}
+function parseError(ctx, depth, id, current) {
+	const options = getErrorOptions(current, ctx.base.features);
+	return createErrorNode(id, current, options ? parseProperties(ctx, depth, options) : void 0);
+}
+function parseAggregateError(ctx, depth, id, current) {
+	const options = getErrorOptions(current, ctx.base.features);
+	return createAggregateErrorNode(id, current, options ? parseProperties(ctx, depth, options) : void 0);
+}
+function parseMap(ctx, depth, id, current) {
+	const keyNodes = [];
+	const valueNodes = [];
+	for (const [key, value] of current.entries()) {
+		keyNodes.push(parseSOS(ctx, depth, key));
+		valueNodes.push(parseSOS(ctx, depth, value));
+	}
+	return createMapNode(ctx.base, id, keyNodes, valueNodes);
+}
+function parseSet(ctx, depth, id, current) {
+	const items = [];
+	for (const item of current.keys()) items.push(parseSOS(ctx, depth, item));
+	return createSetNode(id, items);
+}
+function parseStream(ctx, depth, id, current) {
+	const result = createStreamConstructorNode(id, parseSpecialReference(ctx.base, 4), []);
+	if (ctx.type === 1) return result;
+	pushPendingState(ctx);
+	current.on({
+		next: (value) => {
+			if (ctx.state.alive) {
+				const parsed = parseWithError(ctx, depth, value);
+				if (parsed) onParse(ctx, createStreamNextNode(id, parsed));
+			}
+		},
+		throw: (value) => {
+			if (ctx.state.alive) {
+				const parsed = parseWithError(ctx, depth, value);
+				if (parsed) onParse(ctx, createStreamThrowNode(id, parsed));
+			}
+			popPendingState(ctx);
+		},
+		return: (value) => {
+			if (ctx.state.alive) {
+				const parsed = parseWithError(ctx, depth, value);
+				if (parsed) onParse(ctx, createStreamReturnNode(id, parsed));
+			}
+			popPendingState(ctx);
+		}
+	});
+	return result;
+}
+function handlePromiseSuccess(id, depth, data) {
+	if (this.state.alive) {
+		const parsed = parseWithError(this, depth, data);
+		if (parsed) onParse(this, createSerovalNode(23, id, void 0, void 0, void 0, void 0, void 0, [parseSpecialReference(this.base, 2), parsed], void 0, void 0, void 0, void 0));
+		popPendingState(this);
+	}
+}
+function handlePromiseFailure(id, depth, data) {
+	if (this.state.alive) {
+		const parsed = parseWithError(this, depth, data);
+		if (parsed) onParse(this, createSerovalNode(24, id, void 0, void 0, void 0, void 0, void 0, [parseSpecialReference(this.base, 3), parsed], void 0, void 0, void 0, void 0));
+	}
+	popPendingState(this);
+}
+function parsePromise(ctx, depth, id, current) {
+	const resolver = createIndexForValue(ctx.base, {});
+	if (ctx.type === 2) {
+		pushPendingState(ctx);
+		current.then(handlePromiseSuccess.bind(ctx, resolver, depth), handlePromiseFailure.bind(ctx, resolver, depth));
+	}
+	return createPromiseConstructorNode(ctx.base, id, resolver);
+}
+function parsePluginSync(ctx, depth, id, current, currentPlugins) {
+	for (let i = 0, len = currentPlugins.length; i < len; i++) {
+		const plugin = currentPlugins[i];
+		if (plugin.parse.sync && plugin.test(current)) return createPluginNode(id, plugin.tag, plugin.parse.sync(current, new SyncParsePluginContext(ctx, depth), { id }));
+	}
+}
+function parsePluginStream(ctx, depth, id, current, currentPlugins) {
+	for (let i = 0, len = currentPlugins.length; i < len; i++) {
+		const plugin = currentPlugins[i];
+		if (plugin.parse.stream && plugin.test(current)) return createPluginNode(id, plugin.tag, plugin.parse.stream(current, new StreamParsePluginContext(ctx, depth), { id }));
+	}
+}
+function parsePlugin(ctx, depth, id, current) {
+	const currentPlugins = ctx.base.plugins;
+	if (currentPlugins) return ctx.type === 1 ? parsePluginSync(ctx, depth, id, current, currentPlugins) : parsePluginStream(ctx, depth, id, current, currentPlugins);
+}
+function parseSequence(ctx, depth, id, current) {
+	const nodes = [];
+	for (let i = 0, len = current.v.length; i < len; i++) nodes[i] = parseSOS(ctx, depth, current.v[i]);
+	return createSequenceNode(id, nodes, current.t, current.d);
+}
+function parseObjectPhase2(ctx, depth, id, current, currentClass) {
+	switch (currentClass) {
+		case Object: return parsePlainObject(ctx, depth, id, current, false);
+		case void 0: return parsePlainObject(ctx, depth, id, current, true);
+		case Date: return createDateNode(id, current);
+		case Error:
+		case EvalError:
+		case RangeError:
+		case ReferenceError:
+		case SyntaxError:
+		case TypeError:
+		case URIError: return parseError(ctx, depth, id, current);
+		case Number:
+		case Boolean:
+		case String:
+		case BigInt: return parseBoxed(ctx, depth, id, current);
+		case ArrayBuffer: return createArrayBufferNode(ctx.base, id, current);
+		case Int8Array:
+		case Int16Array:
+		case Int32Array:
+		case Uint8Array:
+		case Uint16Array:
+		case Uint32Array:
+		case Uint8ClampedArray:
+		case Float32Array:
+		case Float64Array: return parseTypedArray(ctx, depth, id, current);
+		case DataView: return parseDataView(ctx, depth, id, current);
+		case Map: return parseMap(ctx, depth, id, current);
+		case Set: return parseSet(ctx, depth, id, current);
+	}
+	if (currentClass === Promise || current instanceof Promise) return parsePromise(ctx, depth, id, current);
+	const currentFeatures = ctx.base.features;
+	if (currentFeatures & 32 && currentClass === RegExp) return createRegExpNode(id, current);
+	if (currentFeatures & 16) switch (currentClass) {
+		case BigInt64Array:
+		case BigUint64Array: return parseBigIntTypedArray(ctx, depth, id, current);
+	}
+	if (currentFeatures & 1 && typeof AggregateError !== "undefined" && (currentClass === AggregateError || current instanceof AggregateError)) return parseAggregateError(ctx, depth, id, current);
+	if (currentFeatures & 64 && typeof Temporal !== "undefined") switch (currentClass) {
+		case Temporal.Instant: return createTemporalNode(id, 0, current);
+		case Temporal.Duration: return createTemporalNode(id, 1, current);
+		case Temporal.PlainDate: return createTemporalNode(id, 2, current);
+		case Temporal.PlainDateTime: return createTemporalNode(id, 3, current);
+		case Temporal.PlainMonthDay: return createTemporalNode(id, 4, current);
+		case Temporal.PlainTime: return createTemporalNode(id, 5, current);
+		case Temporal.PlainYearMonth: return createTemporalNode(id, 6, current);
+		case Temporal.ZonedDateTime: return createTemporalNode(id, 7, current);
+	}
+	if (current instanceof Error) return parseError(ctx, depth, id, current);
+	if (SYM_ITERATOR in current || SYM_ASYNC_ITERATOR in current) return parsePlainObject(ctx, depth, id, current, !!currentClass);
+	throw new SerovalUnsupportedTypeError(current);
+}
+function parseObject(ctx, depth, id, current) {
+	if (Array.isArray(current)) return parseArray(ctx, depth, id, current);
+	if (isStream(current)) return parseStream(ctx, depth, id, current);
+	if (isSequence(current)) return parseSequence(ctx, depth, id, current);
+	let currentClass = current.constructor;
+	if (currentClass !== void 0 && typeof currentClass !== "function") {
+		const proto = Object.getPrototypeOf(current);
+		currentClass = proto === null ? void 0 : proto.constructor;
+	}
+	if (currentClass === OpaqueReference) return parseSOS(ctx, depth, current.replacement);
+	const parsed = parsePlugin(ctx, depth, id, current);
+	if (parsed) return parsed;
+	return parseObjectPhase2(ctx, depth, id, current, currentClass);
+}
+function parseFunction(ctx, depth, current) {
+	const ref = getReferenceNode(ctx.base, current);
+	if (ref.type !== 0) return ref.value;
+	const plugin = parsePlugin(ctx, depth, ref.value, current);
+	if (plugin) return plugin;
+	throw new SerovalUnsupportedTypeError(current);
+}
+function parseSOS(ctx, depth, current) {
+	if (depth >= ctx.base.depthLimit) throw new SerovalDepthLimitError(ctx.base.depthLimit);
+	switch (typeof current) {
+		case "boolean": return current ? TRUE_NODE : FALSE_NODE;
+		case "undefined": return UNDEFINED_NODE;
+		case "string": return createStringNode(current);
+		case "number": return createNumberNode(current);
+		case "bigint": return createBigIntNode(current);
+		case "object":
+			if (current) {
+				const ref = getReferenceNode(ctx.base, current);
+				return ref.type === 0 ? parseObject(ctx, depth + 1, ref.value, current) : ref.value;
+			}
+			return NULL_NODE;
+		case "symbol": return parseWellKnownSymbol(ctx.base, current);
+		case "function": return parseFunction(ctx, depth, current);
+		default: throw new SerovalUnsupportedTypeError(current);
+	}
+}
+function onParse(ctx, node) {
+	if (ctx.state.initial) ctx.state.buffer.push(node);
+	else onParseInternal(ctx, node, false);
+}
+function onError(ctx, error) {
+	if (ctx.state.onError) ctx.state.onError(error);
+	else throw error instanceof SerovalParserError ? error : new SerovalParserError(error);
+}
+function onDone(ctx) {
+	if (ctx.state.onDone) ctx.state.onDone();
+	for (let i = 0, len = ctx.state.cleanups.length; i < len; i++) ctx.state.cleanups[i]();
+}
+function onParseInternal(ctx, node, initial) {
+	try {
+		ctx.state.onParse(node, initial);
+	} catch (error) {
+		onError(ctx, error);
+	}
+}
+function pushPendingState(ctx) {
+	ctx.state.pending++;
+}
+function popPendingState(ctx) {
+	if (--ctx.state.pending <= 0) onDone(ctx);
+}
+function parseWithError(ctx, depth, current) {
+	try {
+		return parseSOS(ctx, depth, current);
+	} catch (err) {
+		onError(ctx, err);
+		return;
+	}
+}
+function startStreamParse(ctx, current) {
+	const parsed = parseWithError(ctx, 0, current);
+	if (parsed) {
+		onParseInternal(ctx, parsed, true);
+		ctx.state.initial = false;
+		flushStreamParse(ctx, ctx.state);
+		if (ctx.state.pending <= 0) destroyStreamParse(ctx);
+	}
+}
+function flushStreamParse(ctx, state) {
+	for (let i = 0, len = state.buffer.length; i < len; i++) onParseInternal(ctx, state.buffer[i], false);
+}
+function destroyStreamParse(ctx) {
+	if (ctx.state.alive) {
+		onDone(ctx);
+		ctx.state.alive = false;
+	}
+}
+async function toCrossJSONAsync(source, options = {}) {
+	const plugins = resolvePlugins(options.plugins);
+	return await parseTopAsync(createAsyncParserContext(2, {
+		compactArrayBufferViews: options.compactArrayBufferViews,
+		plugins,
+		disabledFeatures: options.disabledFeatures,
+		refs: options.refs
+	}), source);
+}
+function crossSerializeStream(source, options) {
+	const plugins = resolvePlugins(options.plugins);
+	const ctx = createStreamParserContext({
+		compactArrayBufferViews: options.compactArrayBufferViews,
+		plugins,
+		refs: options.refs,
+		disabledFeatures: options.disabledFeatures,
+		onParse(node, initial) {
+			const serial = createCrossSerializerContext({
+				plugins,
+				features: ctx.base.features,
+				scopeId: options.scopeId,
+				markedRefs: ctx.base.marked
+			});
+			let serialized;
+			try {
+				serialized = serializeTopCross(serial, node);
+			} catch (err) {
+				if (options.onError) options.onError(err);
+				return;
+			}
+			options.onSerialize(serialized, initial);
+		},
+		onError: options.onError,
+		onDone: options.onDone
+	});
+	startStreamParse(ctx, source);
+	return destroyStreamParse.bind(null, ctx);
+}
+function toCrossJSONStream(source, options) {
+	const plugins = resolvePlugins(options.plugins);
+	const ctx = createStreamParserContext({
+		compactArrayBufferViews: options.compactArrayBufferViews,
+		plugins,
+		refs: options.refs,
+		disabledFeatures: options.disabledFeatures,
+		depthLimit: options.depthLimit,
+		onParse: options.onParse,
+		onError: options.onError,
+		onDone: options.onDone
+	});
+	startStreamParse(ctx, source);
+	return destroyStreamParse.bind(null, ctx);
+}
+function fromJSON(source, options = {}) {
+	var _source$f;
+	const plugins = resolvePlugins(options.plugins);
+	const disabledFeatures = options.disabledFeatures || 0;
+	const sourceFeatures = (_source$f = source.f) !== null && _source$f !== void 0 ? _source$f : 127;
+	return deserializeTop(createVanillaDeserializerContext({
+		maxBase64Length: options.maxBase64Length,
+		plugins,
+		markedRefs: source.m,
+		features: sourceFeatures & ~disabledFeatures,
+		disabledFeatures
+	}), source.t);
+}
+/** Create a Seroval plugin for client/server symmetric (de)serialization. */
+/* @__NO_SIDE_EFFECTS__ */
+function makeSerovalPlugin(serializationAdapter) {
+	return /* @__PURE__ */ createPlugin({
+		tag: "$TSR/t/" + serializationAdapter.key,
+		test: serializationAdapter.test,
+		parse: {
+			sync(value, ctx) {
+				return { v: ctx.parse(serializationAdapter.toSerializable(value)) };
+			},
+			async async(value, ctx) {
+				return { v: await ctx.parse(serializationAdapter.toSerializable(value)) };
+			},
+			stream(value, ctx) {
+				return { v: ctx.parse(serializationAdapter.toSerializable(value)) };
+			}
+		},
+		serialize: void 0,
+		deserialize(node, ctx) {
+			return serializationAdapter.fromSerializable(ctx.deserialize(node.v));
+		}
+	});
+}
+/**
+* Marker class for ReadableStream<Uint8Array> that should be serialized
+* with base64/text encoding (JSON and SSR) or binary framing
+* (server-function responses).
+*
+* Wrap your binary streams with this to get efficient serialization:
+* ```ts
+* // For binary data (files, images, etc.)
+* return { data: new RawStream(file.stream()) }
+*
+* // For text-heavy data (RSC payloads, etc.)
+* return { data: new RawStream(rscStream, { hint: 'text' }) }
+* ```
+*
+* RawStreams returned from one server function share one ordered response.
+* Arbitrary or sequential consumption can require potentially unbounded client
+* buffering for unread data. Cancelling one RawStream discards it locally;
+* abort the whole server-function call to cancel the response and server work.
+* Consume streams concurrently, cancel unused streams promptly, or use separate
+* calls when independent backpressure is required.
+*/
+var RawStream = class {
+	constructor(stream, options) {
+		this.stream = stream;
+		this.hint = options?.hint ?? "binary";
+	}
+};
+var GLOBAL_EVENT_STORAGE_KEY = Symbol.for("tanstack-start:event-storage");
+var globalObj$1 = globalThis;
+if (!globalObj$1[GLOBAL_EVENT_STORAGE_KEY]) globalObj$1[GLOBAL_EVENT_STORAGE_KEY] = new AsyncLocalStorage();
+var eventStorage = globalObj$1[GLOBAL_EVENT_STORAGE_KEY];
+var PROTECTED_RESPONSE_HEADERS = Symbol.for("tanstack-start:protected-response-headers");
+function getProtectedResponseHeaders(response) {
+	return response[PROTECTED_RESPONSE_HEADERS];
+}
+function installProtectedResponseHeaders(response, headers) {
+	Object.defineProperty(response, PROTECTED_RESPONSE_HEADERS, {
+		value: headers,
+		configurable: true
+	});
+}
+/** Transport requirements belong to the encoded body, not its wrapper. */
+function transferResponseProtocol(source, target) {
+	const protectedHeaders = getProtectedResponseHeaders(source);
+	if (protectedHeaders && getProtectedResponseHeaders(target) !== protectedHeaders) installProtectedResponseHeaders(target, protectedHeaders);
+}
+/** Preserve metadata when Start reconstructs an existing response. */
+function transferResponseMetadata(source, target) {
+	transferResponseProtocol(source, target);
+	const event = eventStorage.getStore();
+	const appliedHeaderAppends = event?.responseHeaderAppends?.get(source);
+	if (appliedHeaderAppends) event.responseHeaderAppends.set(target, appliedHeaderAppends);
+}
+function sanitizeStatusMessage(statusMessage) {
+	return statusMessage.replace(/[^\t\x20-\x7e]/g, "");
+}
+function sanitizeStatusCode(statusCode) {
+	const code = typeof statusCode === "string" ? Number(statusCode) : statusCode;
+	if (code === void 0 || !Number.isInteger(code) || code < 200 || code > 599) return;
+	return code;
+}
+function getObjectProperty(value, key) {
+	if (typeof value === "object" && value || typeof value === "function") return value[key];
+}
+function getStatusCodeProperty(value, key) {
+	const property = getObjectProperty(value, key);
+	if (typeof property === "string" || typeof property === "number") return property;
+}
+function getErrorStatus(error) {
+	const cause = getObjectProperty(error, "cause");
+	return sanitizeStatusCode(getStatusCodeProperty(error, "status") ?? getStatusCodeProperty(error, "statusCode") ?? getStatusCodeProperty(cause, "status") ?? getStatusCodeProperty(cause, "statusCode"));
+}
+function getErrorStatusText(error) {
+	const cause = getObjectProperty(error, "cause");
+	const statusText = getObjectProperty(error, "statusText") ?? getObjectProperty(error, "statusMessage") ?? getObjectProperty(cause, "statusText") ?? getObjectProperty(cause, "statusMessage");
+	if (typeof statusText === "string") return sanitizeStatusMessage(statusText);
+}
+var GENERATED_BODY_EXCLUDED_HEADERS = /* @__PURE__ */ new Set([
+	"connection",
+	"content-encoding",
+	"content-length",
+	"keep-alive",
+	"proxy-connection",
+	"te",
+	"trailer",
+	"transfer-encoding"
+]);
+function isResponse(value) {
+	return value instanceof Response || Object.prototype.toString.call(value) === "[object Response]";
+}
+function getErrorHeaders(error) {
+	let init = getObjectProperty(error, "headers");
+	if (!init) {
+		const cause = getObjectProperty(error, "cause");
+		if (isResponse(cause)) return;
+		init = getObjectProperty(cause, "headers");
+	}
+	if (!init) return;
+	let headers;
+	try {
+		headers = new Headers(init);
+	} catch {
+		return;
+	}
+	for (const name of GENERATED_BODY_EXCLUDED_HEADERS) headers.delete(name);
+	return headers;
+}
+function getDistinctCookieKey(name, options, defaultPath = "") {
+	return [
+		name,
+		options.domain || "",
+		options.path ?? defaultPath
+	].join(";");
+}
+function getDistinctCookieKeyFromHeader(cookie) {
+	const parsed = parseSetCookie(cookie);
+	return parsed ? getDistinctCookieKey(parsed.name, parsed) : `\0${cookie}`;
+}
+function replaceSetCookieValues(headers, cookies) {
+	headers.delete("set-cookie");
+	for (const cookie of cookies) headers.append("set-cookie", cookie);
+}
+function getCookieKey(state, cookie) {
+	const keys = state.setCookieKeys ||= /* @__PURE__ */ new Map();
+	let key = keys.get(cookie);
+	if (key === void 0) {
+		key = getDistinctCookieKeyFromHeader(cookie);
+		keys.set(cookie, key);
+	}
+	return key;
+}
+function getMergedSetCookieValues(state, currentCookies, cookiesToMerge) {
+	if (currentCookies.length === 0) return cookiesToMerge;
+	const cookieKeysToMerge = /* @__PURE__ */ new Set();
+	for (const cookie of cookiesToMerge) cookieKeysToMerge.add(getCookieKey(state, cookie));
+	return currentCookies.filter((cookie) => !cookieKeysToMerge.has(getCookieKey(state, cookie))).concat(cookiesToMerge);
+}
+function hasProtectedHeaderChanges(response, protectedHeaders) {
+	const headers = response.headers;
+	for (const [name, value] of protectedHeaders) if (headers.get(name) !== value) return true;
+	return false;
+}
+function applyProtectedHeaders(protectedHeaders, headers) {
+	for (const [name, value] of protectedHeaders) if (value === null) headers.delete(name);
+	else headers.set(name, value);
+}
+function applyHeaderState(target, state, generatedBody, protectedHeaders, appliedHeaderAppends) {
+	let headers = target;
+	const mutableHeaders = () => {
+		if (headers === target) headers = new Headers(target);
+		return headers;
+	};
+	if (state.clearHeaders) {
+		for (const name of Array.from(target.keys())) if (!protectedHeaders?.has(name)) mutableHeaders().delete(name);
+	}
+	if (!state.clearHeaders && state.removedHeaders) {
+		for (const name of state.removedHeaders) if (!protectedHeaders?.has(name) && headers.has(name)) mutableHeaders().delete(name);
+	}
+	for (const [name, value] of state.headers) if (name !== "set-cookie" && !protectedHeaders?.has(name) && !(generatedBody && GENERATED_BODY_EXCLUDED_HEADERS.has(name))) {
+		let append = state.headerAppends?.get(name);
+		if (!append) {
+			if (headers.get(name) !== value) mutableHeaders().set(name, value);
+			continue;
+		}
+		const applied = appliedHeaderAppends?.get(name);
+		const pending = [];
+		while (append && append !== applied) {
+			pending.push(append.value);
+			append = append.previous;
+		}
+		for (let index = pending.length - 1; index >= 0; index--) mutableHeaders().append(name, pending[index]);
+	}
+	if (state.setCookieBehavior && !protectedHeaders?.has("set-cookie")) {
+		const eventSetCookies = getSetCookieValues(state.headers);
+		const currentCookies = getSetCookieValues(headers);
+		const cookies = state.setCookieBehavior === "replace" ? eventSetCookies : getMergedSetCookieValues(state, currentCookies, eventSetCookies);
+		if (cookies.length !== currentCookies.length || cookies.some((cookie, index) => cookie !== currentCookies[index])) replaceSetCookieValues(mutableHeaders(), cookies);
+	}
+	return headers;
+}
+function canHaveBody(method, status) {
+	return method !== "HEAD" && status !== 204 && status !== 205 && status !== 304;
+}
+/** A protected content type marks a Start-serialized body the client decodes. */
+function isSerializedResponse(protectedHeaders) {
+	return typeof protectedHeaders?.get("content-type") === "string";
+}
+/**
+* A helper status that forbids a body never applies to a serialized
+* server-function reply, because the client must decode it. Only a HEAD request
+* drops its body.
+*/
+function getHelperStatus(state, serialized) {
+	const status = state?.status;
+	if (!serialized || status === void 0 || canHaveBody("GET", status)) return status;
+}
+/** Helper status text describes the helper status and is ignored with it. */
+function getHelperStatusText(state, helperStatus) {
+	return helperStatus === state?.status ? state?.statusText : void 0;
+}
+function cancelDroppedBody(response, reason) {
+	try {
+		response.body?.cancel(reason).catch(() => {});
+	} catch {}
+}
+function createReconciledResponse(body, status, statusText, headers) {
+	try {
+		return new Response(body, {
+			status,
+			statusText,
+			headers
+		});
+	} catch (cause) {
+		throw new Error("Unable to reconcile response because its body has already been consumed or locked.", { cause });
+	}
+}
+/** Apply helper state to a response that leaves Start. */
+function finalizeResponse(response, event) {
+	return applyResponseState(response, event, event.request.method);
+}
+/**
+* Apply helper state with the body rules of `method`. Request middleware still
+* reads a HEAD response's body, so the pipeline applies GET rules and strips a
+* HEAD body only when the response leaves it.
+*/
+function applyResponseState(response, event, method, disposeBody) {
+	const protectedHeaders = getProtectedResponseHeaders(response);
+	const serialized = isSerializedResponse(protectedHeaders);
+	let helperStatus = getHelperStatus(event.responseState, serialized);
+	const mustDropBody = !canHaveBody(method, helperStatus ?? response.status) && response.body !== null;
+	if (mustDropBody) {
+		const reason = method === "HEAD" ? "HEAD body stripped" : "Response body dropped by Start reconciliation";
+		if (disposeBody) disposeBody(reason);
+		else cancelDroppedBody(response, reason);
+		helperStatus = getHelperStatus(event.responseState, serialized);
+	}
+	const state = event.responseState;
+	if (!state && !mustDropBody) {
+		event.currentResponse = response;
+		return response;
+	}
+	const status = helperStatus ?? response.status;
+	const statusText = getHelperStatusText(state, helperStatus) ?? response.statusText;
+	const statusChanged = status !== response.status;
+	const statusTextChanged = statusText !== response.statusText;
+	const headers = state ? applyHeaderState(response.headers, state, serialized, protectedHeaders, event.responseHeaderAppends?.get(response)) : response.headers;
+	const reconciled = statusChanged || statusTextChanged || mustDropBody || headers !== response.headers ? createReconciledResponse(mustDropBody ? null : response.body, status, statusText, headers) : response;
+	if (protectedHeaders && reconciled !== response) installProtectedResponseHeaders(reconciled, protectedHeaders);
+	return publishResponse(reconciled, event);
+}
+function publishResponse(response, event) {
+	const headerAppends = event.responseState?.headerAppends;
+	if (headerAppends?.size) (event.responseHeaderAppends ||= /* @__PURE__ */ new WeakMap()).set(response, new Map(headerAppends));
+	event.currentResponse = response;
+	return response;
+}
+function getHttpErrorStatus(status) {
+	return status !== void 0 && status >= 400 ? status : void 0;
+}
+/**
+* Status for a response built from an uncaught error. Only an error status
+* (400-599) from a helper or from error metadata describes the failure, so a
+* success or redirect status set before the throw cannot hide it. The error is
+* logged unless its own metadata marks it as an HTTP error. Reporting runs
+* before helper state is read, so hooks that write helpers are included.
+*/
+function resolveErrorStatus(error, event) {
+	const metadataStatus = getErrorStatus(error);
+	const errorStatus = getHttpErrorStatus(metadataStatus);
+	if (errorStatus === void 0) console.error(error);
+	const state = event?.responseState;
+	const helperStatus = getHttpErrorStatus(state?.status);
+	const status = helperStatus ?? errorStatus ?? 500;
+	const statusText = getHelperStatusText(state, helperStatus) ?? (status === errorStatus || metadataStatus === void 0 ? getErrorStatusText(error) : void 0) ?? "";
+	if (state && state.status !== helperStatus) {
+		state.status = void 0;
+		state.statusText = void 0;
+	}
+	return {
+		status,
+		statusText
+	};
+}
+/**
+* Internal: status and status text for a serialized server-function error.
+* Logs the error and discards a non-error helper status, like any error
+* response Start builds.
+*/
+function resolveErrorResponseStatus(error) {
+	return resolveErrorStatus(error, eventStorage.getStore());
+}
+function createErrorResponse(error, event) {
+	let headers = getErrorHeaders(error) ?? new Headers();
+	const { status, statusText } = resolveErrorStatus(error, event);
+	const state = event.responseState;
+	const body = canHaveBody(event.request.method, status) ? JSON.stringify({
+		status,
+		statusText,
+		unhandled: true,
+		message: "HTTPError"
+	}) : null;
+	if (!headers.has("content-type")) headers.set("content-type", "application/json");
+	if (state) headers = applyHeaderState(headers, state, true);
+	return publishResponse(new Response(body !== null && !headers.has("content-type") ? new TextEncoder().encode(body) : body, {
+		status,
+		statusText,
+		headers
+	}), event);
+}
+function finalizeError(error, event) {
+	if (error instanceof Response) return finalizeResponse(error, event);
+	return createErrorResponse(error, event);
+}
+function handleStartError(error) {
+	const event = eventStorage.getStore();
+	if (event) return finalizeError(error, event);
+	if (error instanceof Response) return error;
+	const request = new Request("http://localhost");
+	return createErrorResponse(error, {
+		request,
+		requestUrl: new URL(request.url)
+	});
+}
+/** Apply helper state to a response inside the request middleware pipeline. */
+function reconcileResponse(response, event, disposeBody) {
+	if (!event.responseState && (response === event.currentResponse || canHaveBody("GET", response.status)) || isRedirect(response)) {
+		event.currentResponse = response;
+		return response;
+	}
+	return applyResponseState(response, event, "GET", disposeBody);
+}
+/**
+* Restore protocol headers that middleware changed directly on the response.
+* Start does this once, when the response leaves the request middleware
+* pipeline; helper writes never override them.
+*/
+function restoreResponseProtocol(response, event) {
+	const protectedHeaders = getProtectedResponseHeaders(response);
+	if (!protectedHeaders || !hasProtectedHeaderChanges(response, protectedHeaders)) return response;
+	const headers = new Headers(response.headers);
+	applyProtectedHeaders(protectedHeaders, headers);
+	const restored = createReconciledResponse(response.body, response.status, response.statusText, headers);
+	transferResponseMetadata(response, restored);
+	event.currentResponse = restored;
+	return restored;
+}
+/**
+* Build a Start-owned serialized reply with already normalized protocol
+* headers. A bodyless helper status never applies to it; only a HEAD request
+* drops its body.
+*/
+function createFinalizedResponse(body, headers, protectedHeaders, event) {
+	const state = event.responseState;
+	let status = 200;
+	let statusText = "";
+	if (state) {
+		const helperStatus = getHelperStatus(state, true);
+		status = helperStatus ?? 200;
+		statusText = getHelperStatusText(state, helperStatus) ?? "";
+		headers = applyHeaderState(headers, state, true, protectedHeaders);
+	}
+	const response = new Response(canHaveBody(event.request.method, status) ? body : null, {
+		status,
+		statusText,
+		headers
+	});
+	installProtectedResponseHeaders(response, protectedHeaders);
+	return publishResponse(response, event);
+}
+function protectResponseHeaders(response, headers) {
+	const previous = getProtectedResponseHeaders(response);
+	if (previous === headers) return;
+	if (previous) {
+		const merged = new Map(previous);
+		for (const [name, value] of headers) merged.set(name, value);
+		headers = merged;
+	}
+	installProtectedResponseHeaders(response, headers);
+}
+/**
+* Set and protect transport headers on a new response. Reuse the body stream
+* without cloning or teeing it; callers transfer ownership to the result.
+*/
+function setProtectedResponseHeaders(response, headers) {
+	let next;
+	try {
+		next = new Response(response.body, response);
+		applyProtectedHeaders(headers, next.headers);
+	} catch (cause) {
+		throw new Error("Unable to set response header because its body has already been consumed or locked.", { cause });
+	}
+	transferResponseMetadata(response, next);
+	protectResponseHeaders(next, headers);
+	return next;
+}
+function decodePathname(pathname) {
+	try {
+		return decodeURI(pathname);
+	} catch (error) {
+		if (error instanceof URIError) return;
+		throw error;
+	}
+}
+function runInStartRequest(request, requestOpts, handler) {
+	let requestUrl;
+	try {
+		requestUrl = new URL(request.url);
+	} catch (error) {
+		if (error instanceof TypeError) return new Response(null, {
+			status: 400,
+			statusText: "Bad Request"
+		});
+		throw error;
+	}
+	const pathname = requestUrl.pathname;
+	if (pathname.includes("%") && decodePathname(pathname) === void 0) return new Response(null, {
+		status: 400,
+		statusText: "Bad Request"
+	});
+	const event = {
+		request,
+		requestUrl
+	};
+	return eventStorage.run(event, handler, request, requestOpts, event);
+}
+/**
+* Keep the complete server entry, including custom error handling, inside one
+* request scope. A custom returned response is used as-is; call handleStartError
+* in a custom catch to preserve Start's response helper state.
+*/
+function createServerEntry$1(entry) {
+	return { fetch: withStartRequest(async (request, requestOpts) => {
+		try {
+			return await entry.fetch(request, requestOpts);
+		} catch (error) {
+			return handleStartError(error);
+		}
+	}) };
+}
+/**
+* Establish request scope; the response pipeline owns reconciliation. A nested
+* handler delegating the same request participates in its scope. Independent
+* fetch invocations and different requests get a fresh event.
+*/
+function withStartRequest(handler) {
+	return (request, requestOpts) => {
+		const event = eventStorage.getStore();
+		if (event?.request === request) return handler(request, requestOpts, event);
+		return runInStartRequest(request, requestOpts, handler);
+	};
+}
+function getStartEvent() {
 	const event = eventStorage.getStore();
 	if (!event) throw new Error(`No StartEvent found in AsyncLocalStorage. Make sure you are using the function within the server runtime.`);
-	return event.h3Event;
+	return event;
 }
-function getResponse() {
-	return getH3Event().res;
+/**
+* Internal: returns the per-request parsed URL for `request`, memoized on the
+* Start event so the framework parses each request URL only once. Falls back
+* to parsing when called outside a Start event (e.g. in unit tests) or for a
+* foreign request. Callers MUST NOT mutate the returned URL.
+*/
+function getParsedRequestUrl(request) {
+	const event = eventStorage.getStore();
+	if (event && event.request === request) return event.requestUrl;
+	return new URL(request.url);
+}
+/**
+* Internal: helper status state for a serialized server-function reply.
+* Bodyless statuses never apply to it and are omitted with their status text.
+*/
+function getSerializedResponseState() {
+	const state = getStartEvent().responseState;
+	const status = getHelperStatus(state, true);
+	return {
+		status,
+		statusText: getHelperStatusText(state, status)
+	};
 }
 var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 /**
@@ -102,7 +3778,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-c8HHADTo.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-BxTSABD9.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -147,7 +3823,7 @@ var GLOBAL_STORAGE_KEY = Symbol.for("tanstack-start:start-storage-context");
 var globalObj = globalThis;
 if (!globalObj[GLOBAL_STORAGE_KEY]) globalObj[GLOBAL_STORAGE_KEY] = new AsyncLocalStorage();
 var startStorage = globalObj[GLOBAL_STORAGE_KEY];
-async function runWithStartContext(context, fn) {
+function runWithStartContext(context, fn) {
 	return startStorage.run(context, fn);
 }
 function getStartContext(opts) {
@@ -156,6 +3832,346 @@ function getStartContext(opts) {
 	return context;
 }
 var getStartOptions = () => getStartContext().startOptions;
+function toHeadersInstance(init) {
+	if (init instanceof Headers) return init;
+	else if (Array.isArray(init)) return new Headers(init);
+	else if (typeof init === "object") return new Headers(init);
+	else return null;
+}
+function mergeHeaders(...headers) {
+	return headers.reduce((acc, header) => {
+		const headersInstance = toHeadersInstance(header);
+		if (!headersInstance) return acc;
+		for (const [key, value] of headersInstance.entries()) if (key === "set-cookie") splitSetCookieString(value).forEach((cookie) => acc.append("set-cookie", cookie));
+		else acc.set(key, value);
+		return acc;
+	}, new Headers());
+}
+/**
+* this plugin serializes only the `message` part of an Error
+* this helps with serializing e.g. a ZodError which has functions attached that cannot be serialized
+*/
+var ShallowErrorPlugin = /* @__PURE__ */ createPlugin({
+	tag: "$TSR/Error",
+	test(value) {
+		return value instanceof Error;
+	},
+	parse: {
+		sync(value, ctx) {
+			return { message: ctx.parse(value.message) };
+		},
+		async async(value, ctx) {
+			return { message: await ctx.parse(value.message) };
+		},
+		stream(value, ctx) {
+			return { message: ctx.parse(value.message) };
+		}
+	},
+	serialize(node, ctx) {
+		return "new Error(" + ctx.serialize(node.message) + ")";
+	},
+	deserialize(node, ctx) {
+		return new Error(ctx.deserialize(node.message));
+	}
+});
+function toBase64(bytes) {
+	const chunks = [];
+	for (let i = 0; i < bytes.length; i += 32768) chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 32768)));
+	return btoa(chunks.join(""));
+}
+function fromBase64(value) {
+	const binary = atob(value);
+	const bytes = new Uint8Array(binary.length);
+	for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+	return bytes;
+}
+var textDecoder = /* @__PURE__ */ new TextDecoder("utf-8", {
+	fatal: true,
+	ignoreBOM: true
+});
+/** `'t' + utf8` for a valid UTF-8 chunk, otherwise `'b' + base64`. */
+function encodeText(value) {
+	try {
+		return "t" + textDecoder.decode(value);
+	} catch {
+		return "b" + toBase64(value);
+	}
+}
+var textEncoder$3 = /* @__PURE__ */ new TextEncoder();
+function decodeText(value) {
+	const data = value.slice(1);
+	return value[0] === "t" ? textEncoder$3.encode(data) : fromBase64(data);
+}
+/**
+* Pump a byte stream into a Seroval stream, one encoded chunk per read.
+* Returns the Seroval stream and a `stop` function that cancels the reader
+* without signalling the Seroval stream; the abort signal and read failures
+* stop the pump and throw through the Seroval stream.
+*/
+function pumpEncodedStream(readable, encode, signal) {
+	signal?.throwIfAborted();
+	const stream = createStream();
+	const reader = readable.getReader();
+	let active = true;
+	const release = () => {
+		active = false;
+		signal?.removeEventListener("abort", abort);
+		reader.releaseLock();
+	};
+	const stop = (reason) => {
+		if (!active) return false;
+		reader.cancel(reason).catch(() => {});
+		release();
+		return true;
+	};
+	const abort = () => {
+		if (stop(signal.reason)) stream.throw(signal.reason);
+	};
+	signal?.addEventListener("abort", abort);
+	(async () => {
+		try {
+			while (active) {
+				const { done, value } = await reader.read();
+				if (!active) return;
+				if (done) {
+					release();
+					stream.return(void 0);
+					return;
+				}
+				stream.next(encode(value));
+			}
+		} catch (error) {
+			if (stop(error)) stream.throw(error);
+		}
+	})();
+	return [stream, stop];
+}
+/** Rebuild a byte stream from encoded Seroval stream chunks. */
+function fromEncodedStream(source, decode) {
+	let unsubscribe;
+	let done = false;
+	return new ReadableStream({
+		start(controller) {
+			const dispose = source.on({
+				next(value) {
+					if (done) return;
+					try {
+						controller.enqueue(decode(value));
+					} catch (error) {
+						done = true;
+						const stop = unsubscribe;
+						unsubscribe = void 0;
+						stop?.();
+						controller.error(error);
+					}
+				},
+				throw(error) {
+					if (!done) {
+						done = true;
+						unsubscribe = void 0;
+						controller.error(error);
+					}
+				},
+				return() {
+					if (!done) {
+						done = true;
+						unsubscribe = void 0;
+						controller.close();
+					}
+				}
+			});
+			if (done) dispose();
+			else unsubscribe = dispose;
+		},
+		cancel() {
+			const dispose = unsubscribe;
+			unsubscribe = void 0;
+			dispose?.();
+		}
+	});
+}
+/**
+* Serializes a RawStream into JSON requests and static-cache responses.
+* The optional signal stops the source pump when the request is aborted.
+*/
+/* @__NO_SIDE_EFFECTS__ */
+function createRawStreamJSONPlugin(signal) {
+	return /* @__PURE__ */ createPlugin({
+		tag: "tss/RawStream",
+		test: (value) => value instanceof RawStream,
+		parse: { async: async (value, ctx) => {
+			const text = await ctx.parse(value.hint === "text");
+			const [stream] = pumpEncodedStream(value.stream, value.hint === "text" ? encodeText : toBase64, signal);
+			return {
+				text,
+				stream: await ctx.parse(stream)
+			};
+		} },
+		serialize: void 0,
+		deserialize: void 0
+	});
+}
+var RawStreamJSONPlugin = /* @__PURE__ */ createRawStreamJSONPlugin();
+/**
+* Deserializes the JSON shape above back into a `ReadableStream<Uint8Array>`.
+* `test` never matches, so this plugin is inert during serialization and can
+* share a plugin list with `RawStreamJSONPlugin`.
+*/
+var RawStreamJSONDeserializePlugin = /* @__PURE__ */ createPlugin({
+	tag: "tss/RawStream",
+	test: () => false,
+	parse: {},
+	serialize: void 0,
+	deserialize(node, ctx) {
+		return fromEncodedStream(ctx.deserialize(node.stream), ctx.deserialize(node.text) ? decodeText : fromBase64);
+	}
+});
+var READABLE_STREAM_FACTORY = {};
+var READABLE_STREAM_FACTORY_CONSTRUCTOR = (stream) => new ReadableStream({ start(controller) {
+	stream.on({
+		next(value) {
+			try {
+				controller.enqueue(value);
+			} catch (_error) {}
+		},
+		throw(value) {
+			controller.error(value);
+		},
+		return() {
+			try {
+				controller.close();
+			} catch (_error) {}
+		}
+	});
+} });
+var ReadableStreamFactoryPlugin = /* @__PURE__ */ createPlugin({
+	tag: "seroval-plugins/web/ReadableStreamFactory",
+	test(value) {
+		return value === READABLE_STREAM_FACTORY;
+	},
+	parse: {
+		sync() {
+			return READABLE_STREAM_FACTORY;
+		},
+		async async() {
+			return await Promise.resolve(READABLE_STREAM_FACTORY);
+		},
+		stream() {
+			return READABLE_STREAM_FACTORY;
+		}
+	},
+	serialize() {
+		return READABLE_STREAM_FACTORY_CONSTRUCTOR.toString();
+	},
+	deserialize() {
+		return READABLE_STREAM_FACTORY;
+	}
+});
+async function drainStream(stream, reader) {
+	try {
+		while (true) {
+			const result = await reader.read();
+			if (result.done) {
+				stream.return(result.value);
+				reader.releaseLock();
+				break;
+			}
+			stream.next(result.value);
+		}
+	} catch (error) {
+		reader.releaseLock();
+		stream.throw(error);
+	}
+}
+function cleanupStream(reader) {
+	reader.cancel().catch(() => {});
+	reader.releaseLock();
+}
+function toStream(value) {
+	const stream = createStream();
+	const reader = value.getReader();
+	const cleanup = cleanupStream.bind(null, reader);
+	drainStream(stream, reader).catch(cleanup);
+	return [stream, cleanup];
+}
+var ReadableStreamPlugin = /* @__PURE__ */ createPlugin({
+	tag: "seroval/plugins/web/ReadableStream",
+	extends: [ReadableStreamFactoryPlugin],
+	test(value) {
+		if (typeof ReadableStream === "undefined") return false;
+		return value instanceof ReadableStream;
+	},
+	parse: {
+		sync(_value, ctx) {
+			return {
+				factory: ctx.parse(READABLE_STREAM_FACTORY),
+				stream: ctx.parse(createStream())
+			};
+		},
+		async async(value, ctx) {
+			return {
+				factory: await ctx.parse(READABLE_STREAM_FACTORY),
+				stream: await ctx.parse(toStream(value)[0])
+			};
+		},
+		stream(value, ctx) {
+			const [stream, cleanup] = toStream(value);
+			ctx.addCleanup(cleanup);
+			return {
+				factory: ctx.parse(READABLE_STREAM_FACTORY),
+				stream: ctx.parse(stream)
+			};
+		}
+	},
+	serialize(node, ctx) {
+		return "(" + ctx.serialize(node.factory) + ")(" + ctx.serialize(node.stream) + ")";
+	},
+	deserialize(node, ctx) {
+		const stream = ctx.deserialize(node.stream);
+		if (!stream || typeof stream !== "object" || !isStream(stream)) throw new Error("Expected a stream source.");
+		return READABLE_STREAM_FACTORY_CONSTRUCTOR(stream);
+	}
+});
+/**
+* Plugins for JSON transport from a client: serializes RawStream arguments
+* and reads plain JSON responses, which never carry RawStream nodes.
+*/
+/* @__NO_SIDE_EFFECTS__ */
+function createDefaultSerovalPlugins(signal) {
+	return [
+		ShallowErrorPlugin,
+		signal ? /* @__PURE__ */ createRawStreamJSONPlugin(signal) : RawStreamJSONPlugin,
+		ReadableStreamPlugin
+	];
+}
+/**
+* `defaultSerovalPlugins` plus RawStream deserialization, for JSON that may
+* carry RawStream nodes: server-function request bodies and cached static
+* responses. Seroval deserializes by first tag match, so the deserialize half
+* precedes the serialize half; it never matches during serialization.
+*/
+var defaultSerovalDeserializerPlugins = [RawStreamJSONDeserializePlugin, .../* @__PURE__ */ createDefaultSerovalPlugins()];
+/**
+* Server-side RawStream plugin for multiplexed server-function responses.
+* The `hint` is ignored: framed responses always carry raw bytes.
+*/
+/* @__NO_SIDE_EFFECTS__ */
+function createRawStreamRPCPlugin(onRawStream) {
+	let nextStreamId = 1;
+	return /* @__PURE__ */ createPlugin({
+		tag: "tss/RawStream",
+		test(value) {
+			return value instanceof RawStream;
+		},
+		parse: { stream(value, ctx) {
+			const streamId = nextStreamId++;
+			onRawStream(streamId, value.stream);
+			return { streamId: ctx.parse(streamId) };
+		} },
+		serialize: void 0,
+		deserialize: void 0
+	});
+}
 /** Start's serialization adapters followed by `routerPlugins`. */
 function getSerovalPlugins(routerPlugins) {
 	return [...(getStartOptions()?.serializationAdapters)?.map(makeSerovalPlugin) ?? [], ...routerPlugins];
@@ -170,7 +4186,7 @@ function getSerovalPlugins(routerPlugins) {
 * - payload: variable length bytes
 */
 /** Cached TextEncoder for frame encoding */
-var textEncoder$1 = new TextEncoder();
+var textEncoder$2 = new TextEncoder();
 /** Shared empty payload for END frames - avoids allocation per call */
 var EMPTY_PAYLOAD = /* @__PURE__ */ new Uint8Array(0);
 var MAX_ERROR_MESSAGE_CODE_UNITS = 4096;
@@ -196,7 +4212,7 @@ function encodeFrame(type, streamId, payload) {
 function encodeErrorPayload(error) {
 	const originalMessage = error instanceof Error ? error.message : String(error ?? "Unknown error");
 	const message = originalMessage.length > MAX_ERROR_MESSAGE_CODE_UNITS ? `${originalMessage.slice(0, MAX_ERROR_MESSAGE_CODE_UNITS)}…` : originalMessage;
-	return textEncoder$1.encode(message);
+	return textEncoder$2.encode(message);
 }
 /**
 * Creates a multiplexed ReadableStream from serialized response records.
@@ -297,7 +4313,8 @@ function createMultiplexedStream(recordStream, options = {}) {
 				if (!(value instanceof Uint8Array)) throw new TypeError("RawStream chunks must be Uint8Array");
 				let offset = 0;
 				do {
-					const frameAdmission = admitFrame(1, streamId, value.byteLength <= 16777216 ? value : value.subarray(offset, offset + MAX_FRAME_PAYLOAD_SIZE));
+					const chunk = value.byteLength <= 16777216 ? value : value.subarray(offset, offset + MAX_FRAME_PAYLOAD_SIZE);
+					const frameAdmission = admitFrame(1, streamId, chunk);
 					if (frameAdmission !== true && (frameAdmission === false || !await frameAdmission)) return;
 					offset += MAX_FRAME_PAYLOAD_SIZE;
 				} while (offset < value.byteLength);
@@ -366,10 +4383,18 @@ function isSafeKey(key) {
 function safeObjectMerge(target, source) {
 	const result = Object.create(null);
 	if (target) {
-		for (const key of Object.keys(target)) if (isSafeKey(key)) result[key] = target[key];
+		const keys = Object.keys(target);
+		for (let i = 0; i < keys.length; i++) {
+			const key = keys[i];
+			if (isSafeKey(key)) result[key] = target[key];
+		}
 	}
 	if (source && typeof source === "object") {
-		for (const key of Object.keys(source)) if (isSafeKey(key)) result[key] = source[key];
+		const keys = Object.keys(source);
+		for (let i = 0; i < keys.length; i++) {
+			const key = keys[i];
+			if (isSafeKey(key)) result[key] = source[key];
+		}
 	}
 	return result;
 }
@@ -377,13 +4402,9 @@ function safeObjectMerge(target, source) {
 * Create a null-prototype object, optionally copying from source.
 */
 function createNullProtoObject(source) {
-	if (!source) return Object.create(null);
-	const obj = Object.create(null);
-	for (const key of Object.keys(source)) if (isSafeKey(key)) obj[key] = source[key];
-	return obj;
+	return source ? safeObjectMerge(source, void 0) : Object.create(null);
 }
-function flattenMiddlewares(middlewares, maxDepth = 100) {
-	const seen = /* @__PURE__ */ new Set();
+function flattenMiddlewares(middlewares, maxDepth = 100, seen = /* @__PURE__ */ new Set()) {
 	const flattened = [];
 	const recurse = (middleware, depth) => {
 		if (depth > maxDepth) throw new Error(`Middleware nesting depth exceeded maximum of ${maxDepth}. Check for circular references.`);
@@ -403,19 +4424,14 @@ var createMiddleware = (options, __opts) => {
 		type: "request",
 		...__opts || options
 	};
-	const setValidator = (validator) => {
-		return createMiddleware({}, Object.assign(resolvedOptions, {
-			validator,
-			inputValidator: validator
-		}));
-	};
 	return {
 		options: resolvedOptions,
 		middleware: (middleware) => {
 			return createMiddleware({}, Object.assign(resolvedOptions, { middleware }));
 		},
-		validator: setValidator,
-		inputValidator: setValidator,
+		validator: (validator) => {
+			return createMiddleware({}, Object.assign(resolvedOptions, { validator }));
+		},
 		client: (client) => {
 			return createMiddleware({}, Object.assign(resolvedOptions, { client }));
 		},
@@ -425,19 +4441,33 @@ var createMiddleware = (options, __opts) => {
 	};
 };
 var innerCreateCsrfMiddleware = (opts = {}) => {
-	return createMiddleware().server(async (ctx) => {
+	const continueRequest = (result, ctx) => {
+		return isValidationResultAllowed(result, opts) ? ctx.next() : getFailureResponse(opts, ctx);
+	};
+	const validateRequest = (ctx) => {
+		const result = validateCsrfRequest(opts, ctx);
+		if (isPromise(result)) return result.then((result) => continueRequest(result, ctx));
+		return continueRequest(result, ctx);
+	};
+	return createMiddleware().server((ctx) => {
 		const csrfCtx = ctx;
-		if (opts.filter && !await opts.filter(csrfCtx)) return ctx.next();
-		if (await isCsrfRequestAllowed(opts, csrfCtx)) return ctx.next();
-		return getFailureResponse(opts, csrfCtx);
+		try {
+			if (opts.filter) {
+				const shouldValidate = opts.filter(csrfCtx);
+				if (isPromise(shouldValidate)) return shouldValidate.then((shouldValidate) => shouldValidate ? validateRequest(csrfCtx) : ctx.next());
+				if (!shouldValidate) return ctx.next();
+			}
+			return validateRequest(csrfCtx);
+		} catch (error) {
+			return Promise.reject(error);
+		}
 	});
 };
 var createCsrfMiddleware = innerCreateCsrfMiddleware;
-async function isCsrfRequestAllowed(opts, ctx) {
-	const result = await getCsrfRequestValidationResult(opts, ctx);
+function isValidationResultAllowed(result, opts) {
 	return result === true || result === void 0 && opts.allowRequestsWithoutOriginCheck === true;
 }
-async function getCsrfRequestValidationResult(opts, ctx) {
+function validateCsrfRequest(opts, ctx) {
 	const fetchSite = ctx.request.headers.get("Sec-Fetch-Site");
 	if (fetchSite !== null) return matchValue(opts.secFetchSite ?? "same-origin", fetchSite, ctx);
 	const origin = ctx.request.headers.get("Origin");
@@ -454,7 +4484,7 @@ async function getCsrfRequestValidationResult(opts, ctx) {
 	}
 	return isRefererSameOrigin(referer, new URL(ctx.request.url).origin);
 }
-async function matchValue(matcher, value, ctx) {
+function matchValue(matcher, value, ctx) {
 	if (typeof matcher === "function") return matcher(value, ctx);
 	if (Array.isArray(matcher)) return matcher.includes(value);
 	return value === matcher;
@@ -473,12 +4503,888 @@ function isRefererSameOrigin(referer, requestOrigin) {
 	const code = referer.charCodeAt(requestOrigin.length);
 	return code === 47 || code === 63 || code === 35;
 }
-async function getFailureResponse(opts, ctx) {
+function getFailureResponse(opts, ctx) {
 	if (typeof opts.failureResponse === "function") return opts.failureResponse(ctx);
 	return opts.failureResponse?.clone() ?? new Response("Forbidden", { status: 403 });
 }
-var serovalPlugins = void 0;
-var FORM_DATA_CONTENT_TYPES = ["multipart/form-data", "application/x-www-form-urlencoded"];
+var GLOBAL_TSR = "$_TSR";
+/**
+* Create a Seroval plugin for server-side serialization only. `tracker.didRun`
+* becomes true once the plugin serialized a value.
+*/
+/* @__NO_SIDE_EFFECTS__ */
+function makeSsrSerovalPlugin(serializationAdapter, tracker) {
+	return /* @__PURE__ */ createPlugin({
+		tag: "$TSR/t/" + serializationAdapter.key,
+		test: serializationAdapter.test,
+		parse: { stream(value, ctx) {
+			return { v: ctx.parse(serializationAdapter.toSerializable(value)) };
+		} },
+		serialize(node, ctx) {
+			if (tracker) tracker.didRun = true;
+			return GLOBAL_TSR + ".t.get(\"" + serializationAdapter.key + "\")(" + ctx.serialize(node.v) + ")";
+		},
+		deserialize: void 0
+	});
+}
+var tsrScript_default = "self.$_TSR={h(){this.hydrated=!0,this.c()},e(){this.streamEnded=!0,this.c()},c(){this.hydrated&&this.streamEnded&&(delete self.$_TSR,delete self.$R.tsr)},p(e){this.initialized?e():this.buffer.push(e)},buffer:[]}";
+var textEncoder$1 = new TextEncoder();
+var DOCUMENT_CLOSE = "</body></html>";
+var SCRIPT_CLOSE = "<\/script>";
+DOCUMENT_CLOSE.indexOf("y");
+SCRIPT_CLOSE.indexOf("p");
+textEncoder$1.encode(DOCUMENT_CLOSE);
+textEncoder$1.encode(SCRIPT_CLOSE);
+function encodeIntoBoundedChunk(source, sourceOffset, output, outputOffset = 0) {
+	return textEncoder$1.encodeInto(sourceOffset === 0 ? source : source.slice(sourceOffset), outputOffset === 0 ? output : output.subarray(outputOffset));
+}
+var encoder = new TextEncoder();
+var SOURCE_SEPARATOR = ";";
+var MAX_INITIAL_SOURCE_CODE_UNITS = 16384;
+var MAX_BACKLOG_CODE_UNITS = 16777216;
+var MAX_BACKLOG_SOURCES = 4096;
+var MIN_OUTPUT_BYTES = 256;
+var MAX_DIRECT_CODE_UNITS = 16384;
+var MAX_HYDRATION_OUTPUT_CHUNK_BYTES = 65536;
+var MAX_DYNAMIC_RECORD_CODE_UNITS = MAX_HYDRATION_OUTPUT_CHUNK_BYTES;
+var STREAM_PART_ATTRIBUTE = "data-tsr-stream-part";
+var INITIAL_CLEANUP_SOURCE = `{let s=document.currentScript,p;while((p=s.previousElementSibling)&&p.hasAttribute('${STREAM_PART_ATTRIBUTE}'))p.remove();s.remove()}`;
+var INITIAL_CLEANUP_SUFFIX = SOURCE_SEPARATOR + INITIAL_CLEANUP_SOURCE;
+var DYNAMIC_CLOSE_SOURCE = "document.currentScript.remove()<\/script>";
+var HYDRATION_SCRIPT_BOUNDARY_SOURCE = "document.currentScript.remove();/*$tsr-stream-boundary*/";
+var HYDRATION_SCRIPT_BOUNDARY_SUFFIX = ";/*$tsr-stream-boundary*/<\/script>";
+HYDRATION_SCRIPT_BOUNDARY_SUFFIX.lastIndexOf("*");
+encoder.encode(HYDRATION_SCRIPT_BOUNDARY_SUFFIX);
+var ROUTER_PREFIX = GLOBAL_TSR + ".router=";
+var PROMISE_PREFIX = GLOBAL_TSR + ".p(()=>";
+var DEFAULT_INITIAL_SOURCES = [getCrossReferenceHeader("tsr"), tsrScript_default];
+var HydrationScriptOutputState = {
+	Waiting: 0,
+	Ready: 1,
+	Active: 2,
+	Done: 3,
+	Failed: 4
+};
+function escapeAttribute(value) {
+	return value.replace(/[&"'<>]/g, (char) => `&#${char.charCodeAt(0)};`);
+}
+function createInitialTags(sources, nonce) {
+	const before = [];
+	for (const source of sources) {
+		if (!source) continue;
+		const previous = before[before.length - 1];
+		if (previous?.children && previous.children.length + 1 + source.length <= MAX_INITIAL_SOURCE_CODE_UNITS) previous.children += SOURCE_SEPARATOR + source;
+		else before.push({
+			tag: "script",
+			attrs: {
+				nonce,
+				[STREAM_PART_ATTRIBUTE]: ""
+			},
+			children: source
+		});
+	}
+	const lastHydrationTag = before[before.length - 1];
+	if (lastHydrationTag) {
+		const lastSource = lastHydrationTag.children;
+		if (lastSource.length + INITIAL_CLEANUP_SUFFIX.length <= MAX_INITIAL_SOURCE_CODE_UNITS) lastHydrationTag.children = lastSource + INITIAL_CLEANUP_SUFFIX;
+		else before.push({
+			tag: "script",
+			attrs: {
+				nonce,
+				[STREAM_PART_ATTRIBUTE]: ""
+			},
+			children: INITIAL_CLEANUP_SOURCE
+		});
+	}
+	return {
+		before,
+		boundary: {
+			tag: "script",
+			attrs: { nonce },
+			children: HYDRATION_SCRIPT_BOUNDARY_SOURCE
+		}
+	};
+}
+var HydrationScriptsOwner = class {
+	constructor(nonce, initialSources) {
+		this.nonce = nonce;
+		this.queuedSources = [];
+		this.queuedSourceHead = 0;
+		this.initialTaken = false;
+		this.barrierLifted = false;
+		this.producerDone = false;
+		this.retainedSources = 0;
+		this.regularCodeUnits = 0;
+		this.hasOversizedSource = false;
+		this.segmentIndex = 0;
+		this.closingSegmentIndex = 0;
+		this.source = "";
+		this.sourceOffset = 0;
+		this.outputCapacity = MIN_OUTPUT_BYTES;
+		this.outputState = HydrationScriptOutputState.Waiting;
+		this.takeInitialHydrationScriptTags = this.takeInitialHydrationScriptTags.bind(this);
+		const seedSources = initialSources ?? DEFAULT_INITIAL_SOURCES;
+		for (const seedSource of seedSources) {
+			if (!this.account(seedSource)) break;
+			this.queuedSources.push(seedSource);
+		}
+	}
+	get state() {
+		return this.outputState;
+	}
+	get error() {
+		return this.outputError;
+	}
+	notify() {
+		try {
+			this.listener?.();
+		} catch (listenerError) {
+			console.error("Hydration script output listener error:", listenerError);
+		}
+	}
+	refresh(notifyChange = true) {
+		const next = this.outputState === HydrationScriptOutputState.Failed ? HydrationScriptOutputState.Failed : this.active ? HydrationScriptOutputState.Active : typeof this.consumer === "object" && this.initialTaken && this.barrierLifted && !this.queueIsEmpty() ? HydrationScriptOutputState.Ready : this.producerDone && this.initialTaken && this.queueIsEmpty() ? HydrationScriptOutputState.Done : HydrationScriptOutputState.Waiting;
+		if (this.outputState !== next) {
+			this.outputState = next;
+			if (notifyChange) this.notify();
+		}
+	}
+	clearTimeoutIfSet() {
+		if (this.timeout !== void 0) {
+			clearTimeout(this.timeout);
+			this.timeout = void 0;
+		}
+	}
+	queueIsEmpty() {
+		return this.queuedSourceHead === this.queuedSources.length;
+	}
+	clearQueue() {
+		this.queuedSources = [];
+		this.queuedSourceHead = 0;
+	}
+	dropBufferedOutput() {
+		this.clearQueue();
+		this.active = void 0;
+		this.retainedSources = 0;
+		this.regularCodeUnits = 0;
+		this.hasOversizedSource = false;
+		this.segmentIndex = 0;
+		this.closingSegmentIndex = 0;
+		this.source = "";
+		this.sourceOffset = 0;
+		this.outputCapacity = MIN_OUTPUT_BYTES;
+		this.opening = void 0;
+	}
+	fail(reason) {
+		if (this.consumer === "cleaned" || this.outputState === HydrationScriptOutputState.Failed) return;
+		this.outputError = reason;
+		this.clearTimeoutIfSet();
+		this.dropBufferedOutput();
+		this.outputState = HydrationScriptOutputState.Failed;
+		this.notify();
+	}
+	rejectBacklog(kind) {
+		this.fail(/* @__PURE__ */ new Error(`SSR hydration backlog exceeded maximum ${kind} count`));
+		return false;
+	}
+	account(nextSource) {
+		if (this.retainedSources === MAX_BACKLOG_SOURCES) return this.rejectBacklog("source-part");
+		if (nextSource.length > MAX_BACKLOG_CODE_UNITS) {
+			if (this.hasOversizedSource) return this.rejectBacklog("code-unit");
+			this.hasOversizedSource = true;
+		} else if (this.regularCodeUnits + nextSource.length > MAX_BACKLOG_CODE_UNITS) return this.rejectBacklog("code-unit");
+		else this.regularCodeUnits += nextSource.length;
+		this.retainedSources++;
+		return true;
+	}
+	releaseSource(part) {
+		this.retainedSources--;
+		if (part.length > MAX_BACKLOG_CODE_UNITS) this.hasOversizedSource = false;
+		else this.regularCodeUnits -= part.length;
+	}
+	releaseAccounting(batch) {
+		for (const part of batch) if (part !== void 0) this.releaseSource(part);
+	}
+	liftBarrier() {
+		if (this.consumer !== "cleaned" && !this.barrierLifted) {
+			this.barrierLifted = true;
+			this.refresh();
+		}
+	}
+	producerCanWrite() {
+		return this.consumer !== "cleaned" && this.outputState !== HydrationScriptOutputState.Failed && !this.producerDone;
+	}
+	pushSource(nextSource) {
+		if (!this.producerCanWrite()) return false;
+		if (this.account(nextSource)) {
+			this.queuedSources.push(nextSource);
+			if (this.initialTaken) this.refresh();
+		} else return false;
+		return this.producerCanWrite();
+	}
+	takeQueuedBatch(batchLength) {
+		if (this.queuedSourceHead === 0 && batchLength === this.queuedSources.length) {
+			const batch = this.queuedSources;
+			this.clearQueue();
+			return batch;
+		}
+		const end = this.queuedSourceHead + batchLength;
+		const batch = this.queuedSources.slice(this.queuedSourceHead, end);
+		for (let index = this.queuedSourceHead; index < end; index++) this.queuedSources[index] = void 0;
+		this.queuedSourceHead = end;
+		if (this.queueIsEmpty()) this.clearQueue();
+		else if (this.queuedSourceHead >= 1024 && this.queuedSourceHead >= this.queuedSources.length - this.queuedSourceHead) {
+			this.queuedSources = this.queuedSources.slice(this.queuedSourceHead);
+			this.queuedSourceHead = 0;
+		}
+		return batch;
+	}
+	release(batch) {
+		this.releaseAccounting(batch);
+		this.active = void 0;
+		this.source = "";
+		this.sourceOffset = 0;
+		this.refresh(false);
+	}
+	advanceSource() {
+		const batch = this.active;
+		if (this.segmentIndex > 0 && this.segmentIndex < this.closingSegmentIndex) {
+			const partIndex = this.segmentIndex - 1 >> 1;
+			if (this.segmentIndex % 2 === 1) {
+				const part = batch[partIndex];
+				if (part !== void 0) {
+					this.releaseSource(part);
+					batch[partIndex] = void 0;
+				}
+			}
+		}
+		this.segmentIndex++;
+		if (this.segmentIndex < this.closingSegmentIndex) {
+			const partIndex = this.segmentIndex - 1 >> 1;
+			this.source = this.segmentIndex % 2 === 1 ? batch[partIndex] : SOURCE_SEPARATOR;
+		} else if (this.segmentIndex === this.closingSegmentIndex) this.source = DYNAMIC_CLOSE_SOURCE;
+		else this.release(batch);
+		this.sourceOffset = 0;
+	}
+	pullActive() {
+		const bytes = new Uint8Array(this.outputCapacity);
+		let offset = 0;
+		while (this.active) if (this.sourceOffset === this.source.length) this.advanceSource();
+		else if (offset === bytes.length) break;
+		else {
+			const result = encodeIntoBoundedChunk(this.source, this.sourceOffset, bytes, offset);
+			if (result.read === 0) break;
+			this.sourceOffset += result.read;
+			offset += result.written;
+		}
+		if (offset === 0) throw new Error("SSR router script record produced no output");
+		if (offset === bytes.length) return bytes;
+		return offset * 2 < bytes.length ? bytes.slice(0, offset) : bytes.subarray(0, offset);
+	}
+	pullReady() {
+		const scriptOpening = this.opening ??= this.nonce ? `<script nonce="${escapeAttribute(this.nonce)}">` : "<script>";
+		let codeUnits = scriptOpening.length + 40;
+		let batchLength = 0;
+		for (let index = this.queuedSourceHead; index < this.queuedSources.length; index++) {
+			const part = this.queuedSources[index];
+			const nextCodeUnits = codeUnits + 1 + part.length;
+			if (batchLength > 0 && nextCodeUnits > MAX_DYNAMIC_RECORD_CODE_UNITS) break;
+			codeUnits = nextCodeUnits;
+			batchLength++;
+			if (codeUnits > MAX_DYNAMIC_RECORD_CODE_UNITS) break;
+		}
+		const batch = this.takeQueuedBatch(batchLength);
+		if (codeUnits <= MAX_DIRECT_CODE_UNITS) {
+			const joined = batch.length === 1 ? batch[0] : batch.join(SOURCE_SEPARATOR);
+			const bytes = encoder.encode(scriptOpening + joined + ";document.currentScript.remove()<\/script>");
+			this.release(batch);
+			return bytes;
+		}
+		this.active = batch;
+		this.segmentIndex = 0;
+		this.closingSegmentIndex = (batch.length << 1) + 1;
+		this.source = scriptOpening;
+		this.sourceOffset = 0;
+		this.outputCapacity = Math.max(MIN_OUTPUT_BYTES, Math.min(MAX_HYDRATION_OUTPUT_CHUNK_BYTES, codeUnits));
+		this.outputState = HydrationScriptOutputState.Active;
+		return this.pullActive();
+	}
+	pullChunk() {
+		if (this.outputState !== HydrationScriptOutputState.Ready && this.outputState !== HydrationScriptOutputState.Active) throw new Error("Hydration script output is not ready");
+		try {
+			return this.outputState === HydrationScriptOutputState.Ready ? this.pullReady() : this.pullActive();
+		} catch (cause) {
+			this.fail(cause);
+			throw cause;
+		}
+	}
+	subscribe(onChange) {
+		if (this.consumer === "cleaned") return () => {};
+		if (this.listener) throw new Error("SSR hydration output already has a subscriber");
+		this.listener = onChange;
+		return () => {
+			if (this.listener === onChange) this.listener = void 0;
+		};
+	}
+	pushSerializedSource(data, initial, wrap) {
+		let serialized = initial ? ROUTER_PREFIX + data : data;
+		if (wrap) serialized = PROMISE_PREFIX + serialized + ")";
+		return this.pushSource(serialized);
+	}
+	finish() {
+		if (!this.pushSource("$_TSR.e()")) return;
+		this.producerDone = true;
+		this.clearTimeoutIfSet();
+		this.refresh();
+	}
+	takeInitialHydrationScriptTags() {
+		if (this.consumer === "cleaned" || this.outputState === HydrationScriptOutputState.Failed || this.initialTaken) return;
+		const sources = this.queuedSources;
+		const tags = createInitialTags(sources, this.nonce);
+		this.initialTaken = true;
+		this.releaseAccounting(sources);
+		sources.length = 0;
+		this.queuedSourceHead = 0;
+		this.refresh();
+		return tags;
+	}
+	/**
+	* Opt this request out of hydration output entirely (for example a
+	* `hydrate: false` page). Drops the queued bootstrap sources, marks the
+	* producer done, and makes the fast pass-through path reservable without
+	* a rendered `<Scripts>` boundary. Must run before the initial take and
+	* before serialization produces output.
+	*/
+	disableHydration() {
+		if (this.consumer === "cleaned" || this.outputState === HydrationScriptOutputState.Failed) return;
+		if (this.initialTaken || this.consumer !== void 0 || this.producerDone) invariant();
+		this.releaseAccounting(this.queuedSources);
+		this.clearQueue();
+		this.initialTaken = true;
+		this.barrierLifted = true;
+		this.producerDone = true;
+		this.refresh();
+	}
+	isInitialTaken() {
+		return this.initialTaken;
+	}
+	skipInitialTake() {
+		if (this.consumer !== "cleaned" && !this.initialTaken) {
+			this.initialTaken = true;
+			this.refresh();
+		}
+	}
+	claimOutput() {
+		if (this.consumer === "cleaned") throw new Error("SSR hydration script output is already cleaned up");
+		if (this.consumer !== void 0) throw new Error("SSR hydration script output already has a consumer");
+		this.consumer = this;
+		this.refresh(false);
+		return this;
+	}
+	reserveFastPath(output) {
+		const ownsConsumer = this.consumer === output;
+		if (this.outputState === HydrationScriptOutputState.Failed || !this.producerDone || !this.initialTaken || !this.queueIsEmpty() || this.active || !ownsConsumer) return false;
+		this.consumer = "fast-path";
+		return true;
+	}
+	startSerializationTimeout(timeoutMs) {
+		if (this.consumer === "cleaned" || this.outputState === HydrationScriptOutputState.Failed || this.producerDone || this.timeout !== void 0) return;
+		this.timeout = setTimeout(() => {
+			this.timeout = void 0;
+			if (this.consumer !== "cleaned" && this.outputState !== HydrationScriptOutputState.Failed && !this.producerDone) {
+				console.error("Serialization timeout after app render finished");
+				this.fail(/* @__PURE__ */ new Error("Serialization timeout after app render finished"));
+			}
+		}, timeoutMs);
+	}
+	cleanup() {
+		if (this.consumer === "cleaned") return;
+		this.consumer = "cleaned";
+		this.clearTimeoutIfSet();
+		this.dropBufferedOutput();
+		this.listener = void 0;
+		this.outputError = void 0;
+		this.producerDone = true;
+		this.outputState = HydrationScriptOutputState.Done;
+	}
+};
+/** Create the hydration-script owner for one server request. */
+function createHydrationScripts(nonce, initialSources) {
+	return new HydrationScriptsOwner(nonce, initialSources);
+}
+var nodeBuffer = globalThis.Buffer;
+var toBase64Fast = nodeBuffer ? (bytes) => nodeBuffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString("base64") : toBase64;
+var BINARY_FACTORY = () => {};
+var TEXT_FACTORY = () => {};
+var FACTORY_BINARY = `((s,u=1)=>new ReadableStream({start(c,f){f=s.on({next(b){const d=atob(b),a=new Uint8Array(d.length);for(let i=0;i<d.length;i++)a[i]=d.charCodeAt(i);c.enqueue(a)},throw(e){s=u=0;c.error(e)},return(){s=u=0;c.close()}});u=u&&f},cancel(){u&&u()}}))`;
+var FACTORY_TEXT = `((s,u=1,e=new TextEncoder)=>new ReadableStream({start(c,f){f=s.on({next(v){const x=v.slice(1);if(v[0]==='t')c.enqueue(e.encode(x));else{const d=atob(x),a=new Uint8Array(d.length);for(let i=0;i<d.length;i++)a[i]=d.charCodeAt(i);c.enqueue(a)}},throw(x){s=u=0;c.error(x)},return(){s=u=0;c.close()}});u=u&&f},cancel(){u&&u()}}))`;
+function makeFactoryPlugin(tag, sentinel, source) {
+	return createPlugin({
+		tag,
+		test(value) {
+			return value === sentinel;
+		},
+		parse: { stream() {
+			return {};
+		} },
+		serialize() {
+			return source;
+		},
+		deserialize: void 0
+	});
+}
+/** Server-only plugins for streaming hydration data into HTML. */
+var ssrSerovalPlugins = [
+	ShallowErrorPlugin,
+	/* @__PURE__ */ createPlugin({
+		tag: "tss/RawStream",
+		extends: [/* @__PURE__ */ makeFactoryPlugin("tss/RawStreamFactory", BINARY_FACTORY, FACTORY_BINARY), /* @__PURE__ */ makeFactoryPlugin("tss/RawStreamFactoryText", TEXT_FACTORY, FACTORY_TEXT)],
+		test(value) {
+			return value instanceof RawStream;
+		},
+		parse: { stream(value, ctx) {
+			const text = value.hint === "text";
+			const factory = ctx.parse(text ? TEXT_FACTORY : BINARY_FACTORY);
+			const [stream, stop] = pumpEncodedStream(value.stream, text ? encodeText : toBase64Fast);
+			ctx.addCleanup(stop);
+			return {
+				factory,
+				stream: ctx.parse(stream)
+			};
+		} },
+		serialize(node, ctx) {
+			return "(" + ctx.serialize(node.factory) + ")(" + ctx.serialize(node.stream) + ")";
+		},
+		deserialize: void 0
+	}),
+	ReadableStreamPlugin
+];
+function dehydrateMatch(match) {
+	const dehydratedMatch = {
+		i: dehydrateSsrMatchId(match.id),
+		u: match.updatedAt,
+		s: match.status
+	};
+	for (const [key, shorthand] of [
+		["__beforeLoadContext", "b"],
+		["loaderData", "l"],
+		["error", "e"],
+		["ssr", "ssr"]
+	]) if (match[key] !== void 0) dehydratedMatch[shorthand] = match[key];
+	if (match._notFound) dehydratedMatch.g = true;
+	return dehydratedMatch;
+}
+function disposeSerializationSafely(dispose) {
+	try {
+		dispose?.();
+	} catch (err) {
+		console.error("Error disposing SSR serialization:", err);
+	}
+}
+function notifyAndClearListeners(listeners, errorMessage, arg) {
+	const pending = listeners.slice();
+	listeners.length = 0;
+	for (const listener of pending) try {
+		listener(arg);
+	} catch (error) {
+		console.error(errorMessage, error);
+	}
+}
+var MANIFEST_CACHE_SIZE = 100;
+var manifestCaches = /* @__PURE__ */ new WeakMap();
+function getManifestCache(manifest) {
+	const cache = manifestCaches.get(manifest);
+	if (cache) return cache;
+	const newCache = createSieveCache(MANIFEST_CACHE_SIZE);
+	manifestCaches.set(manifest, newCache);
+	return newCache;
+}
+function getInlineCssForPreparedRoutes(manifest, preparedRoutes) {
+	const styles = manifest.inlineCss?.styles;
+	const hrefs = preparedRoutes.inlineCssHrefs;
+	if (!styles || !hrefs?.length) return;
+	let css = "";
+	for (const href of hrefs) css += styles[href];
+	return css;
+}
+function getInlineCssAssetForPreparedRoutes(manifest, preparedRoutes) {
+	const css = getInlineCssForPreparedRoutes(manifest, preparedRoutes);
+	return css === void 0 ? void 0 : createInlineCssStyleAsset(css);
+}
+function getMatchedRoutesCacheKey(matches) {
+	let cacheKey = "";
+	for (let i = 0; i < matches.length; i++) cacheKey += (i === 0 ? "" : "\0") + matches[i].routeId;
+	return cacheKey;
+}
+function getPreparedMatchedManifestRoutes(manifest, matches, cacheKey) {
+	{
+		const cached = getManifestCache(manifest).get(cacheKey);
+		if (cached) return cached;
+	}
+	const preparedRoutes = prepareMatchedManifestRoutes(manifest, matches);
+	getManifestCache(manifest).set(cacheKey, preparedRoutes);
+	return preparedRoutes;
+}
+function prepareMatchedManifestRoutes(manifest, matches) {
+	const inlineStyles = manifest.inlineCss?.styles;
+	const routes = {};
+	if (!inlineStyles) {
+		for (const match of matches) {
+			const route = manifest.routes[match.routeId];
+			if (route) routes[match.routeId] = route;
+		}
+		return {
+			routes,
+			hasStrippedRoutes: false
+		};
+	}
+	const inlineCssHrefs = [];
+	const seenInlineCssHrefs = /* @__PURE__ */ new Set();
+	let hasStrippedRoutes = false;
+	for (const match of matches) {
+		const routeId = match.routeId;
+		const route = manifest.routes[routeId];
+		if (!route) continue;
+		const nextRoute = stripInlinedStylesheetAssetsFromRoute(inlineStyles, route, inlineCssHrefs, seenInlineCssHrefs);
+		if (nextRoute !== route) hasStrippedRoutes = true;
+		routes[routeId] = nextRoute;
+	}
+	return {
+		routes,
+		hasStrippedRoutes,
+		...inlineCssHrefs.length ? { inlineCssHrefs } : {}
+	};
+}
+function stripInlinedStylesheetAssetsFromRoute(inlineStyles, route, inlineCssHrefs, seenInlineCssHrefs) {
+	const css = route.css;
+	if (!css) return route;
+	if (css.length === 0) {
+		const nextRoute = { ...route };
+		delete nextRoute.css;
+		return nextRoute;
+	}
+	let cssLinks;
+	for (let i = 0; i < css.length; i++) {
+		const link = css[i];
+		const href = getStylesheetHref(link);
+		if (inlineStyles[href] === void 0) {
+			if (cssLinks) cssLinks.push(link);
+			continue;
+		}
+		if (!seenInlineCssHrefs.has(href)) {
+			seenInlineCssHrefs.add(href);
+			inlineCssHrefs.push(href);
+		}
+		if (!cssLinks) cssLinks = css.slice(0, i);
+	}
+	if (!cssLinks) return route;
+	if (cssLinks.length > 0) return {
+		...route,
+		css: cssLinks
+	};
+	const nextRoute = { ...route };
+	delete nextRoute.css;
+	return nextRoute;
+}
+function hasRouteAssets(route) {
+	return !!route.scripts?.length || !!route.css?.length;
+}
+function hasRequestAssets(assets) {
+	return !!assets && (!!assets.preloads?.length || hasRouteAssets(assets));
+}
+function mergeRequestAssetsIntoRootRoute(rootRoute, requestAssets) {
+	const preloads = requestAssets?.preloads?.length ? [...requestAssets.preloads, ...rootRoute?.preloads ?? []] : rootRoute?.preloads;
+	const scripts = requestAssets?.scripts?.length ? [...requestAssets.scripts, ...rootRoute?.scripts ?? []] : rootRoute?.scripts;
+	const cssLinks = requestAssets?.css?.length ? [...requestAssets.css, ...rootRoute?.css ?? []] : rootRoute?.css;
+	return {
+		...rootRoute ?? {},
+		...preloads?.length ? { preloads } : {},
+		...scripts?.length ? { scripts } : {},
+		...cssLinks?.length ? { css: cssLinks } : {}
+	};
+}
+/**
+* Compose a client-facing manifest from prepared routes, an optional inline
+* style, and optional request-scoped assets merged into the root route.
+* Shared by the `router.ssr.manifest` getter and `dehydrate()` so the two
+* compositions cannot drift.
+*/
+function composeManifest(scriptFormat, inlineStyle, routes, requestAssets) {
+	const base = {
+		...scriptFormat ? { scriptFormat } : {},
+		...inlineStyle ? { inlineStyle } : {},
+		routes
+	};
+	if (!hasRequestAssets(requestAssets)) return base;
+	return {
+		...base,
+		routes: {
+			...routes,
+			[rootRouteId]: mergeRequestAssetsIntoRootRoute(routes[rootRouteId], requestAssets)
+		}
+	};
+}
+function attachRouterServerSsrUtils({ router, manifest, getRequestAssets }) {
+	let memoizedPreparedManifest;
+	router.ssr = { get manifest() {
+		if (!manifest) return manifest;
+		const requestAssets = getRequestAssets?.();
+		const hasAssets = hasRequestAssets(requestAssets);
+		if (!hasAssets && !manifest.inlineCss) return manifest;
+		let inlineCssAsset;
+		let routes = manifest.routes;
+		if (manifest.inlineCss) {
+			const matches = _getRenderedMatches(router.stores.matches.get());
+			const cacheKey = getMatchedRoutesCacheKey(matches);
+			if (memoizedPreparedManifest?.cacheKey === cacheKey) {
+				inlineCssAsset = memoizedPreparedManifest.inlineCssAsset;
+				routes = memoizedPreparedManifest.routes;
+			} else {
+				const preparedManifest = getPreparedMatchedManifestRoutes(manifest, matches, cacheKey);
+				inlineCssAsset = getInlineCssAssetForPreparedRoutes(manifest, preparedManifest);
+				if (preparedManifest.hasStrippedRoutes) routes = {
+					...manifest.routes,
+					...preparedManifest.routes
+				};
+				memoizedPreparedManifest = {
+					cacheKey,
+					inlineCssAsset,
+					routes
+				};
+			}
+		}
+		return composeManifest(manifest.scriptFormat, inlineCssAsset, routes, hasAssets ? requestAssets : void 0);
+	} };
+	let dehydrationPhase = "idle";
+	let renderFinished = false;
+	const renderFinishedListeners = [];
+	const cleanupListeners = [];
+	let cleanupStarted = false;
+	let settled = false;
+	let disposeSerialization;
+	const hydrationScripts = createHydrationScripts(router.options.ssr?.nonce);
+	const serverSsr = {
+		hydrationScripts,
+		dehydrate: async (opts) => {
+			if (dehydrationPhase !== "idle") invariant();
+			opts?.signal?.throwIfAborted();
+			dehydrationPhase = "started";
+			let matchesToDehydrate = _getRenderedMatches(router.stores.matches.get());
+			if (router.isShell()) matchesToDehydrate = matchesToDehydrate.slice(0, 1);
+			const matches = matchesToDehydrate.map(dehydrateMatch);
+			let manifestToDehydrate = void 0;
+			if (manifest) {
+				const cacheKey = getMatchedRoutesCacheKey(matchesToDehydrate);
+				const preparedManifest = getPreparedMatchedManifestRoutes(manifest, matchesToDehydrate, cacheKey);
+				manifestToDehydrate = composeManifest(manifest.scriptFormat, preparedManifest.inlineCssHrefs ? createInlineCssPlaceholderAsset() : void 0, preparedManifest.routes, opts?.requestAssets);
+			}
+			const dehydratedRouter = {
+				manifest: manifestToDehydrate,
+				matches
+			};
+			const dehydrate = router.options.dehydrate;
+			const dehydratedData = dehydrate ? opts?.signal ? await waitForReason(dehydrate.call(router.options), opts.signal) : await dehydrate.call(router.options) : void 0;
+			opts?.signal?.throwIfAborted();
+			if (cleanupStarted) return;
+			if (dehydratedData !== void 0) dehydratedRouter.dehydratedData = dehydratedData;
+			const trackPlugins = { didRun: false };
+			const serializationAdapters = router.options.serializationAdapters;
+			const plugins = serializationAdapters ? [...serializationAdapters.map((adapter) => /* @__PURE__ */ makeSsrSerovalPlugin(adapter, trackPlugins)), ...ssrSerovalPlugins] : ssrSerovalPlugins;
+			let serializationCompleteSignaled = false;
+			let initialSerialized = false;
+			const completeScriptSerialization = (result) => {
+				if (serializationCompleteSignaled || cleanupStarted) return;
+				serializationCompleteSignaled = true;
+				const dispose = disposeSerialization;
+				disposeSerialization = void 0;
+				if (result === true) {
+					settled = true;
+					hydrationScripts.finish();
+				} else if (result) hydrationScripts.fail(result.error);
+				if (dispose) queueMicrotask(() => disposeSerializationSafely(dispose));
+			};
+			let synchronousFailure;
+			const dispose = crossSerializeStream(dehydratedRouter, {
+				refs: /* @__PURE__ */ new Map(),
+				plugins,
+				onSerialize: (data, initial) => {
+					if (serializationCompleteSignaled || cleanupStarted) return;
+					initialSerialized ||= initial;
+					if (!hydrationScripts.pushSerializedSource(data, initial, trackPlugins.didRun)) completeScriptSerialization(false);
+				},
+				onError: (err) => {
+					if (serializationCompleteSignaled || cleanupStarted) return;
+					console.error("Serialization error:", err);
+					synchronousFailure = { error: err };
+					completeScriptSerialization({ error: err });
+				},
+				scopeId: "tsr",
+				onDone: () => {
+					if (initialSerialized) completeScriptSerialization(true);
+				}
+			});
+			if (cleanupStarted || serializationCompleteSignaled) disposeSerializationSafely(dispose);
+			else disposeSerialization = dispose;
+			if (synchronousFailure) throw synchronousFailure.error;
+		},
+		onRenderFinished: (listener) => {
+			if (cleanupStarted) return;
+			if (renderFinished) {
+				try {
+					listener();
+				} catch (error) {
+					console.error("Error in render finished listener:", error);
+				}
+				return;
+			}
+			renderFinishedListeners.push(listener);
+		},
+		onCleanup: (listener) => {
+			if (cleanupStarted) {
+				try {
+					listener(settled);
+				} catch (error) {
+					console.error("Error in SSR cleanup listener:", error);
+				}
+				return;
+			}
+			cleanupListeners.push(listener);
+		},
+		setRenderFinished: () => {
+			if (cleanupStarted || renderFinished) return;
+			renderFinished = true;
+			hydrationScripts.liftBarrier();
+			notifyAndClearListeners(renderFinishedListeners, "Error in render finished listener:", void 0);
+		},
+		disableHydration: () => {
+			if (cleanupStarted || dehydrationPhase === "disabled") return;
+			if (dehydrationPhase !== "idle") invariant();
+			hydrationScripts.disableHydration();
+			dehydrationPhase = "disabled";
+		},
+		takeInitialHydrationScriptTags: hydrationScripts.takeInitialHydrationScriptTags,
+		cleanup() {
+			if (cleanupStarted) return;
+			cleanupStarted = true;
+			hydrationScripts.cleanup();
+			const dispose = disposeSerialization;
+			disposeSerialization = void 0;
+			disposeSerializationSafely(dispose);
+			notifyAndClearListeners(cleanupListeners, "Error in SSR cleanup listener:", settled);
+			renderFinishedListeners.length = 0;
+			router.ssr = void 0;
+			router.serverSsr = void 0;
+		}
+	};
+	router.serverSsr = serverSsr;
+	for (const listener of router.serverSsrLifecycle?.onServerSsrAttach ?? []) try {
+		listener(serverSsr);
+	} catch (err) {
+		console.error("SSR attach listener error:", err);
+	}
+}
+function getNormalizedURL(url, base) {
+	const rawUrl = typeof url === "string" ? new URL(url.replace("\\", "%5C"), base) : url;
+	const handledProtocolRelativeURL = rawUrl.pathname.startsWith("//");
+	const decodedPathname = decodePath(handledProtocolRelativeURL ? rawUrl.pathname.replace(/^\/+/, "/") : rawUrl.pathname);
+	const searchParams = new URLSearchParams(rawUrl.search);
+	const normalizedHref = decodedPathname + (searchParams.size > 0 ? "?" : "") + searchParams.toString() + rawUrl.hash;
+	return {
+		url: new URL(normalizedHref, rawUrl.origin),
+		handledProtocolRelativeURL
+	};
+}
+function isSsrResponse(value) {
+	if (typeof value !== "object" || value === null || !("response" in value) || !(value.response instanceof Response) || !("serverSsrCleanup" in value)) return false;
+	if (value.serverSsrCleanup === "none") return true;
+	return value.serverSsrCleanup === "stream" && "dispose" in value && typeof value.dispose === "function";
+}
+function normalizeSsrResponse(result) {
+	if (result instanceof Response) return {
+		response: result,
+		serverSsrCleanup: "none"
+	};
+	if (isSsrResponse(result)) return result;
+	throw new TypeError("Expected a Response from the SSR handler");
+}
+function cancelResponseBody(response, reason) {
+	const body = response.body;
+	if (!body) return;
+	body.cancel(reason).catch(console.error);
+}
+function disposeSsrResponse(result, reason) {
+	const response = normalizeSsrResponse(result);
+	if (response.serverSsrCleanup === "stream") response.dispose(reason);
+	else cancelResponseBody(response.response, reason);
+}
+function bindSsrResponseToRequest(router, result, signal) {
+	const ssrResponse = normalizeSsrResponse(result);
+	if (ssrResponse.serverSsrCleanup !== "stream") {
+		if (signal.aborted) disposeSsrResponse(result, signal.reason);
+		return ssrResponse;
+	}
+	const abort = () => {
+		disposeSsrResponse(ssrResponse, signal.reason);
+	};
+	if (signal.aborted) {
+		abort();
+		return ssrResponse;
+	}
+	const serverSsr = router?.serverSsr;
+	if (serverSsr?.hydrationScripts.requestSignal === signal) {
+		serverSsr.onCleanup(() => {
+			if (signal.aborted) abort();
+		});
+		return ssrResponse;
+	}
+	signal.addEventListener("abort", abort, { once: true });
+	if (!serverSsr) return ssrResponse;
+	serverSsr.onCleanup(() => {
+		signal.removeEventListener("abort", abort);
+	});
+	return ssrResponse;
+}
+function stripSsrResponseBody(result, reason) {
+	const ssrResponse = normalizeSsrResponse(result);
+	disposeSsrResponse(ssrResponse, reason);
+	return {
+		response: new Response(null, ssrResponse.response),
+		serverSsrCleanup: "none"
+	};
+}
+var SERIALIZED_JSON_HEADERS = /* @__PURE__ */ new Map([
+	["content-type", "application/json"],
+	[X_TSS_SERIALIZED, "true"],
+	[X_TSS_RAW_RESPONSE, null],
+	["location", null]
+]);
+var SERIALIZED_JSON_HEADER_INIT = new Headers({
+	"content-type": "application/json",
+	[X_TSS_SERIALIZED]: "true"
+});
+/** Completed bytes own no stream until the request pipeline accepts them. */
+var DeferredResponse = class {
+	constructor(body) {
+		this.body = body;
+	}
+	createResponse(event) {
+		return createFinalizedResponse(this.body, SERIALIZED_JSON_HEADER_INIT, SERIALIZED_JSON_HEADERS, event);
+	}
+};
+var SERIALIZED_FRAMED_HEADERS = /* @__PURE__ */ new Map([
+	["content-type", TSS_CONTENT_TYPE_FRAMED_VERSIONED],
+	[X_TSS_SERIALIZED, "true"],
+	[X_TSS_RAW_RESPONSE, null],
+	["location", null]
+]);
+var NOT_FOUND_HEADERS = /* @__PURE__ */ new Map([
+	["content-type", "application/json"],
+	[X_TSS_SERIALIZED, null],
+	[X_TSS_RAW_RESPONSE, null],
+	["location", null]
+]);
+var RAW_RESPONSE_HEADERS = /* @__PURE__ */ new Map([[X_TSS_RAW_RESPONSE, "true"]]);
+var THROWN_RESPONSE_HEADERS = /* @__PURE__ */ new Map([[X_TSS_RAW_RESPONSE, "thrown"]]);
 var MAX_PAYLOAD_SIZE = 1e6;
 var MAX_PENDING_SERIALIZATION_RECORDS = 1024;
 var MAX_PENDING_SERIALIZATION_BYTES = 33554432;
@@ -497,86 +5403,103 @@ function runSerializationCleanup(dispose) {
 function cancelRawStream(stream, reason) {
 	stream.cancel(reason).catch(() => {});
 }
-var handleServerAction = async ({ request, context, serverFnId }) => {
+/**
+* Marks a Response thrown during a server-function request so the client
+* rejects the call with it. Redirects keep their own protocol.
+*/
+function toThrownServerFnResponse(response) {
+	return isRedirect(response) ? response : setProtectedResponseHeaders(response, THROWN_RESPONSE_HEADERS);
+}
+/**
+* Builds the reply for a server-function request that failed outside the
+* function, such as in request middleware. Like a failed call, it carries
+* only the thrown value under an `error` key, so the client rethrows it.
+*/
+async function createServerFnErrorResponse(error, serovalPlugins) {
+	if (isNotFound(error)) return isNotFoundResponse(error);
+	const headers = getErrorHeaders(error) ?? new Headers();
+	const { status, statusText } = resolveErrorResponseStatus(error);
+	headers.set("Content-Type", "application/json");
+	headers.set(X_TSS_SERIALIZED, "true");
+	headers.delete(X_TSS_RAW_RESPONSE);
+	headers.delete("location");
+	const plugins = serovalPlugins ?? getSerovalPlugins(defaultSerovalDeserializerPlugins);
+	let serializedError;
+	try {
+		serializedError = JSON.stringify(await toCrossJSONAsync({ error }, {
+			refs: /* @__PURE__ */ new Map(),
+			plugins
+		}));
+	} catch (serializationError) {
+		serializedError = JSON.stringify(await toCrossJSONAsync({ error: serializationError }, {
+			refs: /* @__PURE__ */ new Map(),
+			plugins
+		}));
+	}
+	const errorResponse = new Response(serializedError, {
+		status,
+		statusText,
+		headers
+	});
+	protectResponseHeaders(errorResponse, SERIALIZED_JSON_HEADERS);
+	return errorResponse;
+}
+var handleServerAction = async ({ request, serverFnId }) => {
 	const methodUpper = request.method.toUpperCase();
-	const url = new URL(request.url);
 	const action = await getServerFnById(serverFnId, { origin: "client" });
 	if (action.method && methodUpper !== action.method) return new Response(`expected ${action.method} method. Got ${methodUpper}`, {
 		status: 405,
 		headers: { Allow: action.method }
 	});
-	const isServerFn = request.headers.get("x-tsr-serverFn") === "true";
-	serovalPlugins ??= getSerovalPlugins(defaultSerovalDeserializerPlugins);
-	const contentType = request.headers.get("Content-Type");
+	const headers = request.headers;
+	const isServerFn = headers.get("x-tsr-serverfn") === "true";
+	let serovalPlugins;
+	const getRequestSerovalPlugins = () => {
+		return serovalPlugins ??= getSerovalPlugins(defaultSerovalDeserializerPlugins);
+	};
+	const contentType = headers.get("content-type");
 	try {
 		let res;
-		if (FORM_DATA_CONTENT_TYPES.some((type) => contentType && contentType.includes(type))) {
+		if (contentType && (contentType.includes("multipart/form-data") || contentType.includes("application/x-www-form-urlencoded"))) {
 			if (methodUpper === "GET") invariant();
 			const formData = await request.formData();
 			const serializedContext = formData.get(TSS_FORMDATA_CONTEXT);
 			formData.delete(TSS_FORMDATA_CONTEXT);
 			const params = {
-				context,
 				data: formData,
 				method: methodUpper
 			};
 			if (typeof serializedContext === "string") try {
-				const deserializedContext = fromJSON(JSON.parse(serializedContext), { plugins: serovalPlugins });
-				if (typeof deserializedContext === "object" && deserializedContext) params.context = safeObjectMerge(deserializedContext, context);
+				const deserializedContext = fromJSON(JSON.parse(serializedContext), { plugins: getRequestSerovalPlugins() });
+				if (typeof deserializedContext === "object" && deserializedContext) params.context = deserializedContext;
 			} catch (e) {}
 			res = await action(params);
-		} else if (methodUpper === "GET") {
-			const payloadParam = url.searchParams.get("payload");
-			if (payloadParam && payloadParam.length > MAX_PAYLOAD_SIZE) throw new Error("Payload too large");
-			const payload = payloadParam ? fromJSON(JSON.parse(payloadParam), { plugins: serovalPlugins }) : void 0;
-			res = await action({
-				data: payload?.data,
-				context: safeObjectMerge(payload?.context, context),
-				method: methodUpper
-			});
 		} else {
-			const payload = contentType?.includes("application/json") ? fromJSON(await request.json(), { plugins: serovalPlugins }) : void 0;
+			let json;
+			if (methodUpper === "GET") {
+				const payloadParam = getParsedRequestUrl(request).searchParams.get("payload");
+				if (payloadParam && payloadParam.length > MAX_PAYLOAD_SIZE) throw new Error("Payload too large");
+				json = payloadParam ? JSON.parse(payloadParam) : void 0;
+			} else if (contentType?.includes("application/json")) json = await request.json();
+			const payload = json === void 0 ? void 0 : fromJSON(json, { plugins: getRequestSerovalPlugins() });
 			res = await action({
 				data: payload?.data,
-				context: safeObjectMerge(payload?.context, context),
+				context: payload?.context,
 				method: methodUpper
 			});
 		}
-		const unwrapped = res.error !== void 0 ? res.error : res.result;
-		if (isNotFound(res)) res = isNotFoundResponse(res);
+		const failed = "error" in res;
+		const unwrapped = failed ? res.error : res.result;
 		if (!isServerFn && (unwrapped instanceof Response || unwrapped === null || typeof unwrapped !== "object")) return unwrapped;
 		if (unwrapped instanceof Response) {
+			if (failed) return toThrownServerFnResponse(unwrapped);
 			if (isRedirect(unwrapped)) return unwrapped;
-			unwrapped.headers.set(X_TSS_RAW_RESPONSE, "true");
-			return unwrapped;
+			return setProtectedResponseHeaders(unwrapped, RAW_RESPONSE_HEADERS);
 		}
-		return serializeResult(res, request.signal, serovalPlugins);
+		return serializeResult(res, request, getRequestSerovalPlugins());
 	} catch (error) {
 		if (error instanceof Response) return error;
-		if (isNotFound(error)) return isNotFoundResponse(error);
-		console.error("Server Fn Error!", error);
-		const serializedError = JSON.stringify(await toCrossJSONAsync(error, {
-			refs: /* @__PURE__ */ new Map(),
-			plugins: serovalPlugins
-		}));
-		const response = getResponse();
-		const headers = {
-			"Content-Type": "application/json",
-			[X_TSS_SERIALIZED]: "true"
-		};
-		try {
-			return new Response(serializedError, {
-				status: response.status ?? 500,
-				statusText: response.statusText,
-				headers
-			});
-		} catch {
-			return new Response(serializedError, {
-				status: 500,
-				statusText: "",
-				headers
-			});
-		}
+		return createServerFnErrorResponse(error, serovalPlugins);
 	}
 };
 /**
@@ -584,8 +5507,7 @@ var handleServerAction = async ({ request, context, serverFnId }) => {
 * synchronously without RawStreams becomes plain JSON; everything else is a
 * framed response whose records and raw streams are multiplexed in order.
 */
-function serializeResult(res, signal, plugins) {
-	const alsResponse = getResponse();
+function serializeResult(res, request, plugins) {
 	const initialRecords = [];
 	let initialBytes = 0;
 	const pendingRawStreams = [];
@@ -610,25 +5532,24 @@ function serializeResult(res, signal, plugins) {
 	let onError = (error) => {
 		serializationFailure ??= [error];
 	};
-	const rawStreamPlugin = createRawStreamRPCPlugin((id, stream) => {
-		if (serializationFailure) {
-			cancelRawStream(stream, serializationFailure[0]);
-			return;
-		}
-		if (id > 1024) {
-			const error = /* @__PURE__ */ new Error(`Too many raw streams in framed response (max ${MAX_FRAMED_STREAMS})`);
-			cancelRawStream(stream, error);
-			onError(error);
-			return;
-		}
-		pendingRawStreams.push({
-			id,
-			stream
-		});
-	});
 	const dispose = toCrossJSONStream(res, {
 		refs: /* @__PURE__ */ new Map(),
-		plugins: [rawStreamPlugin, ...plugins],
+		plugins: [/* @__PURE__ */ createRawStreamRPCPlugin((id, stream) => {
+			if (serializationFailure) {
+				cancelRawStream(stream, serializationFailure[0]);
+				return;
+			}
+			if (id > 1024) {
+				const error = /* @__PURE__ */ new Error(`Too many raw streams in framed response (max ${MAX_FRAMED_STREAMS})`);
+				cancelRawStream(stream, error);
+				onError(error);
+				return;
+			}
+			pendingRawStreams.push({
+				id,
+				stream
+			});
+		}), ...plugins],
 		onParse(value, initial) {
 			onParse(value, initial);
 		},
@@ -645,14 +5566,7 @@ function serializeResult(res, signal, plugins) {
 		throw serializationFailure[0];
 	}
 	if (!done) disposeSerialization = dispose;
-	if (done && pendingRawStreams.length === 0 && initialRecords.length === 1) return new Response(initialRecords[0], {
-		status: alsResponse.status,
-		statusText: alsResponse.statusText,
-		headers: {
-			"Content-Type": "application/json",
-			[X_TSS_SERIALIZED]: "true"
-		}
-	});
+	if (done && pendingRawStreams.length === 0 && initialRecords.length === 1) return new DeferredResponse(initialRecords[0]);
 	if (done && initialRecords.length === 1) {
 		const json = initialRecords[0];
 		if (json.byteLength > 16777216) {
@@ -673,7 +5587,7 @@ function serializeResult(res, signal, plugins) {
 			cancel(reason) {
 				for (const registration of rawStreams) cancelRawStream(registration.stream, reason);
 			}
-		}), { signal });
+		}), { signal: request.signal });
 	}
 	const { readable, writable } = new TransformStream();
 	const writer = writable.getWriter();
@@ -746,33 +5660,45 @@ function serializeResult(res, signal, plugins) {
 		abortRecordStream(error);
 	});
 	return createFramedResponse(readable, {
-		signal: AbortSignal.any([recordAbortController.signal, signal]),
+		signal: AbortSignal.any([recordAbortController.signal, request.signal]),
 		onCancel: abortRecordStream
 	});
-	function createFramedResponse(records, options) {
-		const multiplexedStream = createMultiplexedStream(records, options);
-		try {
-			return new Response(multiplexedStream, {
-				status: alsResponse.status,
-				statusText: alsResponse.statusText,
-				headers: {
-					"Content-Type": TSS_CONTENT_TYPE_FRAMED_VERSIONED,
-					[X_TSS_SERIALIZED]: "true"
-				}
-			});
-		} catch (error) {
-			cancelRawStream(multiplexedStream, error);
-			throw error;
-		}
+}
+function createFramedResponse(records, options) {
+	const multiplexedStream = createMultiplexedStream(records, options);
+	const { status, statusText } = getSerializedResponseState();
+	try {
+		const response = new Response(multiplexedStream, {
+			status,
+			statusText,
+			headers: {
+				"Content-Type": TSS_CONTENT_TYPE_FRAMED_VERSIONED,
+				[X_TSS_SERIALIZED]: "true"
+			}
+		});
+		protectResponseHeaders(response, SERIALIZED_FRAMED_HEADERS);
+		return response;
+	} catch (error) {
+		cancelRawStream(multiplexedStream, error);
+		throw error;
 	}
 }
 function isNotFoundResponse(error) {
 	const { headers, ...rest } = error;
+	let responseHeaders;
+	if (headers) {
+		const copiedHeaders = new Headers(headers);
+		copiedHeaders.set("Content-Type", "application/json");
+		copiedHeaders.delete(X_TSS_SERIALIZED);
+		copiedHeaders.delete(X_TSS_RAW_RESPONSE);
+		copiedHeaders.delete("location");
+		responseHeaders = copiedHeaders;
+	} else responseHeaders = { "Content-Type": "application/json" };
 	const response = new Response(JSON.stringify(rest), {
 		status: 404,
-		headers
+		headers: responseHeaders
 	});
-	response.headers.set("Content-Type", "application/json");
+	protectResponseHeaders(response, NOT_FOUND_HEADERS);
 	return response;
 }
 var LINK_PARAM_TOKEN_RE = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
@@ -1137,7 +6063,8 @@ async function transformManifestAssets(source, transformFn, _opts) {
 	else if (manifest.inlineCss) manifest.inlineCss = await transformInlineCssStyles(manifest.inlineCss, transformFn);
 	for (const route of Object.values(manifest.routes)) {
 		if (route.preloads?.length) route.preloads = await Promise.all(route.preloads.map(async (link) => {
-			const result = await transformScript(resolveManifestAssetLink(link).href);
+			const resolved = resolveManifestAssetLink(link);
+			const result = await transformScript(resolved.href);
 			return assignManifestLink(link, {
 				href: result.href,
 				crossOrigin: result.crossOrigin
@@ -1180,14 +6107,20 @@ function buildManifest(source, opts) {
 		routes: { ...source.routes }
 	};
 }
-function getStaticHandlerInlineCssDefault(handlerInlineCss) {
+/**
+* The inline-CSS choice that needs no handler callback: a request override
+* wins, then a static handler option, then the default. Undefined when a
+* handler callback has to decide.
+*/
+function getStaticInlineCss(requestInlineCss, handlerInlineCss) {
+	if (requestInlineCss !== void 0) return requestInlineCss;
 	if (typeof handlerInlineCss === "function") return;
 	return handlerInlineCss ?? true;
 }
 async function resolveInlineCssForRequest(opts) {
-	if (opts.requestInlineCss !== void 0) return opts.requestInlineCss;
-	if (typeof opts.handlerInlineCss === "function") return await opts.handlerInlineCss({ request: opts.request });
-	return opts.handlerInlineCss ?? true;
+	const inlineCss = getStaticInlineCss(opts.requestInlineCss, opts.handlerInlineCss);
+	if (inlineCss !== void 0) return inlineCss;
+	return await opts.handlerInlineCss({ request: opts.request });
 }
 function createCachedBaseManifestLoader(loadBaseManifest) {
 	let baseManifestPromise;
@@ -1226,7 +6159,7 @@ function createFinalManifestTransformResolver(transformAssets, opts) {
 function createFinalManifestResolver(opts) {
 	const finalManifestCache = /* @__PURE__ */ new Map();
 	const transformResolver = createFinalManifestTransformResolver(opts.transformAssets, { cacheCreateTransform: opts.cacheCreateTransform });
-	const handlerDefaultInlineCss = getStaticHandlerInlineCssDefault(opts.inlineCss);
+	const handlerDefaultInlineCss = getStaticInlineCss(void 0, opts.inlineCss);
 	const getRequestManifestOptions = async (requestOpts) => {
 		const transformFn = await transformResolver.getTransformFn({
 			warmup: false,
@@ -1260,25 +6193,35 @@ function createFinalManifestResolver(opts) {
 			getTransformFn: () => transformResolver.getTransformFn({ warmup: true }),
 			onError: transformResolver.clearCachedCreateTransform
 		}),
-		resolveCached: (requestOpts) => resolveRequest(requestOpts, finalManifestCache),
+		resolveCached: (requestOpts) => {
+			const inlineCss = getStaticInlineCss(requestOpts.requestInlineCss, opts.inlineCss);
+			if (transformResolver.cache && inlineCss !== void 0) {
+				const cached = finalManifestCache.get(getFinalManifestCacheKey(inlineCss));
+				if (cached) return cached;
+			}
+			return resolveRequest(requestOpts, finalManifestCache);
+		},
 		resolveUncached: (requestOpts) => resolveRequest(requestOpts, void 0)
 	};
 }
 function getFinalManifestCacheKey(inlineCss) {
 	return inlineCss ? "inline-css" : "linked-css";
 }
-function cacheFinalManifestPromise(cachedFinalManifestPromises, cacheKey, promise) {
-	const cachedFinalManifestPromise = promise.catch((error) => {
-		if (cachedFinalManifestPromises.get(cacheKey) === cachedFinalManifestPromise) cachedFinalManifestPromises.delete(cacheKey);
+function cacheFinalManifestPromise(finalManifestCache, cacheKey, promise) {
+	const cachedPromise = promise.then((manifest) => {
+		if (finalManifestCache.get(cacheKey) === cachedPromise) finalManifestCache.set(cacheKey, manifest);
+		return manifest;
+	}, (error) => {
+		if (finalManifestCache.get(cacheKey) === cachedPromise) finalManifestCache.delete(cacheKey);
 		throw error;
 	});
-	cachedFinalManifestPromises.set(cacheKey, cachedFinalManifestPromise);
-	return cachedFinalManifestPromise;
+	finalManifestCache.set(cacheKey, cachedPromise);
+	return cachedPromise;
 }
-function getOrCreateCachedFinalManifestPromise(cachedFinalManifestPromises, cacheKey, computeFinalManifest) {
-	const cachedFinalManifestPromise = cachedFinalManifestPromises.get(cacheKey);
-	if (cachedFinalManifestPromise) return cachedFinalManifestPromise;
-	return cacheFinalManifestPromise(cachedFinalManifestPromises, cacheKey, Promise.resolve().then(computeFinalManifest));
+function getOrCreateCachedFinalManifest(finalManifestCache, cacheKey, computeFinalManifest) {
+	const cached = finalManifestCache.get(cacheKey);
+	if (cached) return cached;
+	return cacheFinalManifestPromise(finalManifestCache, cacheKey, Promise.resolve().then(computeFinalManifest));
 }
 async function buildFinalManifest(opts) {
 	return opts.transformFn ? await transformManifestAssets(opts.base, opts.transformFn, { inlineCss: opts.inlineCss }) : buildManifest(opts.base, { inlineCss: opts.inlineCss });
@@ -1291,20 +6234,20 @@ async function resolveFinalManifest(opts) {
 			inlineCss: opts.inlineCss
 		});
 	};
-	if (opts.finalManifestCache && (!opts.transformFn || opts.cache)) return getOrCreateCachedFinalManifestPromise(opts.finalManifestCache, getFinalManifestCacheKey(opts.inlineCss), computeFinalManifest);
+	if (opts.finalManifestCache && (!opts.transformFn || opts.cache)) return getOrCreateCachedFinalManifest(opts.finalManifestCache, getFinalManifestCacheKey(opts.inlineCss), computeFinalManifest);
 	return computeFinalManifest();
 }
 function warmupFinalManifest(opts) {
 	if (!opts.enabled || opts.handlerDefaultInlineCss === void 0 || !opts.cache) return;
 	const inlineCss = opts.handlerDefaultInlineCss;
-	const warmupPromise = getOrCreateCachedFinalManifestPromise(opts.finalManifestCache, getFinalManifestCacheKey(inlineCss), async () => {
+	const warmupPromise = cacheFinalManifestPromise(opts.finalManifestCache, getFinalManifestCacheKey(inlineCss), Promise.resolve().then(async () => {
 		const [base, transformFn] = await Promise.all([opts.getBaseManifest(), opts.getTransformFn()]);
 		return buildFinalManifest({
 			base,
 			transformFn,
 			inlineCss
 		});
-	});
+	}));
 	if (opts.onError) warmupPromise.catch(opts.onError);
 	return warmupPromise;
 }
@@ -1324,18 +6267,18 @@ var ServerFunctionSerializationAdapter = createSerializationAdapter({
 				context: opts?.context,
 				method: serverFn.method ?? "GET"
 			}, signal);
-			if (result.error !== void 0) throw result.error;
+			if ("error" in result) throw result.error;
 			return result.result;
 		};
 		return fn;
 	}
 });
-function getStartResponseHeaders(opts) {
-	return mergeHeaders({ "Content-Type": "text/html; charset=utf-8" }, ..._getRenderedMatches(opts.router.stores.matches.get()).map((match) => {
-		return match.headers;
-	}));
+function getStartResponseHeaders(router) {
+	const headers = new Headers({ "content-type": "text/html; charset=utf-8" });
+	const matches = _getRenderedMatches(router.stores.matches.get());
+	return matches.some((match) => match.headers) ? mergeHeaders(headers, ...matches.map((match) => match.headers)) : headers;
 }
-var entriesPromise;
+var cachedEntries;
 var defaultCsrfMiddleware = createCsrfMiddleware({ filter: (ctx) => ctx.handlerType === "serverFn" });
 var getCachedBaseManifest = createCachedBaseManifestLoader(() => getStartManifest());
 var getProdBaseManifest = () => getCachedBaseManifest();
@@ -1343,9 +6286,9 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-DG3ZotMK.mjs").then((n) => n.t),
-		import("./start-5Z2QO8AU.mjs"),
-		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
+		import("./router-CS87OpRW.mjs").then((n) => n.t),
+		import("./start-_NmO6-qV.mjs"),
+		import("./empty-plugin-adapters-D95ImunT.mjs")
 	]);
 	return {
 		routerEntry,
@@ -1354,8 +6297,11 @@ async function loadEntries() {
 	};
 }
 function getEntries() {
-	if (!entriesPromise) entriesPromise = loadEntries();
-	return entriesPromise;
+	if (!cachedEntries) cachedEntries = loadEntries().then((entries) => {
+		cachedEntries = entries;
+		return entries;
+	});
+	return cachedEntries;
 }
 var ROUTER_BASEPATH = "/";
 var SERVER_FN_BASE = "/_serverFn/";
@@ -1373,16 +6319,21 @@ function throwIfMayNotDefer() {
 function getResponseFromResult(result) {
 	return isSsrResponse(result) || result instanceof Response ? result : result?.response;
 }
-var responseBodySources = /* @__PURE__ */ new WeakMap();
 function disposeResponseResult(result, reason) {
 	const response = getResponseFromResult(result);
 	if (isSsrResponse(response) || response instanceof Response) disposeSsrResponse(response, reason);
 }
-function hasResponseBody(value) {
-	return value instanceof Response && value.body !== null;
-}
-function inheritsResponseOwnership(ownership, candidate) {
-	return hasResponseBody(candidate) && (candidate.body === ownership.response.body || responseBodySources.get(candidate) === ownership.response);
+/**
+* A new body continues the owned one when it is the same stream, or when the
+* owned body is already being read, as by a pipe, a tee, or a `Response` that
+* copies a body by reading it (Bun, or a wrapped global `Response`). Start
+* cannot tell such a reader from one that stops early, so it disposes only an
+* unread body. A stream whose reader stops early ends with the request's abort
+* or the SSR stream's lifetime limit.
+*/
+function inheritsResponseOwnership(ownership, body) {
+	const ownedBody = ownership.response.body;
+	return body === ownedBody || ownedBody.locked;
 }
 function disposeResponseOwnership(ownership, reason) {
 	const { response, sourceBody, streamResponse } = ownership;
@@ -1412,54 +6363,80 @@ function createLateResponseDisposer(signal) {
 * Compose middleware around a terminal response handler. With no middleware
 * the terminal runs directly.
 */
-async function executeMiddleware(middlewares, terminal, ctx, signal, terminalNext) {
+async function executeMiddleware(middlewares, terminal, ctx, signal, event, terminalNext) {
 	let index = -1;
 	let responseOwnership;
-	let settled = false;
+	let returnedDepth = Infinity;
 	const disposeAbandonedResult = createLateResponseDisposer(signal);
-	const setResponse = (response) => {
-		const ssrResponse = isSsrResponse(response) ? response : void 0;
-		const streamResponse = ssrResponse?.serverSsrCleanup === "stream" ? ssrResponse : void 0;
-		const exposed = ssrResponse ? ssrResponse.response : response;
+	const adoptResponse = (exposed, streamResponse) => {
 		const current = responseOwnership;
-		if (settled) {
-			if (exposed !== ctx.response) disposeResponseResult(response, "late middleware response");
-			return;
-		}
+		const body = exposed instanceof Response ? exposed.body : null;
+		const response = exposed;
+		if (streamResponse && !body && streamResponse !== current?.streamResponse) streamResponse.dispose("Response body dropped by Start reconciliation");
 		if (current && current.response === exposed) current.streamResponse ??= streamResponse;
-		else if (current && inheritsResponseOwnership(current, exposed)) {
-			current.response = exposed;
+		else if (current && body && inheritsResponseOwnership(current, body)) {
+			if (body === current.response.body) transferResponseProtocol(current.response, response);
+			current.response = response;
 			current.streamResponse ??= streamResponse;
 		} else {
-			if (current) disposeResponseOwnership(current, "middleware response replaced");
-			if (hasResponseBody(exposed)) responseOwnership = {
-				response: exposed,
-				sourceBody: exposed.body,
+			if (current) {
+				responseOwnership = void 0;
+				disposeResponseOwnership(current, "middleware response replaced");
+			}
+			responseOwnership = body ? {
+				response,
+				sourceBody: body,
 				streamResponse
-			};
-			else responseOwnership = void 0;
+			} : void 0;
 		}
 		ctx.response = exposed;
 	};
-	const reconcileCtxResponse = () => {
-		if (ctx.response !== responseOwnership?.response) setResponse(ctx.response);
+	const disposeCurrentBody = (reason) => {
+		const current = responseOwnership;
+		responseOwnership = void 0;
+		if (current) disposeResponseOwnership(current, reason);
+	};
+	const setResponse = (response, caller) => {
+		const owned = response !== void 0 && response === responseOwnership?.response;
+		const ssrResponse = !owned && isSsrResponse(response) ? response : void 0;
+		const exposed = ssrResponse ? ssrResponse.response : response;
+		if (returnedDepth <= caller) {
+			if (exposed !== ctx.response) disposeResponseResult(response, "late middleware response");
+			return;
+		}
+		if (!owned) adoptResponse(exposed, ssrResponse?.serverSsrCleanup === "stream" ? ssrResponse : void 0);
+		if (exposed instanceof Response) {
+			const reconciled = reconcileResponse(exposed, event, disposeCurrentBody);
+			if (reconciled !== exposed) adoptRebuilt(exposed, reconciled);
+		}
+	};
+	const adoptRebuilt = (exposed, rebuilt) => {
+		const current = responseOwnership;
+		if (current?.response === exposed && rebuilt.body) {
+			current.response = rebuilt;
+			ctx.response = rebuilt;
+		} else adoptResponse(rebuilt);
 	};
 	let nextPromise;
 	function next(nextCtx) {
-		const result = runNext(nextCtx);
+		const result = runNext(index, nextCtx);
 		nextPromise = result;
 		return result;
 	}
-	async function runNext(nextCtx) {
+	async function runNext(caller, nextCtx) {
 		signal.throwIfAborted();
 		if (nextCtx) {
 			if (nextCtx.context) ctx.context = safeObjectMerge(ctx.context, nextCtx.context);
-			for (const key of Object.keys(nextCtx)) if (key === "response") setResponse(nextCtx.response);
-			else if (key !== "context") ctx[key] = nextCtx[key];
+			const keys = Object.keys(nextCtx);
+			for (let i = 0; i < keys.length; i++) {
+				const key = keys[i];
+				if (key === "response") setResponse(nextCtx.response, caller);
+				else if (key !== "context") ctx[key] = nextCtx[key];
+			}
 		}
-		index++;
-		const isTerminal = index === middlewares.length;
-		const middleware = index < middlewares.length ? middlewares[index] : isTerminal ? terminal : void 0;
+		const depth = ++index;
+		const isTerminal = depth === middlewares.length;
+		const middleware = depth < middlewares.length ? middlewares[depth] : isTerminal ? terminal : void 0;
 		const middlewareNext = isTerminal && terminalNext ? terminalNext : next;
 		if (!middleware) return ctx;
 		let result;
@@ -1470,45 +6447,61 @@ async function executeMiddleware(middlewares, terminal, ctx, signal, terminalNex
 			});
 			if (nextPromise && pending === nextPromise) {
 				nextPromise = void 0;
-				await pending;
-				if (signal.aborted) throw signal.reason;
-				return ctx;
+				result = await pending;
+				signal.throwIfAborted();
 			} else if (!isPromise(pending)) {
 				result = pending;
 				signal.throwIfAborted();
 			} else result = await waitForReason(pending, signal, disposeAbandonedResult, disposeAbandonedResult);
 		} catch (err) {
-			reconcileCtxResponse();
+			if (depth < returnedDepth) returnedDepth = depth;
+			if (returnedDepth > caller) adoptResponse(ctx.response);
 			if (signal.aborted) {
 				if (result !== void 0) disposeAbandonedResult(result);
 				if (err !== signal.reason) disposeAbandonedResult(err);
 				throw signal.reason;
 			}
 			if (err instanceof Response) {
-				setResponse(err);
+				setResponse(ctx.handlerType === "serverFn" ? toThrownServerFnResponse(err) : err, caller);
 				return ctx;
 			}
 			throw err;
 		}
+		if (depth < returnedDepth) returnedDepth = depth;
 		if (isTerminal && terminalNext && !result) throwRouteHandlerError();
-		reconcileCtxResponse();
+		if (isTerminal && !terminalNext && result instanceof DeferredResponse) {
+			if (returnedDepth > caller) {
+				adoptResponse(void 0);
+				adoptResponse(result.createResponse(event));
+			}
+			return ctx;
+		}
 		if (result && result !== ctx) {
 			const response = getResponseFromResult(result);
-			if (response !== void 0 && response !== ctx.response) setResponse(response);
-			if (response !== result && result.context && result.context !== ctx.context) ctx.context = safeObjectMerge(ctx.context, result.context);
-		}
+			if (response !== void 0) {
+				if (ctx.response !== responseOwnership?.response && ctx.response !== response && returnedDepth > caller) adoptResponse(ctx.response);
+				setResponse(response, caller);
+			} else setResponse(ctx.response, caller);
+			if (returnedDepth > caller && response !== result && result.context && result.context !== ctx.context) ctx.context = safeObjectMerge(ctx.context, result.context);
+		} else setResponse(ctx.response, caller);
 		return ctx;
 	}
 	try {
-		await runNext();
-		const response = ctx.response;
+		await runNext(-1);
+		let response = ctx.response;
 		if (!response) throwRouteHandlerError();
-		reconcileCtxResponse();
 		if (signal.aborted) throw signal.reason;
-		settled = true;
+		returnedDepth = -1;
+		if (middlewares.length && ctx.handlerType === "serverFn") {
+			const restored = restoreResponseProtocol(response, event);
+			if (restored !== response) {
+				adoptRebuilt(response, restored);
+				response = restored;
+			}
+		}
 		return responseOwnership ? getOwnedResponse(responseOwnership) : response;
 	} catch (err) {
-		settled = true;
+		returnedDepth = -1;
 		if (responseOwnership) disposeResponseOwnership(responseOwnership, signal.aborted ? signal.reason : err);
 		throw err;
 	}
@@ -1552,18 +6545,24 @@ function createStartHandler(cbOrOptions) {
 	});
 	const resolveManifestForRequest = finalManifestResolver.resolveCached;
 	finalManifestResolver.warmup({ getBaseManifest: () => getBaseManifest(void 0) });
-	const startRequestResolver = async (request, requestOpts) => {
+	const startRequestResolver = async (request, requestOpts, event) => {
 		const signal = request.signal;
 		let router;
 		let routerPromise;
 		let responseOwnsCleanup = false;
+		let response;
 		try {
 			signal.throwIfAborted();
-			const { url, handledProtocolRelativeURL } = getNormalizedURL(request.url);
-			const href = url.pathname + url.search + url.hash;
-			const origin = url.origin;
-			if (handledProtocolRelativeURL) return Response.redirect(url, 308);
-			const entries = await waitForReason(getEntries(), signal);
+			const requestUrl = event.requestUrl;
+			let url = requestUrl;
+			const pathname = url.pathname;
+			if (!SERVER_FN_BASE || !pathname.startsWith(SERVER_FN_BASE) || pathname.includes("%") || pathname.startsWith("//")) {
+				const normalized = getNormalizedURL(requestUrl);
+				url = normalized.url;
+				if (normalized.handledProtocolRelativeURL) return finalizeResponse(Response.redirect(url, 308), event);
+			}
+			const pendingEntries = getEntries();
+			const entries = isPromise(pendingEntries) ? await waitForReason(pendingEntries, signal) : pendingEntries;
 			const isServerFnRequest = !!SERVER_FN_BASE && url.pathname.startsWith(SERVER_FN_BASE);
 			const startInstance = entries.startEntry.startInstance;
 			let startOptions;
@@ -1583,22 +6582,29 @@ function createStartHandler(cbOrOptions) {
 				requestMiddleware: startInstance ? startOptions.requestMiddleware : isServerFnRequest ? [defaultCsrfMiddleware] : void 0,
 				serializationAdapters
 			};
-			const flattenedRequestMiddlewares = requestStartOptions.requestMiddleware ? flattenMiddlewares(requestStartOptions.requestMiddleware) : [];
-			const executedRequestMiddlewares = new Set(flattenedRequestMiddlewares);
+			const requestMiddleware = requestStartOptions.requestMiddleware;
+			let executedRequestMiddlewares;
+			let flattenedRequestMiddlewares = [];
+			if (requestMiddleware?.length) {
+				executedRequestMiddlewares = /* @__PURE__ */ new Set();
+				flattenedRequestMiddlewares = flattenMiddlewares(requestMiddleware, void 0, executedRequestMiddlewares);
+			}
 			const getRouter = () => {
 				routerPromise ??= (async () => {
 					signal.throwIfAborted();
-					const requestRouter = await waitForReason(entries.routerEntry.getRouter(), signal);
+					const routerUrl = url === requestUrl ? getNormalizedURL(url).url : url;
+					const pendingRouter = entries.routerEntry.getRouter();
+					const requestRouter = isPromise(pendingRouter) ? await waitForReason(pendingRouter, signal) : pendingRouter;
 					let isShell = IS_SHELL_ENV;
 					if (IS_PRERENDERING && !isShell) isShell = request.headers.get(HEADERS.TSS_SHELL) === "true";
-					const history = createServerHistory(href);
+					const history = createServerHistory(routerUrl.pathname + routerUrl.search + routerUrl.hash);
 					requestRouter.update({
 						history,
 						isShell,
 						isPrerendering: IS_PRERENDERING,
-						origin: requestRouter.options.origin ?? origin,
+						origin: requestRouter.options.origin ?? routerUrl.origin,
 						defaultSsr: requestStartOptions.defaultSsr,
-						serializationAdapters: [...requestStartOptions.serializationAdapters, ...requestRouter.options.serializationAdapters || []],
+						serializationAdapters: requestRouter.options.serializationAdapters?.length ? [...requestStartOptions.serializationAdapters, ...requestRouter.options.serializationAdapters] : requestStartOptions.serializationAdapters,
 						basepath: ROUTER_BASEPATH
 					});
 					router = requestRouter;
@@ -1623,51 +6629,49 @@ function createStartHandler(cbOrOptions) {
 					contextAfterGlobalMiddlewares: context
 				}, () => handleServerAction({
 					request,
-					context: requestOpts?.context,
 					serverFnId
 				}));
 			} else {
-				const executeRouter = async (serverContext, matchedRoutes) => {
+				const executeRouter = async (serverContext, matchedRoutes, routerInstance) => {
 					if (!/(^|,)\s*(\*\/\*|text\/html)/.test(request.headers.get("Accept") || "*/*")) return normalizeSsrResponse(Response.json({ error: "Only HTML requests are supported here" }, { status: 406 }));
-					const manifest = await waitForReason(resolveManifestForRequest({
+					const pendingManifest = resolveManifestForRequest({
 						request,
 						requestInlineCss: requestOpts?.inlineCss,
 						getBaseManifest: () => getBaseManifest(matchedRoutes)
-					}), signal);
-					const earlyHints = createEarlyHintsForRequest({
-						onEarlyHints: requestOpts?.onEarlyHints,
-						responseLinkHeader: requestOpts?.responseLinkHeader
 					});
+					const manifest = isPromise(pendingManifest) ? await waitForReason(pendingManifest, signal) : pendingManifest;
+					const earlyHints = createEarlyHintsForRequest(requestOpts);
 					earlyHints?.collectStatic({
 						manifest,
 						matchedRoutes
 					});
-					const routerInstance = await getRouter();
+					const storedStartContext = getStartContext({ throwIfNotFound: false });
 					attachRouterServerSsrUtils({
 						router: routerInstance,
 						manifest,
-						getRequestAssets: () => getStartContext({ throwIfNotFound: false })?.requestAssets
+						getRequestAssets: () => storedStartContext?.requestAssets
 					});
 					routerInstance.options.additionalContext = { serverContext };
-					await routerInstance.load({ _signal: signal });
+					await routerInstance.load({
+						_signal: signal,
+						_skipLocationUpdate: true
+					});
 					signal.throwIfAborted();
 					if (routerInstance._serverResult?.type === "redirect") return normalizeSsrResponse(routerInstance._serverResult.redirect);
 					earlyHints?.collectDynamic(_getRenderedMatches(routerInstance.stores.matches.get()));
-					const ctx = getStartContext({ throwIfNotFound: false });
 					await routerInstance.serverSsr.dehydrate({
-						requestAssets: ctx?.requestAssets,
+						requestAssets: storedStartContext?.requestAssets,
 						signal
 					});
 					signal.throwIfAborted();
-					const responseHeaders = getStartResponseHeaders({ router: routerInstance });
+					const responseHeaders = getStartResponseHeaders(routerInstance);
 					earlyHints?.appendResponseHeaders(responseHeaders);
 					signal.throwIfAborted();
-					const disposeLate = createLateResponseDisposer(signal);
-					return normalizeSsrResponse(await waitForReason(cb({
+					return normalizeSsrResponse(await cb({
 						request,
 						router: routerInstance,
 						responseHeaders
-					}), signal, disposeLate, disposeLate));
+					}));
 				};
 				terminal = ({ context }) => runWithStartContext({
 					...startContext,
@@ -1675,22 +6679,45 @@ function createStartHandler(cbOrOptions) {
 				}, () => handleServerRoutes({
 					getRouter,
 					request,
-					url,
 					executeRouter,
 					context,
-					executedRequestMiddlewares
+					executedRequestMiddlewares,
+					signal,
+					event
 				}));
 			}
-			const middlewareResponse = await executeMiddleware(flattenedRequestMiddlewares.map((d) => d.options.server), terminal, {
+			const middlewareCtx = {
 				request,
 				pathname: url.pathname,
 				handlerType,
 				context: createNullProtoObject(requestOpts?.context)
-			}, signal);
+			};
+			let middlewareResponse;
+			try {
+				if (!isServerFnRequest && flattenedRequestMiddlewares.length === 0) middlewareResponse = await terminal(middlewareCtx);
+				else middlewareResponse = await executeMiddleware(flattenedRequestMiddlewares.map((d) => d.options.server), terminal, middlewareCtx, signal, event);
+			} catch (error) {
+				if (signal.aborted) throw error;
+				if (error instanceof Response) middlewareResponse = reconcileResponse(error, event);
+				else if (!isServerFnRequest) throw error;
+				else {
+					const disposeLate = createLateResponseDisposer(signal);
+					middlewareResponse = await waitForReason(runWithStartContext({
+						...startContext,
+						contextAfterGlobalMiddlewares: middlewareCtx.context
+					}, () => createServerFnErrorResponse(error)), signal, disposeLate, disposeLate);
+					middlewareResponse = reconcileResponse(middlewareResponse, event);
+				}
+			}
 			let result;
 			try {
-				result = await handleRedirectResponse(middlewareResponse, getRouter, signal, isServerFnRequest && request.headers.get("x-tsr-serverFn") === "true");
-				if (request.method === "HEAD") result = stripSsrResponseBody(result, "HEAD body stripped");
+				result = normalizeSsrResponse(middlewareResponse);
+				if (isRedirect(result.response)) result = await handleRedirectResponse(result, getRouter, signal, isServerFnRequest && request.headers.get("x-tsr-serverFn") === "true", event);
+				if (request.method === "HEAD" && result.response.body !== null) {
+					const source = result.response;
+					result = stripSsrResponseBody(result, "HEAD body stripped");
+					transferResponseMetadata(source, result.response);
+				}
 			} catch (error) {
 				disposeResponseResult(middlewareResponse, signal.aborted ? signal.reason : error);
 				throw error;
@@ -1698,17 +6725,26 @@ function createStartHandler(cbOrOptions) {
 			bindSsrResponseToRequest(router, result, signal);
 			signal.throwIfAborted();
 			responseOwnsCleanup = result.serverSsrCleanup === "stream";
-			return result.response;
+			response = result.response;
 		} finally {
-			if (router?.serverSsr && !responseOwnsCleanup) router.serverSsr.cleanup();
+			if (router?.serverSsr && !responseOwnsCleanup) {
+				router.serverSsr.cleanup();
+				if (response) response = finalizeResponse(response, event);
+			}
 		}
+		return response;
 	};
-	return requestHandler(startRequestResolver);
+	return withStartRequest(startRequestResolver);
 }
 var relativeRedirectProtocols = /* @__PURE__ */ new Set();
-async function handleRedirectResponse(response, getRouter, signal, serializeRedirect) {
+var SERIALIZED_REDIRECT_HEADERS = /* @__PURE__ */ new Map([
+	["content-type", "application/json"],
+	["location", null],
+	[X_TSS_RAW_RESPONSE, null],
+	[X_TSS_SERIALIZED, null]
+]);
+async function handleRedirectResponse(ssrResponse, getRouter, signal, serializeRedirect, event) {
 	signal.throwIfAborted();
-	const ssrResponse = normalizeSsrResponse(response);
 	const redirect = ssrResponse.response;
 	if (!isRedirect(redirect)) return ssrResponse;
 	const opts = redirect.options;
@@ -1731,13 +6767,21 @@ async function handleRedirectResponse(response, getRouter, signal, serializeRedi
 	if (serializeRedirect) {
 		const redirectOptions = { ...opts };
 		delete redirectOptions.headers;
+		redirectOptions.isSerializedRedirect = true;
 		const responseHeaders = new Headers(redirect.headers);
 		responseHeaders.set("content-type", "application/json");
-		return replaceSsrResponse(ssrResponse, Response.json({
-			...redirectOptions,
-			isSerializedRedirect: true
-		}, { headers: responseHeaders }), "redirect response replaced");
+		responseHeaders.delete("location");
+		responseHeaders.delete(X_TSS_RAW_RESPONSE);
+		responseHeaders.delete(X_TSS_SERIALIZED);
+		const body = JSON.stringify(redirectOptions);
+		if (body === void 0) throw new TypeError("Value is not JSON serializable");
+		disposeSsrResponse(ssrResponse, "redirect response replaced");
+		return {
+			response: createFinalizedResponse(body, responseHeaders, SERIALIZED_REDIRECT_HEADERS, event),
+			serverSsrCleanup: "none"
+		};
 	}
+	ssrResponse.response = finalizeResponse(redirect, event);
 	return ssrResponse;
 }
 function withParsedParams(handler, matchedRoutes) {
@@ -1754,19 +6798,19 @@ function withParsedParams(handler, matchedRoutes) {
 		});
 	};
 }
-async function handleServerRoutes({ getRouter, request, url, executeRouter, context, executedRequestMiddlewares }) {
+async function handleServerRoutes({ getRouter, request, executeRouter, context, executedRequestMiddlewares, signal, event }) {
 	const router = await getRouter();
-	const pathname = executeRewriteInput(router.rewrite, url).pathname;
+	const { pathname } = router.latestLocation;
 	const [matchedRoutes, rawParams, foundRoute] = router.getMatchedRoutes(pathname);
 	const isExactMatch = foundRoute && rawParams["**"] === void 0;
 	const routeMiddlewares = [];
-	let terminalHandler = (ctx) => executeRouter(ctx.context, matchedRoutes);
+	let terminalHandler = (ctx) => executeRouter(ctx.context, matchedRoutes, router);
 	let terminalNext;
 	for (const route of matchedRoutes) {
 		const serverMiddleware = route.options.server?.middleware;
 		if (serverMiddleware) {
 			const flattened = flattenMiddlewares(serverMiddleware);
-			for (const m of flattened) if (!executedRequestMiddlewares.has(m)) routeMiddlewares.push(m.options.server);
+			for (const m of flattened) if (!executedRequestMiddlewares?.has(m)) routeMiddlewares.push(m.options.server);
 		}
 	}
 	const server = foundRoute?.options.server;
@@ -1798,14 +6842,10 @@ async function handleServerRoutes({ getRouter, request, url, executeRouter, cont
 		params: rawParams,
 		pathname,
 		handlerType: "router"
-	}, request.signal, terminalNext));
+	}, signal, event, terminalNext));
 }
 var fetch = createStartHandler(defaultStreamHandler);
-function createServerEntry(entry) {
-	return { async fetch(...args) {
-		return await entry.fetch(...args);
-	} };
-}
+var createServerEntry = createServerEntry$1;
 var server_default = createServerEntry({ fetch });
 //#endregion
 export { createServerEntry, server_default as default, ssr_exports as t };

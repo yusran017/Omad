@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-//#region node_modules/fflate/esm/index.mjs
+//#region node_modules/.pnpm/fflate@0.8.3/node_modules/fflate/esm/index.mjs
 var require = createRequire("/");
 var _a;
 var Worker;
